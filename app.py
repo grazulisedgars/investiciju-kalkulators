@@ -1,4 +1,5 @@
 import streamlit as st
+from calculations import calculate_price_per_m2
 
 st.set_page_config(
     page_title="Nekustamā īpašuma investīciju kalkulators",
@@ -60,6 +61,30 @@ elif st.session_state.financing == "cash":
     st.write(
         "Ievadi informāciju par dzīvokli, lai aprēķinātu "
         "potenciālo investīcijas atdevi."
+    )
+
+# Pirmā sadaļa - Īpašuma pamatinformācija
+
+    st.subheader("🏠 Īpašuma pamatinformācija")
+
+    purchase_price = st.number_input(
+        "Īpašuma iegādes cena (€)",
+        min_value=0,
+    )
+
+    area = st.number_input(
+        "Platība (m²)",
+        min_value=0,
+    )
+
+    price_per_m2 = calculate_price_per_m2(
+        purchase_price,
+        area
+    )
+
+    st.metric(
+        "Cena par m²",
+        f"{price_per_m2:,.2f} €"
     )
 
     if st.button("← Atpakaļ"):
