@@ -4,7 +4,8 @@ from calculations import (
     calculate_notary_fee,
     calculate_notary_vat,
     calculate_state_fee,
-    calculate_additional_purchase_costs
+    calculate_additional_purchase_costs,
+    calculate_total_purchase_cost
 )
 
 st.set_page_config(
@@ -69,8 +70,8 @@ elif st.session_state.financing == "cash":
         "potenciālo investīcijas atdevi."
     )
 
-# Pirmā sadaļa - Īpašuma pamatinformācija
-# ----------------------------------------
+    # Pirmā sadaļa - Īpašuma pamatinformācija
+    # ----------------------------------------
 
     st.subheader("🏠 Īpašuma pamatinformācija")
 
@@ -123,6 +124,11 @@ elif st.session_state.financing == "cash":
         state_fee
     )
 
+    total_purchase_cost = calculate_total_purchase_cost(
+        purchase_price,
+        total_additional_costs
+    )
+
     st.write(f"**Notārs:** {notary_fee:,.2f} €")
     st.write(f"**Notārs PVN:** {notary_vat:,.2f} €")
     st.write(f"**Valsts nodeva:** {state_fee:,.2f} €")
@@ -130,6 +136,13 @@ elif st.session_state.financing == "cash":
     st.metric(
         "Kopējie papildu izdevumi",
         f"{total_additional_costs:,.2f} €"
+    )
+
+    st.subheader("💰 Kopējie īpašuma iegādes izdevumi")
+
+    st.metric(
+        "Kopējā nepieciešamā summa īpašuma iegādei",
+        f"{total_purchase_cost:,.2f} €"
     )
 
     # Atpakaļ poga
