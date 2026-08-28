@@ -1,5 +1,11 @@
 import streamlit as st
-from calculations import calculate_price_per_m2
+from calculations import (
+    calculate_price_per_m2,
+    calculate_notary_fee,
+    calculate_notary_vat,
+    calculate_state_fee,
+    calculate_additional_purchase_costs
+)
 
 st.set_page_config(
     page_title="Nekustamā īpašuma investīciju kalkulators",
@@ -64,6 +70,7 @@ elif st.session_state.financing == "cash":
     )
 
 # Pirmā sadaļa - Īpašuma pamatinformācija
+# ----------------------------------------
 
     st.subheader("🏠 Īpašuma pamatinformācija")
 
@@ -86,6 +93,46 @@ elif st.session_state.financing == "cash":
         "Cena par m²",
         f"{price_per_m2:,.2f} €"
     )
+
+    # Otrā sadaļa - Papildu izdevumi
+    # ----------------------------------------
+
+    st.subheader("💶 Īpašuma iegādes papildu izdevumi")
+
+    notary_fee = calculate_notary_fee(purchase_price)
+
+    notary_vat = calculate_notary_vat(notary_fee)
+
+    registry_fee = st.number_input(
+        "Kancelejas nodeva (€)",
+        min_value=0
+    )
+
+    property_valuation = st.number_input(
+        "Īpašuma vērtējums (€)",
+        min_value=0
+    )
+
+    state_fee = calculate_state_fee(purchase_price)
+
+    total_additional_costs = calculate_additional_purchase_costs(
+        notary_fee,
+        notary_vat,
+        registry_fee,
+        property_valuation,
+        state_fee
+    )
+
+    st.write(f"**Notārs:** {notary_fee:,.2f} €")
+    st.write(f"**Notārs PVN:** {notary_vat:,.2f} €")
+    st.write(f"**Valsts nodeva:** {state_fee:,.2f} €")
+
+    st.metric(
+        "Kopējie papildu izdevumi",
+        f"{total_additional_costs:,.2f} €"
+    )
+
+    # Atpakaļ poga
 
     if st.button("← Atpakaļ"):
         st.session_state["financing"] = None
