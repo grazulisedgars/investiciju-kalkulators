@@ -1,12 +1,16 @@
 import { useState } from "react";
+import "./App.css";
 import FinancingChoice from "./components/FinancingChoice";
 import PropertyInfo from "./components/PropertyInfo";
+import PurchaseCosts from "./components/PurchaseCosts";
 
 function App() {
   const [financing, setFinancing] = useState(null);
+  const [purchasePrice, setPurchasePrice] = useState("");
+  const [area, setArea] = useState("");
 
   return (
-    <main>
+    <main className="app">
       <h1>Vai šis īpašums ir labs ieguldījums?</h1>
 
       <p>
@@ -16,11 +20,23 @@ function App() {
 
       <FinancingChoice setFinancing={setFinancing} />
 
-      {financing === "cash" && <PropertyInfo />}
+      {financing === "cash" && (
+        <>
+          <PropertyInfo
+            purchasePrice={purchasePrice}
+            setPurchasePrice={setPurchasePrice}
+            area={area}
+            setArea={setArea}
+          />
 
-      {financing === "mortgage" && (
-        < h2 > investīcija ar hipotēku</h2>
-      )
+          <PurchaseCosts purchasePrice={purchasePrice} />
+        </>
+      )}
+
+      {
+        financing === "mortgage" && (
+          <h2> investīcija ar hipotēku</h2>
+        )
       }
     </main >
   );
