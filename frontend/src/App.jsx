@@ -1,5 +1,6 @@
 import { useState } from "react";
 import FinancingChoice from "./components/FinancingChoice";
+import PropertyInfo from "./components/PropertyInfo";
 
 function App() {
   const [financing, setFinancing] = useState(null);
@@ -15,9 +16,7 @@ function App() {
 
       <FinancingChoice setFinancing={setFinancing} />
 
-      {financing === "cash" && (
-        <h2>Investīcija saviem līdzekļiem</h2>
-      )}
+      {financing === "cash" && <PropertyInfo />}
 
       {financing === "mortgage" && (
         < h2 > investīcija ar hipotēku</h2>

@@ -1,5 +1,5 @@
 import streamlit as st
-from calculations import (
+from backend.calculations import (
     calculate_price_per_m2,
     calculate_notary_fee,
     calculate_notary_vat,
