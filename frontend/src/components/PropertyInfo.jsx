@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import "../PropertyInfo.css";
 
-function PropertyInfo() {
-
-    const [purchasePrice, setPurchasePrice] = useState("");
-    const [area, setArea] = useState("");
+function PropertyInfo({
+    purchasePrice,
+    setPurchasePrice,
+    area,
+    setArea
+}) {
     const [pricePerM2, setPricePerM2] = useState(null);
 
     const areaInputRef = useRef(null);
