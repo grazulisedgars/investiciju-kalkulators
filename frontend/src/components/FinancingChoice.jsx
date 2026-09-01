@@ -1,16 +1,45 @@
+import "./FinancingChoice.css";
+
 function FinancingChoice({ setFinancing }) {
     return (
-        <section>
-            <h2>Kā plāno finansēt šo investīciju?</h2>
+        <div className="financing-choice">
+            <button
+                className="financing-option"
+                onClick={() => setFinancing("mortgage")}
+            >
+                <span className="financing-kicker">
+                    BANKAS FINANSĒJUMS
+                </span>
 
-            <button onClick={() => setFinancing("mortgage")}>
-                🏦 Ar hipotēku
+                <span className="financing-title">
+                    Ar hipotēku
+                </span>
+
+                <span className="financing-description">
+                    Aprēķini pirmo iemaksu, kredīta izmaksas un
+                    investīcijas atdevi ar bankas finansējumu.
+                </span>
             </button>
 
-            <button onClick={() => setFinancing("cash")}>
-                💶 Par saviem līdzekļiem
+
+            <button
+                className="financing-option"
+                onClick={() => setFinancing("cash")}
+            >
+                <span className="financing-kicker">
+                    SAVS KAPITĀLS
+                </span>
+
+                <span className="financing-title">
+                    Ar saviem līdzekļiem
+                </span>
+
+                <span className="financing-description">
+                    Izvērtē ieguldījumu bez kredīta un nosaki kopējo
+                    nepieciešamo sākuma kapitālu.
+                </span>
             </button>
-        </section>
+        </div>
     );
 }
 

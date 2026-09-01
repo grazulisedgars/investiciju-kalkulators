@@ -1,17 +1,218 @@
 .app {
   width: 100%;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 3rem 1.5rem;
+  padding: 2rem 3rem 4rem;
 }
 
-.app h1 {
-  margin-bottom: 1rem;
-  font-size: 2.5rem;
+
+/* Header */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5rem;
 }
 
-.app p {
-  max-width: 650px;
-  line-height: 1.6;
+.logo {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.navigation a {
   color: #555;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.navigation a:hover {
+  color: #222;
+}
+
+
+/* Hero */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+  gap: 4rem;
+  align-items: center;
+  min-height: 620px;
+}
+
+
+/* Hero content */
+
+.hero-content {
+  max-width: 620px;
+}
+
+.eyebrow {
+  margin-bottom: 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #4d8b68;
+}
+
+.hero h1 {
+  margin: 0;
+  max-width: 650px;
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -3px;
+  font-weight: 750;
+}
+
+.hero-highlight {
+  color: #3f7d5a;
+}
+
+.hero-description {
+  max-width: 540px;
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.65;
+  color: #666;
+}
+
+
+/* Financing */
+
+.financing-section {
+  margin-top: 2.5rem;
+}
+
+.financing-section h2 {
+  margin-bottom: 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+
+/* Calculator preview */
+
+.calculator-preview {
+  align-self: center;
+  width: 100%;
+  max-width: 420px;
+  justify-self: end;
+
+  padding: 1.75rem;
+  border: 1px solid #dce8df;
+  border-radius: 18px;
+  background: #f0f6f2;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.07);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #888;
+}
+
+.preview-header span:last-child {
+  color: #4d8b68;
+}
+
+.preview-property {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.preview-property>div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.preview-label {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.preview-property strong {
+  font-size: 1.4rem;
+}
+
+.preview-divider {
+  height: 1px;
+  margin: 2rem 0;
+  background: #eee;
+}
+
+.preview-kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.preview-kpis>div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.preview-kpis span {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.preview-kpis strong {
+  font-size: 1.5rem;
+  color: #3f7d5a;
+}
+
+
+/* Mobile */
+
+@media (max-width: 900px) {
+
+  .app {
+    padding: 1.5rem;
+  }
+
+  .header {
+    margin-bottom: 4rem;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .hero h1 {
+    font-size: 3.2rem;
+  }
+
+  .calculator-preview {
+    justify-self: start;
+    max-width: 500px;
+  }
+}
+
+
+@media (max-width: 600px) {
+
+  .hero h1 {
+    font-size: 2.6rem;
+    letter-spacing: -1.5px;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+  }
+
+  .preview-property,
+  .preview-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
 }
