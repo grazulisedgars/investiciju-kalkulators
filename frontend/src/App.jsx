@@ -40,7 +40,7 @@ function App() {
             <h1>
               Vai šis īpašums
               <br />
-              ir laba investīcija?
+              ir  <span className="hero-highlight">laba investīcija?</span>
             </h1>
 
             <p className="hero-description">
@@ -105,21 +105,21 @@ function App() {
 
               <div>
                 <span>
-                  Net Yield
+                  Cena par m²
                 </span>
 
                 <strong>
-                  6.8%
+                  715 €/m²
                 </strong>
               </div>
 
               <div>
                 <span>
-                  Cash-on-Cash
+                  Gada bruto īre
                 </span>
 
                 <strong>
-                  8.2%
+                  3 600 €
                 </strong>
               </div>
 
@@ -130,6 +130,60 @@ function App() {
         </section>
       )}
 
+
+      {/* Kā tas darbojas sadaļa */}
+
+      {financing === null && (
+        <section className="how-it-works" id="how-it-works">
+
+          <div className="how-header">
+            <p className="section-label">
+              KĀ TAS DARBOJAS
+            </p>
+
+            <h2>
+              No īpašuma cenas līdz skaidram
+              <br />
+              investīcijas novērtējumam.
+            </h2>
+          </div>
+
+          <div className="steps">
+
+            <div className="step">
+              <span className="step-number">01</span>
+
+              <h3>Ievadi īpašuma datus</h3>
+
+              <p>
+                Norādi iegādes cenu, platību, remonta izmaksas,
+                īres maksu un citus nepieciešamos datus.
+              </p>
+            </div>
+
+            <div className="step">
+              <span className="step-number">02</span>
+
+              <h3>Saņem aprēķinus</h3>
+
+              <p>
+                Propfolio automātiski aprēķina iegādes izmaksas,
+                nepieciešamo kapitālu un potenciālo ienesīgumu.
+              </p>
+            </div>
+
+            <div className="step">
+              <span className="step-number">03</span>
+              <h3>Izvērtē investīciju</h3>
+
+              <p>
+                Salīdzini galvenos rādītājus un pieņem datos
+                balstītu lēmumu par īpašuma iegādi.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Cash calculator */}
 
@@ -171,41 +225,3 @@ function App() {
 }
 
 export default App;
-
-/*
-        </section>
-      )}
-
-      <h1>Vai šis īpašums ir labs ieguldījums?</h1>
-
-      <p>
-        Aprēķini potenciālo atdevi no nekustamā īpašuma
-        iegādes un izvērtē, cik izdevīgs ir šis ieguldījums.
-      </p>
-
-      <FinancingChoice setFinancing={setFinancing} />
-
-      {financing === "cash" && (
-        <>
-          <PropertyInfo
-            purchasePrice={purchasePrice}
-            setPurchasePrice={setPurchasePrice}
-            area={area}
-            setArea={setArea}
-          />
-
-          <PurchaseCosts purchasePrice={purchasePrice} />
-        </>
-      )}
-
-      {
-        financing === "mortgage" && (
-          <h2> investīcija ar hipotēku</h2>
-        )
-      }
-    </main >
-  );
-}
-
-export default App;
-*/

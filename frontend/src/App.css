@@ -171,6 +171,74 @@
   color: #3f7d5a;
 }
 
+/* How it works */
+
+.how-it-works {
+  margin-top: 6rem;
+  padding: 5rem 4rem;
+  border-radius: 24px;
+
+  background: #244c38;
+  color: #fff;
+}
+
+.how-header {
+  max-width: 700px;
+}
+
+.section-label {
+  margin: 0 0 1.25rem;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+
+  color: #a9c9b5;
+}
+
+.how-header h2 {
+  margin: 0;
+
+  font-size: 2.7rem;
+  line-height: 1.15;
+  letter-spacing: -1.5px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
+
+  margin-top: 4rem;
+}
+
+.step {
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.step-number {
+  display: block;
+  margin-bottom: 2rem;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #a9c9b5;
+}
+
+.step h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.step p {
+  margin: 0;
+
+  font-size: 0.9rem;
+  line-height: 1.65;
+
+  color: rgba(255, 255, 255, 0.7);
+}
 
 /* Mobile */
 
@@ -196,6 +264,20 @@
   .calculator-preview {
     justify-self: start;
     max-width: 500px;
+  }
+
+  .how-it-works {
+    margin-top: 4rem;
+    padding: 3rem 2rem;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .how-header h2 {
+    font-size: 2.2rem;
   }
 }
 
