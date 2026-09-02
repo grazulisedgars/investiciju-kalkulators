@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import "../PropertyInfo.css";
+import "./PropertyInfo.css";
 
 function PropertyInfo({
     purchasePrice,
@@ -49,7 +49,7 @@ function PropertyInfo({
             <h2>Īpašuma pamatinformācija</h2>
 
             <div className="input-group">
-                <label>Īpašuma iegādes cena(€)</label>
+                <label>Īpašuma iegādes cena (€)</label>
                 <input
                     type="number"
                     min="0"

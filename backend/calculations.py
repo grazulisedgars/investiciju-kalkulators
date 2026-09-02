@@ -33,30 +33,26 @@ def calculate_purchase_costs(purchase_price, office_fee, valuation):
         "total_purchase_cost": total_purchase_cost
     }
 
-
-# Kopējās īpašuma iegādes PAPILDU izmakses
-
-
-# def calculate_additional_purchase_costs(
-    # notary_fee,
-    # notary_vat,
-    # registry_fee,
-    # property_valuation,
-    # state_fee
-# ):
-    # return (
-    # notary_fee
-    # + notary_vat
-    # + registry_fee
-    # + property_valuation
-    # + state_fee
-    # )
-
-# Kopējās īpašuma iegādes izmaksas
+# Free Analysis aprēķini (Gada bruto īres ienākumi, Kopējā investīcija, Bruto ienesīgums)
 
 
-# def calculate_total_purchase_cost(
-    # purchase_price,
-    # total_additional_costs
-# ):
-    # return purchase_price + total_additional_costs
+def calculate_free_analysis(
+    purchase_price,
+    renovation_costs,
+    monthly_rent,
+    occupancy
+):
+    annual_gross_rent = monthly_rent * 12 * (occupancy / 100)
+
+    total_investment = purchase_price + renovation_costs
+
+    if total_investment > 0:
+        gross_yield = (annual_gross_rent / total_investment) * 100
+    else:
+        gross_yield = 0
+
+    return {
+        "annual_gross_rent": annual_gross_rent,
+        "total_investment": total_investment,
+        "gross_yield": gross_yield
+    }

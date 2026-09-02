@@ -1,0 +1,146 @@
+.free-analysis-results {
+    margin-top: 2rem;
+    padding: 2rem;
+
+    border: 1px solid #dce8df;
+    border-radius: 16px;
+
+    background: #fff;
+}
+
+.free-analysis-results h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.free-analysis-results>div:not(.analysis-cta):not(.premium-teaser) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0.9rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.free-analysis-results p {
+    margin: 0;
+}
+
+.free-analysis-results strong {
+    font-size: 1.15rem;
+}
+
+.analysis-cta {
+    margin-top: 2rem;
+    padding: 1.5rem;
+
+    border-radius: 14px;
+
+    background: #f0f6f2;
+}
+
+.analysis-cta h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1.2rem;
+}
+
+.analysis-cta p {
+    margin-bottom: 1.25rem;
+
+    max-width: 600px;
+
+    line-height: 1.6;
+    color: #666;
+}
+
+.analysis-cta button {
+    padding: 0.8rem 1.2rem;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #3f7d5a;
+    color: #fff;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.analysis-cta button:hover {
+    background: #34684b;
+}
+
+.premium-teaser {
+    display: block;
+
+    margin-top: 2rem;
+    padding: 2rem;
+
+    border: 1px solid #dce8df;
+    border-radius: 16px;
+
+    background: #f4f8f5;
+}
+
+.teaser-copy {
+    max-width: 620px;
+}
+
+.teaser-label {
+    margin: 0 0 0.75rem;
+
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+
+    color: #3f7d5a;
+}
+
+.teaser-copy h3 {
+    margin: 0;
+
+    max-width: 500px;
+
+    font-size: 1.3rem;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
+}
+
+.teaser-description {
+    max-width: 580px;
+    margin-top: 0.75rem;
+
+    line-height: 1.6;
+    color: #666;
+}
+
+.teaser-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+
+    margin-top: 1.5rem;
+}
+
+.teaser-metrics span {
+    padding: 0.55rem 0.85rem;
+
+    border: 1px solid #dce8df;
+    border-radius: 999px;
+
+    background: #fff;
+
+    font-size: 0.82rem;
+    color: #555;
+}
+
+@media (max-width: 600px) {
+    .teaser-metrics {
+        flex-direction: column;
+    }
+
+    .teaser-metrics span {
+        width: 100%;
+    }
+}

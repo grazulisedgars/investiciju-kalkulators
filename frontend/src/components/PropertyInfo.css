@@ -1,0 +1,75 @@
+.property-info {
+    margin-bottom: 1.5rem;
+    padding: 1.75rem;
+
+    border: 1px solid #dce8df;
+    border-radius: 16px;
+
+    background: #ffffff;
+}
+
+.property-info h2 {
+    margin: 0 0 1.5rem;
+
+    font-size: 1.45rem;
+    letter-spacing: -0.5px;
+}
+
+.input-group {
+    margin-bottom: 1.2rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.45rem;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    color: #333;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.8rem 0.9rem;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 9px;
+
+    background: #fff;
+
+    font-size: 1rem;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #3f7d5a;
+    box-shadow: 0 0 0 3px rgba(63, 125, 90, 0.1);
+}
+
+.calculation-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 1.25rem;
+    padding-top: 1.1rem;
+
+    border-top: 1px solid #ececec;
+}
+
+.calculation-result p {
+    margin: 0;
+
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.calculation-result strong {
+    font-size: 1.2rem;
+    color: #3f7d5a;
+}

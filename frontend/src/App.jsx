@@ -1,13 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import FinancingChoice from "./components/FinancingChoice";
 import PropertyInfo from "./components/PropertyInfo";
-import PurchaseCosts from "./components/PurchaseCosts";
+//import PurchaseCosts from "./components/PurchaseCosts";
+import FreeAnalysisInputs from "./components/FreeAnalysisInputs";
+import FreeAnalysisResults from "./components/FreeAnalysisResults";
 
 function App() {
   const [financing, setFinancing] = useState(null);
+
   const [purchasePrice, setPurchasePrice] = useState("");
   const [area, setArea] = useState("");
+
+  const [renovationCosts, setRenovationCosts] = useState("");
+  const [monthlyRent, setMonthlyRent] = useState("");
+  const [occupancy, setOccupancy] = useState("");
+
+  const [freeAnalysisResults, setFreeAnalysisResults] = useState(null);
+
+  useEffect(() => {
+    if (!purchasePrice || Number(purchasePrice) <= 0) {
+      setFreeAnalysisResults(null);
+      return;
+    }
+
+    async function fetchFreeAnalysis() {
+      const response = await fetch(
+        `http://127.0.0.1:8000/calculate/free-analysis?purchase_price=${purchasePrice}&renovation_costs=${renovationCosts || 0}&monthly_rent=${monthlyRent || 0}&occupancy=${occupancy || 100}`
+      );
+
+      const data = await response.json();
+
+      setFreeAnalysisResults(data);
+    }
+
+    fetchFreeAnalysis();
+  }, [
+    purchasePrice,
+    renovationCosts,
+    monthlyRent,
+    occupancy
+  ]);
 
   return (
     <main className="app">
@@ -28,7 +61,7 @@ function App() {
 
       {/*Hero */}
 
-      {financing == null && (
+      {financing === null && (
         <section className="hero">
 
           <div className="hero-content">
@@ -188,7 +221,30 @@ function App() {
       {/* Cash calculator */}
 
       {financing === "cash" && (
-        <>
+        <section className="calculator-page">
+
+          <button
+            className="back-button"
+            onClick={() => setFinancing(null)}
+          >
+            ← Atpakaļ
+          </button>
+
+          <div className="calculator-page-header">
+            <p className="eyebrow">
+              BEZMAKSAS ANALĪZE
+            </p>
+
+            <h1>
+              Investīcija ar paša līdzekļiem
+            </h1>
+
+            <p>
+              Ievadi īpašuma datus un saņem galvenos Investīcijas
+              rādītājus dažu sekunžu laikā.
+            </p>
+          </div>
+
           <PropertyInfo
             purchasePrice={purchasePrice}
             setPurchasePrice={setPurchasePrice}
@@ -196,10 +252,23 @@ function App() {
             setArea={setArea}
           />
 
-          <PurchaseCosts
-            purchasePrice={purchasePrice}
+          <FreeAnalysisInputs
+            renovationCosts={renovationCosts}
+            setRenovationCosts={setRenovationCosts}
+            monthlyRent={monthlyRent}
+            setMonthlyRent={setMonthlyRent}
+            occupancy={occupancy}
+            setOccupancy={setOccupancy}
           />
-        </>
+
+          <FreeAnalysisResults
+            results={freeAnalysisResults}
+          />
+        </section>
+
+        /*<PurchaseCosts
+          purchasePrice={purchasePrice}
+        />*/
       )}
 
 

@@ -1,0 +1,56 @@
+.free-analysis-inputs {
+    margin-bottom: 1.5rem;
+    padding: 1.75rem;
+
+    border: 1px solid #dce8df;
+    border-radius: 16px;
+
+    background: #ffffff;
+}
+
+.free-analysis-inputs h2 {
+    margin: 0 0 1.5rem;
+
+    font-size: 1.45rem;
+    letter-spacing: -0.5px;
+}
+
+.free-analysis-inputs .input-group {
+    margin-bottom: 1.2rem;
+}
+
+.free-analysis-inputs .input-group:last-child {
+    margin-bottom: 0;
+}
+
+.free-analysis-inputs label {
+    display: block;
+    margin-bottom: 0.45rem;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    color: #333;
+}
+
+.free-analysis-inputs input {
+    width: 100%;
+    padding: 0.8rem 0.9rem;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 9px;
+
+    background: #fff;
+
+    font-size: 1rem;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.free-analysis-inputs input:focus {
+    outline: none;
+    border-color: #3f7d5a;
+    box-shadow: 0 0 0 3px rgba(63, 125, 90, 0.1);
+}
