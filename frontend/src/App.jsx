@@ -47,7 +47,9 @@ function App() {
 
       {/* Header */}
 
-      <header className="header">
+      <header
+        className={`header ${financing !== null ? "header-compact" : ""}`}
+      >
         <div className="logo">
           PROPFOLIO
         </div>
@@ -231,9 +233,6 @@ function App() {
           </button>
 
           <div className="calculator-page-header">
-            <p className="eyebrow">
-              BEZMAKSAS ANALĪZE
-            </p>
 
             <h1>
               Investīcija ar paša līdzekļiem
@@ -245,25 +244,29 @@ function App() {
             </p>
           </div>
 
-          <PropertyInfo
-            purchasePrice={purchasePrice}
-            setPurchasePrice={setPurchasePrice}
-            area={area}
-            setArea={setArea}
-          />
+          <div className="calculator-input-grid">
 
-          <FreeAnalysisInputs
-            renovationCosts={renovationCosts}
-            setRenovationCosts={setRenovationCosts}
-            monthlyRent={monthlyRent}
-            setMonthlyRent={setMonthlyRent}
-            occupancy={occupancy}
-            setOccupancy={setOccupancy}
-          />
+            <PropertyInfo
+              purchasePrice={purchasePrice}
+              setPurchasePrice={setPurchasePrice}
+              area={area}
+              setArea={setArea}
+            />
+
+            <FreeAnalysisInputs
+              renovationCosts={renovationCosts}
+              setRenovationCosts={setRenovationCosts}
+              monthlyRent={monthlyRent}
+              setMonthlyRent={setMonthlyRent}
+              occupancy={occupancy}
+              setOccupancy={setOccupancy}
+            />
+          </div>
 
           <FreeAnalysisResults
             results={freeAnalysisResults}
           />
+
         </section>
 
         /*<PurchaseCosts
