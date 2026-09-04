@@ -12,11 +12,19 @@ function App() {
   const [purchasePrice, setPurchasePrice] = useState("");
   const [area, setArea] = useState("");
 
-  const [renovationCosts, setRenovationCosts] = useState("");
+  const [renovationCostPerM2, setRenovationCostPerM2] = useState("");
   const [monthlyRent, setMonthlyRent] = useState("");
   const [occupancy, setOccupancy] = useState("");
 
   const [freeAnalysisResults, setFreeAnalysisResults] = useState(null);
+
+  const totalRenovationCosts =
+    Number(area || 0) * Number(renovationCostPerM2 || 0);
+
+  const pricePerM2AfterRenovation =
+    Number(area) > 0
+      ? (Number(purchasePrice || 0) + totalRenovationCosts) / Number(area)
+      : 0;
 
   useEffect(() => {
     if (!purchasePrice || Number(purchasePrice) <= 0) {
@@ -26,7 +34,7 @@ function App() {
 
     async function fetchFreeAnalysis() {
       const response = await fetch(
-        `http://127.0.0.1:8000/calculate/free-analysis?purchase_price=${purchasePrice}&renovation_costs=${renovationCosts || 0}&monthly_rent=${monthlyRent || 0}&occupancy=${occupancy || 100}`
+        `http://127.0.0.1:8000/calculate/free-analysis?purchase_price=${purchasePrice}&renovation_costs=${totalRenovationCosts}&monthly_rent=${monthlyRent || 0}&occupancy=${occupancy || 100}`
       );
 
       const data = await response.json();
@@ -37,10 +45,37 @@ function App() {
     fetchFreeAnalysis();
   }, [
     purchasePrice,
-    renovationCosts,
+    area,
+    renovationCostPerM2,
     monthlyRent,
     occupancy
   ]);
+
+  function resetCalculator() {
+    setPurchasePrice("");
+    setArea("");
+    setRenovationCostPerM2("");
+    setMonthlyRent("");
+    setOccupancy("");
+    setFreeAnalysisResults(null);
+  }
+
+  function goToHowItWorks(event) {
+    event.preventDefault();
+
+    resetCalculator();
+    setFinancing(null);
+
+    setTimeout(() => {
+      document.getElementById("how-it-works")
+        ?.scrollIntoView({ behaviour: "smooth" });
+    }, 0);
+  }
+
+  function goBackToHome() {
+    resetCalculator();
+    setFinancing(null);
+  }
 
   return (
     <main className="app">
@@ -55,7 +90,10 @@ function App() {
         </div>
 
         <nav className="navigation">
-          <a href="#how-it-works">
+          <a
+            href="#how-it-works"
+            onClick={goToHowItWorks}
+          >
             Kā tas darbojas
           </a>
         </nav>
@@ -227,7 +265,7 @@ function App() {
 
           <button
             className="back-button"
-            onClick={() => setFinancing(null)}
+            onClick={goBackToHome}
           >
             ← Atpakaļ
           </button>
@@ -251,11 +289,14 @@ function App() {
               setPurchasePrice={setPurchasePrice}
               area={area}
               setArea={setArea}
+              pricePerM2AfterRenovation={pricePerM2AfterRenovation}
+              renovationCostPerM2={renovationCostPerM2}
             />
 
             <FreeAnalysisInputs
-              renovationCosts={renovationCosts}
-              setRenovationCosts={setRenovationCosts}
+              renovationCostPerM2={renovationCostPerM2}
+              setRenovationCostPerM2={setRenovationCostPerM2}
+              totalRenovationCosts={totalRenovationCosts}
               monthlyRent={monthlyRent}
               setMonthlyRent={setMonthlyRent}
               occupancy={occupancy}

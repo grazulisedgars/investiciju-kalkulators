@@ -5,7 +5,9 @@ function PropertyInfo({
     purchasePrice,
     setPurchasePrice,
     area,
-    setArea
+    setArea,
+    pricePerM2AfterRenovation,
+    renovationCostPerM2
 }) {
     const [pricePerM2, setPricePerM2] = useState(null);
 
@@ -83,6 +85,19 @@ function PropertyInfo({
                         : "-"}
                 </strong>
             </div>
+
+            {Number(renovationCostPerM2) > 0 && (
+                <div className="calculation-result">
+                    <p>Cena par m² pēc remonta</p>
+
+                    <strong>
+                        {pricePerM2AfterRenovation > 0
+                            ? `${pricePerM2AfterRenovation.toFixed(2)} €/m²`
+                            : "-"}
+                    </strong>
+                </div>
+            )}
+
         </section>
     );
 }

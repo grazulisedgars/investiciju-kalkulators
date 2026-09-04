@@ -42,8 +42,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
   gap: 4rem;
-  align-items: center;
-  min-height: 620px;
+  align-items: start;
+  min-height: 560px;
 }
 
 
@@ -51,6 +51,7 @@
 
 .hero-content {
   max-width: 620px;
+  margin-top: -2rem;
 }
 
 .eyebrow {
@@ -192,7 +193,7 @@
 }
 
 .back-button {
-  margin: 0 0 1rem;
+  margin: 0 0 1.75rem;
   padding: 0;
 
   border: none;

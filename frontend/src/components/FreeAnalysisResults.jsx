@@ -17,14 +17,14 @@ function FreeAnalysisResults({ results }) {
                 <div className="result-item">
                     <span>Gada bruto īres ienākumi</span>
                     <strong>
-                        {results.annual_gross_rent.toFixed(2)} €
+                        {Math.round(results.annual_gross_rent).toLocaleString("lv-LV")} €
                     </strong>
                 </div>
 
                 <div className="result-item">
                     <span>Kopējā investīcija</span>
                     <strong>
-                        {results.total_investment.toFixed(2)} €
+                        {Math.round(results.total_investment).toLocaleString("lv-LV")} €
                     </strong>
                 </div>
 
