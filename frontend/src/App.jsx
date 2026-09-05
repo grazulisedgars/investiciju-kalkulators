@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import FinancingChoice from "./components/FinancingChoice";
 import PropertyInfo from "./components/PropertyInfo";
-//import PurchaseCosts from "./components/PurchaseCosts";
 import FreeAnalysisInputs from "./components/FreeAnalysisInputs";
 import FreeAnalysisResults from "./components/FreeAnalysisResults";
+import MortgageInputs from "./components/MortgageInputs";
+import MortgageSummary from "./components/MortgageSummary";
 
 function App() {
   const [financing, setFinancing] = useState(null);
@@ -17,6 +18,7 @@ function App() {
   const [occupancy, setOccupancy] = useState("");
 
   const [freeAnalysisResults, setFreeAnalysisResults] = useState(null);
+  const [downPaymentPercent, setDownPaymentPercent] = useState("");
 
   const totalRenovationCosts =
     Number(area || 0) * Number(renovationCostPerM2 || 0);
@@ -25,6 +27,16 @@ function App() {
     Number(area) > 0
       ? (Number(purchasePrice || 0) + totalRenovationCosts) / Number(area)
       : 0;
+
+  const downPaymentAmount =
+    Number(purchasePrice || 0) *
+    (Number(downPaymentPercent || 0) / 100);
+
+  const loanAmount =
+    Number(purchasePrice || 0) - downPaymentAmount;
+
+  const initialCapitalNeeded =
+    downPaymentAmount + totalRenovationCosts;
 
   useEffect(() => {
     if (!purchasePrice || Number(purchasePrice) <= 0) {
@@ -58,6 +70,7 @@ function App() {
     setMonthlyRent("");
     setOccupancy("");
     setFreeAnalysisResults(null);
+    setDownPaymentPercent("");
   }
 
   function goToHowItWorks(event) {
@@ -75,6 +88,7 @@ function App() {
   function goBackToHome() {
     resetCalculator();
     setFinancing(null);
+    setDownPaymentPercent("");
   }
 
   return (
@@ -309,30 +323,72 @@ function App() {
           />
 
         </section>
-
-        /*<PurchaseCosts
-          purchasePrice={purchasePrice}
-        />*/
       )}
 
 
       {/* Mortgage calculator */}
 
       {financing === "mortgage" && (
-        <section className="mortgage-section">
+        <section className="calculator-page">
+          <button
+            className="back-button"
+            onClick={goBackToHome}
+          >
+            ← Atpakaļ
+          </button>
 
-          <h2>
-            Investīcija ar hipotēku
-          </h2>
+          <div className="calculator-page-header">
+            <h1>
+              Investīcija ar hipotēku
+            </h1>
 
-          <p>
-            Hipotēkas kalkulatora sadaļa būs pieejama
-            nākamajā solī.
-          </p>
+            <p>
+              Ievadi īpašuma un finansējuma datus un saņem galvenos
+              investīcijas rādītājus dažu sekunžu laikā.
+            </p>
+          </div>
 
+          <div className="calculator-input-grid">
+            <PropertyInfo
+              purchasePrice={purchasePrice}
+              setPurchasePrice={setPurchasePrice}
+              area={area}
+              setArea={setArea}
+              pricePerM2AfterRenovation={pricePerM2AfterRenovation}
+              renovationCostPerM2={renovationCostPerM2}
+            />
+
+            <MortgageInputs
+              downPaymentPercent={downPaymentPercent}
+              setDownPaymentPercent={setDownPaymentPercent}
+              downPaymentAmount={downPaymentAmount}
+              loanAmount={loanAmount}
+            />
+
+            <FreeAnalysisInputs
+              renovationCostPerM2={renovationCostPerM2}
+              setRenovationCostPerM2={setRenovationCostPerM2}
+              totalRenovationCosts={totalRenovationCosts}
+              monthlyRent={monthlyRent}
+              setMonthlyRent={setMonthlyRent}
+              occupancy={occupancy}
+              setOccupancy={setOccupancy}
+            />
+
+            <MortgageSummary
+              downPaymentPercent={downPaymentPercent}
+              renovationCostPerM2={renovationCostPerM2}
+              downPaymentAmount={downPaymentAmount}
+              loanAmount={loanAmount}
+              initialCapitalNeeded={initialCapitalNeeded}
+            />
+          </div>
+
+          <FreeAnalysisResults
+            results={freeAnalysisResults}
+          />
         </section>
       )}
-
     </main>
   );
 }

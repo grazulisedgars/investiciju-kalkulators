@@ -1,0 +1,43 @@
+.mortgage-summary {
+    height: 100%;
+    margin-bottom: 0;
+    padding: 1.75rem;
+
+    border: 1px solid #dce8df;
+    border-radius: 16px;
+
+    background: #ffffff;
+}
+
+.mortgage-summary h2 {
+    margin: 0 0 1.5rem;
+
+    font-size: 1.45rem;
+    letter-spacing: -0.5px;
+}
+
+.summary-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 1.1rem 0;
+    border-top: 1px solid #ececec;
+}
+
+.summary-result:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
+.summary-result p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.summary-result strong {
+    font-size: 1.2rem;
+    color: #3f7d5a;
+    white-space: nowrap;
+}
