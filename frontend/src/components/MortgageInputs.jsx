@@ -62,7 +62,6 @@ function MortgageInputs({
                         : "-"}
                 </strong>
             </div>
-
         </section>
     );
 }
