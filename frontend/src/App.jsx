@@ -6,6 +6,7 @@ import FreeAnalysisInputs from "./components/FreeAnalysisInputs";
 import FreeAnalysisResults from "./components/FreeAnalysisResults";
 import MortgageInputs from "./components/MortgageInputs";
 import MortgageSummary from "./components/MortgageSummary";
+import Registration from "./components/Registration";
 
 function App() {
   const [financing, setFinancing] = useState(null);
@@ -19,6 +20,8 @@ function App() {
 
   const [freeAnalysisResults, setFreeAnalysisResults] = useState(null);
   const [downPaymentPercent, setDownPaymentPercent] = useState("");
+
+  const [showRegistration, setShowRegistration] = useState(false);
 
   const totalRenovationCosts =
     Number(area || 0) * Number(renovationCostPerM2 || 0);
@@ -272,9 +275,15 @@ function App() {
         </section>
       )}
 
+      {showRegistration && (
+        <Registration
+          onBack={() => setShowRegistration(false)}
+        />
+      )}
+
       {/* Cash calculator */}
 
-      {financing === "cash" && (
+      {!showRegistration && financing === "cash" && (
         <section className="calculator-page">
 
           <button
@@ -320,6 +329,7 @@ function App() {
 
           <FreeAnalysisResults
             results={freeAnalysisResults}
+            onCreateProfile={() => setShowRegistration(true)}
           />
 
         </section>
@@ -328,7 +338,7 @@ function App() {
 
       {/* Mortgage calculator */}
 
-      {financing === "mortgage" && (
+      {!showRegistration && financing === "mortgage" && (
         <section className="calculator-page">
           <button
             className="back-button"
@@ -386,6 +396,7 @@ function App() {
 
           <FreeAnalysisResults
             results={freeAnalysisResults}
+            onCreateProfile={() => setShowRegistration(true)}
           />
         </section>
       )}

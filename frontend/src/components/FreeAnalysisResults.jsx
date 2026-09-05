@@ -1,6 +1,6 @@
 import "./FreeAnalysisResults.css";
 
-function FreeAnalysisResults({ results }) {
+function FreeAnalysisResults({ results, onCreateProfile }) {
     if (!results) {
         return null;
     }
@@ -49,7 +49,10 @@ function FreeAnalysisResults({ results }) {
                     </p>
                 </div>
 
-                <button type="button">
+                <button
+                    type="button"
+                    onClick={onCreateProfile}
+                >
                     Izveidot bezmaksas profilu
                 </button>
 
