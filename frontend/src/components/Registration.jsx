@@ -7,6 +7,48 @@ function Registration({ onBack }) {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
+    const [errors, setErrors] = useState({});
+
+    function validateForm() {
+        const newErrors = {};
+
+        if (!username.trim()) {
+            newErrors.username = "Ievadi lietotājvārdu.";
+        }
+
+        if (!email.trim()) {
+            newErrors.email = "Ievadi e-pasta adresi.";
+        } else if (!email.includes("@")) {
+            newErrors.email = "Ievadi derīgu e-pasta adresi.";
+        }
+
+        if (!password) {
+            newErrors.password = "Ievadi paroli.";
+        } else if (password.length < 8) {
+            newErrors.password = "Parolei jābūt vismaz 8 rakstzīmes garai.";
+        }
+
+        if (!confirmPassword) {
+            newErrors.confirmPassword = "Atkārto paroli.";
+        } else if (password !== confirmPassword) {
+            newErrors.confirmPassword = "Paroles nesakrīt";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    }
+
+    function handleSubmit() {
+        const isValid = validateForm();
+
+        if (!isValid) {
+            return;
+        }
+
+        console.log("Forma ir derīga!");
+    }
+
     return (
         <section className="registration-page">
             <button
@@ -37,6 +79,10 @@ function Registration({ onBack }) {
                             value={username}
                             onChange={(event) => setUsername(event.target.value)}
                         />
+
+                        {errors.username && (
+                            <p className="form-error">{errors.username}</p>
+                        )}
                     </div>
 
                     <div className="input-group">
@@ -46,6 +92,10 @@ function Registration({ onBack }) {
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
                         />
+
+                        {errors.email && (
+                            <p className="form-error">{errors.email}</p>
+                        )}
                     </div>
 
                     <div className="input-group">
@@ -55,6 +105,10 @@ function Registration({ onBack }) {
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
                         />
+
+                        {errors.password && (
+                            <p className="form-error">{errors.password}</p>
+                        )}
                     </div>
 
                     <div className="input-group">
@@ -64,11 +118,16 @@ function Registration({ onBack }) {
                             value={confirmPassword}
                             onChange={(event) => setConfirmPassword(event.target.value)}
                         />
+
+                        {errors.confirmPassword && (
+                            <p className="form-error">{errors.confirmPassword}</p>
+                        )}
                     </div>
 
                     <button
                         type="button"
                         className="registration-submit"
+                        onClick={handleSubmit}
                     >
                         Izveidot profilu
                     </button>

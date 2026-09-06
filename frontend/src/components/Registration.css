@@ -99,3 +99,9 @@
 .registration-submit:hover {
     background: #34684b;
 }
+
+.form-error {
+    margin: 0.45rem 0 0;
+    font-size: 0.82rem;
+    color: #b42318;
+}
