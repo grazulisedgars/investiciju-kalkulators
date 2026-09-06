@@ -7,6 +7,7 @@ import FreeAnalysisResults from "./components/FreeAnalysisResults";
 import MortgageInputs from "./components/MortgageInputs";
 import MortgageSummary from "./components/MortgageSummary";
 import Registration from "./components/Registration";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   const [financing, setFinancing] = useState(null);
@@ -22,6 +23,8 @@ function App() {
   const [downPaymentPercent, setDownPaymentPercent] = useState("");
 
   const [showRegistration, setShowRegistration] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   const totalRenovationCosts =
     Number(area || 0) * Number(renovationCostPerM2 || 0);
@@ -118,7 +121,7 @@ function App() {
 
       {/*Hero */}
 
-      {financing === null && (
+      {!showRegistration && !showDashboard && financing === null && (
         <section className="hero">
 
           <div className="hero-content">
@@ -278,128 +281,141 @@ function App() {
       {showRegistration && (
         <Registration
           onBack={() => setShowRegistration(false)}
+          onRegistered={(user) => {
+            setCurrentUser(user);
+            setShowRegistration(false);
+            setShowDashboard(true);
+          }}
         />
+      )}
+
+      {showDashboard && (
+        <Dashboard user={currentUser} />
       )}
 
       {/* Cash calculator */}
 
-      {!showRegistration && financing === "cash" && (
-        <section className="calculator-page">
+      {!showRegistration &&
+        !showDashboard &&
+        financing === "cash" && (
+          <section className="calculator-page">
 
-          <button
-            className="back-button"
-            onClick={goBackToHome}
-          >
-            ← Atpakaļ
-          </button>
+            <button
+              className="back-button"
+              onClick={goBackToHome}
+            >
+              ← Atpakaļ
+            </button>
 
-          <div className="calculator-page-header">
+            <div className="calculator-page-header">
 
-            <h1>
-              Investīcija ar paša līdzekļiem
-            </h1>
+              <h1>
+                Investīcija ar paša līdzekļiem
+              </h1>
 
-            <p>
-              Ievadi īpašuma datus un saņem galvenos Investīcijas
-              rādītājus dažu sekunžu laikā.
-            </p>
-          </div>
+              <p>
+                Ievadi īpašuma datus un saņem galvenos Investīcijas
+                rādītājus dažu sekunžu laikā.
+              </p>
+            </div>
 
-          <div className="calculator-input-grid">
+            <div className="calculator-input-grid">
 
-            <PropertyInfo
-              purchasePrice={purchasePrice}
-              setPurchasePrice={setPurchasePrice}
-              area={area}
-              setArea={setArea}
-              pricePerM2AfterRenovation={pricePerM2AfterRenovation}
-              renovationCostPerM2={renovationCostPerM2}
+              <PropertyInfo
+                purchasePrice={purchasePrice}
+                setPurchasePrice={setPurchasePrice}
+                area={area}
+                setArea={setArea}
+                pricePerM2AfterRenovation={pricePerM2AfterRenovation}
+                renovationCostPerM2={renovationCostPerM2}
+              />
+
+              <FreeAnalysisInputs
+                renovationCostPerM2={renovationCostPerM2}
+                setRenovationCostPerM2={setRenovationCostPerM2}
+                totalRenovationCosts={totalRenovationCosts}
+                monthlyRent={monthlyRent}
+                setMonthlyRent={setMonthlyRent}
+                occupancy={occupancy}
+                setOccupancy={setOccupancy}
+              />
+            </div>
+
+            <FreeAnalysisResults
+              results={freeAnalysisResults}
+              onCreateProfile={() => setShowRegistration(true)}
             />
 
-            <FreeAnalysisInputs
-              renovationCostPerM2={renovationCostPerM2}
-              setRenovationCostPerM2={setRenovationCostPerM2}
-              totalRenovationCosts={totalRenovationCosts}
-              monthlyRent={monthlyRent}
-              setMonthlyRent={setMonthlyRent}
-              occupancy={occupancy}
-              setOccupancy={setOccupancy}
-            />
-          </div>
-
-          <FreeAnalysisResults
-            results={freeAnalysisResults}
-            onCreateProfile={() => setShowRegistration(true)}
-          />
-
-        </section>
-      )}
+          </section>
+        )}
 
 
       {/* Mortgage calculator */}
 
-      {!showRegistration && financing === "mortgage" && (
-        <section className="calculator-page">
-          <button
-            className="back-button"
-            onClick={goBackToHome}
-          >
-            ← Atpakaļ
-          </button>
+      {!showRegistration &&
+        !showDashboard &&
+        financing === "mortgage" && (
+          <section className="calculator-page">
+            <button
+              className="back-button"
+              onClick={goBackToHome}
+            >
+              ← Atpakaļ
+            </button>
 
-          <div className="calculator-page-header">
-            <h1>
-              Investīcija ar hipotēku
-            </h1>
+            <div className="calculator-page-header">
+              <h1>
+                Investīcija ar hipotēku
+              </h1>
 
-            <p>
-              Ievadi īpašuma un finansējuma datus un saņem galvenos
-              investīcijas rādītājus dažu sekunžu laikā.
-            </p>
-          </div>
+              <p>
+                Ievadi īpašuma un finansējuma datus un saņem galvenos
+                investīcijas rādītājus dažu sekunžu laikā.
+              </p>
+            </div>
 
-          <div className="calculator-input-grid">
-            <PropertyInfo
-              purchasePrice={purchasePrice}
-              setPurchasePrice={setPurchasePrice}
-              area={area}
-              setArea={setArea}
-              pricePerM2AfterRenovation={pricePerM2AfterRenovation}
-              renovationCostPerM2={renovationCostPerM2}
+            <div className="calculator-input-grid">
+              <PropertyInfo
+                purchasePrice={purchasePrice}
+                setPurchasePrice={setPurchasePrice}
+                area={area}
+                setArea={setArea}
+                pricePerM2AfterRenovation={pricePerM2AfterRenovation}
+                renovationCostPerM2={renovationCostPerM2}
+              />
+
+              <MortgageInputs
+                downPaymentPercent={downPaymentPercent}
+                setDownPaymentPercent={setDownPaymentPercent}
+                downPaymentAmount={downPaymentAmount}
+                loanAmount={loanAmount}
+              />
+
+              <FreeAnalysisInputs
+                renovationCostPerM2={renovationCostPerM2}
+                setRenovationCostPerM2={setRenovationCostPerM2}
+                totalRenovationCosts={totalRenovationCosts}
+                monthlyRent={monthlyRent}
+                setMonthlyRent={setMonthlyRent}
+                occupancy={occupancy}
+                setOccupancy={setOccupancy}
+              />
+
+              <MortgageSummary
+                downPaymentPercent={downPaymentPercent}
+                renovationCostPerM2={renovationCostPerM2}
+                downPaymentAmount={downPaymentAmount}
+                loanAmount={loanAmount}
+                initialCapitalNeeded={initialCapitalNeeded}
+              />
+            </div>
+
+            <FreeAnalysisResults
+              results={freeAnalysisResults}
+              onCreateProfile={() => setShowRegistration(true)}
             />
-
-            <MortgageInputs
-              downPaymentPercent={downPaymentPercent}
-              setDownPaymentPercent={setDownPaymentPercent}
-              downPaymentAmount={downPaymentAmount}
-              loanAmount={loanAmount}
-            />
-
-            <FreeAnalysisInputs
-              renovationCostPerM2={renovationCostPerM2}
-              setRenovationCostPerM2={setRenovationCostPerM2}
-              totalRenovationCosts={totalRenovationCosts}
-              monthlyRent={monthlyRent}
-              setMonthlyRent={setMonthlyRent}
-              occupancy={occupancy}
-              setOccupancy={setOccupancy}
-            />
-
-            <MortgageSummary
-              downPaymentPercent={downPaymentPercent}
-              renovationCostPerM2={renovationCostPerM2}
-              downPaymentAmount={downPaymentAmount}
-              loanAmount={loanAmount}
-              initialCapitalNeeded={initialCapitalNeeded}
-            />
-          </div>
-
-          <FreeAnalysisResults
-            results={freeAnalysisResults}
-            onCreateProfile={() => setShowRegistration(true)}
-          />
-        </section>
-      )}
+          </section>
+        )}
     </main>
   );
 }

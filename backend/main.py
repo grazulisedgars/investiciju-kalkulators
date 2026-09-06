@@ -1,12 +1,23 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from calculations import (
     calculate_price_per_m2,
     calculate_purchase_costs,
     calculate_free_analysis
 )
+from database import Base, engine
+import models
+
+from sqlalchemy.orm import Session
+
+from database import get_db
+from models import User
+from schemas import UserRegister
+from security import hash_password
 
 app = FastAPI()
+
+Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
@@ -66,3 +77,51 @@ def free_analysis(
         monthly_rent,
         occupancy
     )
+
+# --------------------------------------------------------------------------
+
+
+@app.post("/register")
+def register_user(
+    user_data: UserRegister,
+    db: Session = Depends(get_db)
+):
+    existing_username = (
+        db.query(User)
+        .filter(User.username == user_data.username)
+        .first()
+    )
+
+    if existing_username:
+        raise HTTPException(
+            status_code=400,
+            detail="Lietotājvārds jau tiek izmantots."
+        )
+
+    existing_email = (
+        db.query(User)
+        .filter(User.email == user_data.email)
+        .first()
+    )
+
+    if existing_email:
+        raise HTTPException(
+            status_code=400,
+            detail="E-pasts jau tiek izmantots."
+        )
+
+    new_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        password_hash=hash_password(user_data.password)
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {
+        "id": new_user.id,
+        "username": new_user.username,
+        "email": new_user.email
+    }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./Registration.css";
 
-function Registration({ onBack }) {
+function Registration({ onBack, onRegistered }) {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -39,14 +39,47 @@ function Registration({ onBack }) {
         return Object.keys(newErrors).length === 0;
     }
 
-    function handleSubmit() {
+    async function handleSubmit() {
         const isValid = validateForm();
 
         if (!isValid) {
             return;
         }
 
-        console.log("Forma ir derīga!");
+        try {
+            const response = await fetch(
+                "http://127.0.0.1:8000/register",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setErrors({
+                    general: data.detail || "Reģistrācija neizdevās.",
+                });
+
+                return;
+            }
+
+            onRegistered(data)
+        } catch (error) {
+            console.error(error);
+
+            setErrors({
+                general: "Neizdevās savienoties ar serveri.",
+            });
+        }
     }
 
     return (
@@ -131,6 +164,12 @@ function Registration({ onBack }) {
                     >
                         Izveidot profilu
                     </button>
+
+                    {errors.general && (
+                        <p className="form-error">
+                            {errors.general}
+                        </p>
+                    )}
                 </div>
             </div>
         </section>
