@@ -1,16 +1,23 @@
 import "./Dashboard.css"
 
-function Dashboard({ user }) {
+function Dashboard({ user, onLogout }) {
     return (
         <section className="dashboard-page">
             <div className="dashboard-header">
                 <div>
-                    <p className="dashboard-eyebrow">PROPFOLIO</p>
                     <h1>Sveiks, {user?.username}!</h1>
                     <p>
                         Šeit varēsi pārvaldīt savus īpašumus un investīciju analīzes.
                     </p>
                 </div>
+
+                <button
+                    type="button"
+                    className="logout-button"
+                    onClick={onLogout}
+                >
+                    Iziet
+                </button>
             </div>
 
             <div className="dashboard-section">

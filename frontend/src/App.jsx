@@ -8,6 +8,7 @@ import MortgageInputs from "./components/MortgageInputs";
 import MortgageSummary from "./components/MortgageSummary";
 import Registration from "./components/Registration";
 import Dashboard from "./components/Dashboard";
+import Login from "./components/Login";
 
 function App() {
   const [financing, setFinancing] = useState(null);
@@ -25,6 +26,8 @@ function App() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showDashboard, setShowDashboard] = useState(false);
+
+  const [showLogin, setShowLogin] = useState(false);
 
   const totalRenovationCosts =
     Number(area || 0) * Number(renovationCostPerM2 || 0);
@@ -83,6 +86,9 @@ function App() {
     event.preventDefault();
 
     resetCalculator();
+    setShowRegistration(false);
+    setShowLogin(false);
+    setShowDashboard(false);
     setFinancing(null);
 
     setTimeout(() => {
@@ -116,167 +122,186 @@ function App() {
           >
             Kā tas darbojas
           </a>
+
+          <button
+            type="button"
+            className="login-button"
+            onClick={() => {
+              setShowLogin(true);
+              setShowRegistration(false);
+              setShowDashboard(false);
+              setFinancing(null);
+            }}
+          >
+            Ielogoties
+          </button>
         </nav>
       </header>
 
       {/*Hero */}
 
-      {!showRegistration && !showDashboard && financing === null && (
-        <section className="hero">
+      {!showRegistration &&
+        !showLogin &&
+        !showDashboard &&
+        financing === null && (
+          <section className="hero">
 
-          <div className="hero-content">
+            <div className="hero-content">
 
-            <p className="eyebrow">
-              NEKUSTAMĀ ĪPAŠUMA INVESTĪCIJU ANALĪZE
-            </p>
+              <p className="eyebrow">
+                NEKUSTAMĀ ĪPAŠUMA INVESTĪCIJU ANALĪZE
+              </p>
 
-            <h1>
-              Vai šis īpašums
-              <br />
-              ir  <span className="hero-highlight">laba investīcija?</span>
-            </h1>
+              <h1>
+                Vai šis īpašums
+                <br />
+                ir  <span className="hero-highlight">laba investīcija?</span>
+              </h1>
 
-            <p className="hero-description">
-              Izvērtē īpašuma potenciālo ienesīgumu,
-              izmaksas un nepieciešamo sākuma kapitālu.
-            </p>
+              <p className="hero-description">
+                Izvērtē īpašuma potenciālo ienesīgumu,
+                izmaksas un nepieciešamo sākuma kapitālu.
+              </p>
 
-            <div className="financing-section">
+              <div className="financing-section">
 
-              <h2>
-                Kā plāno finansēt šo investīciju?
-              </h2>
+                <h2>
+                  Kā plāno finansēt šo investīciju?
+                </h2>
 
-              <FinancingChoice
-                setFinancing={setFinancing}
-              />
-            </div>
-
-          </div>
-
-          {/* Calculator preview */}
-
-          <div className="calculator-preview">
-
-            <div className="preview-header">
-              <span>
-                INVESTĪCIJAS ANALĪZE
-              </span>
-
-              <span>
-                ●
-              </span>
-            </div>
-
-            <div className="preview-property">
-
-              <div>
-                <span className="preview-label">
-                  Iegādes cena
-                </span>
-
-                <strong>
-                  €27,900
-                </strong>
-              </div>
-
-              <div>
-                <span className="preview-label">
-                  Platība
-                </span>
-
-                <strong>
-                  39 m²
-                </strong>
+                <FinancingChoice
+                  setFinancing={setFinancing}
+                />
               </div>
 
             </div>
 
-            <div className="preview-divider"></div>
+            {/* Calculator preview */}
 
-            <div className="preview-kpis">
+            <div className="calculator-preview">
 
-              <div>
+              <div className="preview-header">
                 <span>
-                  Cena par m²
+                  INVESTĪCIJAS ANALĪZE
                 </span>
 
-                <strong>
-                  715 €/m²
-                </strong>
+                <span>
+                  ●
+                </span>
               </div>
 
-              <div>
-                <span>
-                  Gada bruto īre
-                </span>
+              <div className="preview-property">
 
-                <strong>
-                  3 600 €
-                </strong>
+                <div>
+                  <span className="preview-label">
+                    Iegādes cena
+                  </span>
+
+                  <strong>
+                    €27,900
+                  </strong>
+                </div>
+
+                <div>
+                  <span className="preview-label">
+                    Platība
+                  </span>
+
+                  <strong>
+                    39 m²
+                  </strong>
+                </div>
+
+              </div>
+
+              <div className="preview-divider"></div>
+
+              <div className="preview-kpis">
+
+                <div>
+                  <span>
+                    Cena par m²
+                  </span>
+
+                  <strong>
+                    715 €/m²
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Gada bruto īre
+                  </span>
+
+                  <strong>
+                    3 600 €
+                  </strong>
+                </div>
+
               </div>
 
             </div>
 
-          </div>
-
-        </section>
-      )}
+          </section>
+        )}
 
 
       {/* Kā tas darbojas sadaļa */}
 
-      {financing === null && (
-        <section className="how-it-works" id="how-it-works">
+      {!showRegistration &&
+        !showLogin &&
+        !showDashboard &&
+        financing === null && (
+          <section className="how-it-works" id="how-it-works">
 
-          <div className="how-header">
-            <p className="section-label">
-              KĀ TAS DARBOJAS
-            </p>
-
-            <h2>
-              No īpašuma cenas līdz skaidram
-              <br />
-              investīcijas novērtējumam.
-            </h2>
-          </div>
-
-          <div className="steps">
-
-            <div className="step">
-              <span className="step-number">01</span>
-
-              <h3>Ievadi īpašuma datus</h3>
-
-              <p>
-                Norādi iegādes cenu, platību, remonta izmaksas,
-                īres maksu un citus nepieciešamos datus.
+            <div className="how-header">
+              <p className="section-label">
+                KĀ TAS DARBOJAS
               </p>
+
+              <h2>
+                No īpašuma cenas līdz skaidram
+                <br />
+                investīcijas novērtējumam.
+              </h2>
             </div>
 
-            <div className="step">
-              <span className="step-number">02</span>
+            <div className="steps">
 
-              <h3>Saņem aprēķinus</h3>
+              <div className="step">
+                <span className="step-number">01</span>
 
-              <p>
-                Propfolio automātiski aprēķina iegādes izmaksas,
-                nepieciešamo kapitālu un potenciālo ienesīgumu.
-              </p>
+                <h3>Ievadi īpašuma datus</h3>
+
+                <p>
+                  Norādi iegādes cenu, platību, remonta izmaksas,
+                  īres maksu un citus nepieciešamos datus.
+                </p>
+              </div>
+
+              <div className="step">
+                <span className="step-number">02</span>
+
+                <h3>Saņem aprēķinus</h3>
+
+                <p>
+                  Propfolio automātiski aprēķina iegādes izmaksas,
+                  nepieciešamo kapitālu un potenciālo ienesīgumu.
+                </p>
+              </div>
+
+              <div className="step">
+                <span className="step-number">03</span>
+                <h3>Izvērtē investīciju</h3>
+
+                <p>
+                  Salīdzini galvenos rādītājus un pieņem datos
+                  balstītu lēmumu par īpašuma iegādi.
+                </p>
+              </div>
             </div>
-
-            <div className="step">
-              <span className="step-number">03</span>
-              <h3>Izvērtē investīciju</h3>
-
-              <p>
-                Salīdzini galvenos rādītājus un pieņem datos
-                balstītu lēmumu par īpašuma iegādi.
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
       {showRegistration && (
         <Registration
@@ -290,7 +315,20 @@ function App() {
       )}
 
       {showDashboard && (
-        <Dashboard user={currentUser} />
+        <Dashboard
+          user={currentUser}
+          onLogout={() => {
+            setCurrentUser(null);
+            setShowDashboard(false);
+            setFinancing(null);
+          }}
+        />
+      )}
+
+      {showLogin && (
+        <Login
+          onBack={() => setShowLogin(false)}
+        />
       )}
 
       {/* Cash calculator */}

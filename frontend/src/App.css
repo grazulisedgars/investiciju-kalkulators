@@ -25,6 +25,12 @@
   letter-spacing: -0.8px;
 }
 
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .navigation a {
   color: #555;
   text-decoration: none;
@@ -33,6 +39,22 @@
 
 .navigation a:hover {
   color: #222;
+}
+
+.login-button {
+  padding: 0.65rem 1rem;
+  border: 1px solid #3f7d5a;
+  border-radius: 9px;
+  background: transparent;
+  color: #3f7d5a;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background: #3f7d5a;
+  color: #ffffff;
 }
 
 
