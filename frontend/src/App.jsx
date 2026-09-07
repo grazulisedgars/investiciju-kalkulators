@@ -328,6 +328,11 @@ function App() {
       {showLogin && (
         <Login
           onBack={() => setShowLogin(false)}
+          onLogin={(user) => {
+            setCurrentUser(user);
+            setShowLogin(false);
+            setShowDashboard(true);
+          }}
         />
       )}
 

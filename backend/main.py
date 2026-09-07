@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from calculations import (
     calculate_price_per_m2,
@@ -12,10 +13,16 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User
-from schemas import UserRegister
-from security import hash_password
+from schemas import UserRegister, UserLogin
+from security import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    decode_access_token,
+)
 
 app = FastAPI()
+security = HTTPBearer()
 
 Base.metadata.create_all(bind=engine)
 
@@ -124,4 +131,87 @@ def register_user(
         "id": new_user.id,
         "username": new_user.username,
         "email": new_user.email
+    }
+
+# --------------------------------------------------------------------------
+
+
+@app.post("/login")
+def login_user(
+    login_data: UserLogin,
+    db: Session = Depends(get_db)
+):
+    user = (
+        db.query(User)
+        .filter(User.email == login_data.email)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Nepareizs e-pasts un/vai parole."
+        )
+
+    if not verify_password(
+        login_data.password,
+        user.password_hash
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Nepareizs e-pasts un/vai parole."
+        )
+
+    access_token = create_access_token(user.id)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email
+        }
+    }
+
+# --------------------------------------------------------------------------
+
+
+@app.get("/me")
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
+    token = credentials.credentials
+
+    payload = decode_access_token(token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    user = db.query(User).filter(
+        User.id == int(user_id)
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="Lietotājs nav atrasts."
+        )
+
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email
     }
