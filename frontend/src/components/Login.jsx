@@ -17,9 +17,10 @@ function Login({ onBack, onLogin }) {
 
         try {
             const response = await fetch(
-                "http://127.0.0.1:8000/login",
+                "http://localhost:8000/login",
                 {
                     method: "POST",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json",
                     },

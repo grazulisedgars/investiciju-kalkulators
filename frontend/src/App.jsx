@@ -72,6 +72,35 @@ function App() {
     occupancy
   ]);
 
+  useEffect(() => {
+    async function checkCurrentUser() {
+      try {
+        const response = await fetch(
+          "http://localhost:8000/me",
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const user = await response.json();
+
+        setCurrentUser(user);
+        setShowDashboard(true);
+        setShowLogin(false);
+        setShowRegistration(false);
+        setFinancing(null);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    checkCurrentUser();
+  }, []);
+
   function resetCalculator() {
     setPurchasePrice("");
     setArea("");
@@ -317,7 +346,19 @@ function App() {
       {showDashboard && (
         <Dashboard
           user={currentUser}
-          onLogout={() => {
+          onLogout={async () => {
+            try {
+              await fetch(
+                "http://localhost:8000/logout",
+                {
+                  method: "POST",
+                  credentials: "include",
+                }
+              );
+            } catch (error) {
+              console.error(error);
+            }
+
             setCurrentUser(null);
             setShowDashboard(false);
             setFinancing(null);

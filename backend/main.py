@@ -1,5 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import FastAPI, Depends, HTTPException, Response, Cookie
 from fastapi.middleware.cors import CORSMiddleware
 from calculations import (
     calculate_price_per_m2,
@@ -22,7 +21,6 @@ from security import (
 )
 
 app = FastAPI()
-security = HTTPBearer()
 
 Base.metadata.create_all(bind=engine)
 
@@ -139,6 +137,7 @@ def register_user(
 @app.post("/login")
 def login_user(
     login_data: UserLogin,
+    response: Response,
     db: Session = Depends(get_db)
 ):
     user = (
@@ -164,9 +163,16 @@ def login_user(
 
     access_token = create_access_token(user.id)
 
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="lax",
+        secure="False",
+        max_age=60*60,
+    )
+
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
         "user": {
             "id": user.id,
             "username": user.username,
@@ -179,12 +185,16 @@ def login_user(
 
 @app.get("/me")
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    access_token: str | None = Cookie(default=None),
     db: Session = Depends(get_db)
 ):
-    token = credentials.credentials
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
 
-    payload = decode_access_token(token)
+    payload = decode_access_token(access_token)
 
     if not payload:
         raise HTTPException(
@@ -214,4 +224,19 @@ def get_current_user(
         "id": user.id,
         "username": user.username,
         "email": user.email
+    }
+# --------------------------------------------------------------------------
+
+
+@app.post("/logout")
+def logout_user(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="lax",
+        secure=False,
+    )
+
+    return {
+        "message": "Izlogošanās veiksmīga."
     }
