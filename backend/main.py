@@ -11,8 +11,8 @@ import models
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User
-from schemas import UserRegister, UserLogin
+from models import User, Property
+from schemas import UserRegister, UserLogin, PropertyCreate
 from security import (
     hash_password,
     verify_password,
@@ -89,8 +89,10 @@ def free_analysis(
 @app.post("/register")
 def register_user(
     user_data: UserRegister,
+    response: Response,
     db: Session = Depends(get_db)
 ):
+
     existing_username = (
         db.query(User)
         .filter(User.username == user_data.username)
@@ -124,6 +126,17 @@ def register_user(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    access_token = create_access_token(new_user.id)
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=60 * 60,
+    )
 
     return {
         "id": new_user.id,
@@ -240,3 +253,115 @@ def logout_user(response: Response):
     return {
         "message": "Izlogošanās veiksmīga."
     }
+
+# --------------------------------------------------------------------------
+
+
+@app.post("/properties")
+def create_property(
+    property_data: PropertyCreate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db)
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies"
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    user = db.query(User).filter(
+        User.id == int(user_id)
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="Lietotājs nav atrasts."
+        )
+
+    property_count = db.query(Property).filter(
+        Property.user_id == user.id
+    ).count()
+
+    new_property = Property(
+        user_id=user.id,
+        property_name=f"Īpašums #{property_count + 1}",
+        financing_type=property_data.financing_type,
+        purchase_price=property_data.purchase_price,
+        area=property_data.area,
+        renovation_cost_per_m2=property_data.renovation_cost_per_m2,
+        monthly_rent=property_data.monthly_rent,
+        occupancy=property_data.occupancy,
+        down_payment_percent=property_data.down_payment_percent,
+    )
+
+    db.add(new_property)
+    db.commit()
+    db.refresh(new_property)
+
+    return {
+        "property_id": new_property.property_id,
+        "user_id": new_property.user_id,
+        "property_name": new_property.property_name,
+        "financing_type": new_property.financing_type,
+        "purchase_price": new_property.purchase_price,
+        "area": new_property.area,
+        "renovation_cost_per_m2": new_property.renovation_cost_per_m2,
+        "monthly_rent": new_property.monthly_rent,
+        "occupancy": new_property.occupancy,
+        "down_payment_percent": new_property.down_payment_percent,
+    }
+# --------------------------------------------------------------------------
+
+
+@app.get("/properties")
+def get_properties(
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db)
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    properties = (
+        db.query(Property)
+        .filter(Property.user_id == int(user_id))
+        .order_by(Property.property_id.asc())
+        .all()
+    )
+
+    return properties

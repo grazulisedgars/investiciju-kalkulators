@@ -1,6 +1,34 @@
+import { useEffect, useState } from "react";
 import "./Dashboard.css"
 
 function Dashboard({ user, onLogout }) {
+    const [properties, setProperties] = useState([]);
+
+    useEffect(() => {
+        async function loadProperties() {
+            try {
+                const response = await fetch(
+                    "http://localhost:8000/properties",
+                    {
+                        credentials: "include",
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Neisdevās ielādēt īpašumus.");
+                }
+
+                const data = await response.json();
+
+                setProperties(data);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        loadProperties();
+    }, []);
+
     return (
         <section className="dashboard-page">
             <div className="dashboard-header">
@@ -27,20 +55,53 @@ function Dashboard({ user, onLogout }) {
                         <p>Tavi saglabātie nekustamie īpašumi parādīsies šeit.</p>
                     </div>
 
-                    <button type="button">
+                    <button
+                        type="button"
+                        className="add-property-button">
                         + Pievienot īpašumu
                     </button>
                 </div>
 
-                <div className="empty-properties">
-                    <h3>Šeit vēl nac saglabātu īpašumu</h3>
-                    <p>
-                        Nākamajā solī piesaistīsim tavu tikko veikto investīcijas
-                        aprēķinu šim profilam.
-                    </p>
-                </div>
+                {properties.length === 0 ? (
+                    <div className="dashboard-empty">
+                        <h3>Šeit vēl nav saglabātu īpašumu</h3>
+                        <p>
+                            Izveido savu pirmo īpašuma analīzi un saglabā to profilā.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="property-list">
+                        {properties.map((property) => (
+                            <div
+                                className="property-card"
+                                key={property.property_id}
+                            >
+                                <h3>{property.property_name}</h3>
+
+                                <p>
+                                    Finansējums:{" "}
+                                    {property.financing_type === "cash"
+                                        ? "Paša līdzekļi"
+                                        : "Hipotēka"}
+                                </p>
+
+                                <p>
+                                    Pirkuma cena: {" "}
+                                    {Number(property.purchase_price).toLocaleString("lv-LV")}  €
+                                </p>
+
+                                <p>Platība: {property.area} m²</p>
+
+                                <p>
+                                    Īres maksa: {" "}
+                                    {Number(property.monthly_rent).toLocaleString("lv-LV")} €/mēn.
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
-        </section>
+        </section >
     );
 }
 

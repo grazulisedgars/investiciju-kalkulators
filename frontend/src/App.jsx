@@ -111,6 +111,43 @@ function App() {
     setDownPaymentPercent("");
   }
 
+  async function saveCurrentProperty() {
+    if (!freeAnalysisResults || !financing) {
+      return;
+    }
+
+    const propertyData = {
+      financing_type: financing,
+      purchase_price: Number(purchasePrice || 0),
+      area: Number(area || 0),
+      renovation_cost_per_m2: Number(renovationCostPerM2 || 0),
+      monthly_rent: Number(monthlyRent || 0),
+      occupancy: Number(occupancy || 0),
+      down_payment_percent:
+        financing === "mortgage"
+          ? Number(downPaymentPercent || 0)
+          : null,
+    };
+
+    const response = await fetch(
+      "http://localhost:8000/properties",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(propertyData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Neizdevās saglabāt īpašumu.");
+    }
+
+    return await response.json();
+  }
+
   function goToHowItWorks(event) {
     event.preventDefault();
 
@@ -154,6 +191,19 @@ function App() {
 
           <button
             type="button"
+            className="register-button"
+            onClick={() => {
+              setShowRegistration(true);
+              setShowLogin(false);
+              setShowDashboard(false);
+              setFinancing(null);
+            }}
+          >
+            Reģistrēties
+          </button>
+
+          <button
+            type="button"
             className="login-button"
             onClick={() => {
               setShowLogin(true);
@@ -162,7 +212,7 @@ function App() {
               setFinancing(null);
             }}
           >
-            Ielogoties
+            Ieiet
           </button>
         </nav>
       </header>
@@ -335,8 +385,15 @@ function App() {
       {showRegistration && (
         <Registration
           onBack={() => setShowRegistration(false)}
-          onRegistered={(user) => {
+          onRegistered={async (user) => {
             setCurrentUser(user);
+
+            try {
+              await saveCurrentProperty();
+            } catch (error) {
+              console.error(error);
+            }
+
             setShowRegistration(false);
             setShowDashboard(true);
           }}
@@ -362,6 +419,7 @@ function App() {
             setCurrentUser(null);
             setShowDashboard(false);
             setFinancing(null);
+            resetCalculator();
           }}
         />
       )}

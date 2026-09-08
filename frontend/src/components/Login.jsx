@@ -73,7 +73,14 @@ function Login({ onBack, onLogin }) {
                     </p>
                 </div>
 
-                <div className="login-form">
+                <form
+                    className="login-form"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        handleLogin();
+                    }}
+                >
+
                     <div className="input-group">
                         <label>E-pasts</label>
 
@@ -95,9 +102,8 @@ function Login({ onBack, onLogin }) {
                     </div>
 
                     <button
-                        type="button"
+                        type="submit"
                         className="login-submit"
-                        onClick={handleLogin}
                     >
                         Ielogoties
                     </button>
@@ -107,7 +113,7 @@ function Login({ onBack, onLogin }) {
                             {errors.general}
                         </p>
                     )}
-                </div>
+                </form>
             </div>
         </section>
     );

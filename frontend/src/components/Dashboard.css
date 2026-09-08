@@ -104,3 +104,26 @@
     border-color: #3f7d5a;
     color: #3f7d5a;
 }
+
+.property-list {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.property-card {
+    padding: 1.25rem;
+    border: 1px solid #dfe7e1;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.property-card h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.property-card p {
+    margin: 0.4rem 0;
+    color: #5f665f;
+}

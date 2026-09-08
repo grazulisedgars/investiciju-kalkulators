@@ -41,6 +41,22 @@
   color: #222;
 }
 
+.register-button {
+  padding: 0.65rem 1rem;
+  border: 1px solid #3f7d5a;
+  border-radius: 9px;
+  background: #3f7d5a;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.register-button:hover {
+  background: #34684b;
+  border-color: #34684b;
+}
+
 .login-button {
   padding: 0.65rem 1rem;
   border: 1px solid #3f7d5a;

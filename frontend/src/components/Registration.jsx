@@ -48,9 +48,10 @@ function Registration({ onBack, onRegistered }) {
 
         try {
             const response = await fetch(
-                "http://127.0.0.1:8000/register",
+                "http://localhost:8000/register",
                 {
                     method: "POST",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -104,7 +105,13 @@ function Registration({ onBack, onRegistered }) {
                     </p>
                 </div>
 
-                <div className="registration-form">
+                <form
+                    className="registration-form"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        handleSubmit();
+                    }}
+                >
                     <div className="input-group">
                         <label>Lietotājvārds</label>
                         <input
@@ -158,9 +165,8 @@ function Registration({ onBack, onRegistered }) {
                     </div>
 
                     <button
-                        type="button"
+                        type="submite"
                         className="registration-submit"
-                        onClick={handleSubmit}
                     >
                         Izveidot profilu
                     </button>
@@ -170,7 +176,7 @@ function Registration({ onBack, onRegistered }) {
                             {errors.general}
                         </p>
                     )}
-                </div>
+                </form>
             </div>
         </section>
     );
