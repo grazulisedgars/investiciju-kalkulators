@@ -170,52 +170,54 @@ function App() {
   }
 
   return (
-    <main className="app">
+    <main className={`app ${showDashboard ? "app-dashboard" : ""}`}>
 
       {/* Header */}
 
-      <header
-        className={`header ${financing !== null ? "header-compact" : ""}`}
-      >
-        <div className="logo">
-          PROPFOLIO
-        </div>
+      {!showDashboard && (
+        <header
+          className={`header ${financing !== null ? "header-compact" : ""}`}
+        >
+          <div className="logo">
+            PROPFOLIO
+          </div>
 
-        <nav className="navigation">
-          <a
-            href="#how-it-works"
-            onClick={goToHowItWorks}
-          >
-            Kā tas darbojas
-          </a>
+          <nav className="navigation">
+            <a
+              href="#how-it-works"
+              onClick={goToHowItWorks}
+            >
+              Kā tas darbojas
+            </a>
 
-          <button
-            type="button"
-            className="register-button"
-            onClick={() => {
-              setShowRegistration(true);
-              setShowLogin(false);
-              setShowDashboard(false);
-              setFinancing(null);
-            }}
-          >
-            Reģistrēties
-          </button>
+            <button
+              type="button"
+              className="register-button"
+              onClick={() => {
+                setShowRegistration(true);
+                setShowLogin(false);
+                setShowDashboard(false);
+                setFinancing(null);
+              }}
+            >
+              Reģistrēties
+            </button>
 
-          <button
-            type="button"
-            className="login-button"
-            onClick={() => {
-              setShowLogin(true);
-              setShowRegistration(false);
-              setShowDashboard(false);
-              setFinancing(null);
-            }}
-          >
-            Ieiet
-          </button>
-        </nav>
-      </header>
+            <button
+              type="button"
+              className="login-button"
+              onClick={() => {
+                setShowLogin(true);
+                setShowRegistration(false);
+                setShowDashboard(false);
+                setFinancing(null);
+              }}
+            >
+              Ieiet
+            </button>
+          </nav>
+        </header>
+      )}
 
       {/*Hero */}
 
@@ -431,6 +433,8 @@ function App() {
             setCurrentUser(user);
             setShowLogin(false);
             setShowDashboard(true);
+            setShowRegistration(false);
+            setFinancing(null);
           }}
         />
       )}

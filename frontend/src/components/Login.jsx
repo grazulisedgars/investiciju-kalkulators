@@ -41,7 +41,7 @@ function Login({ onBack, onLogin }) {
                 return;
             }
 
-            onLogin(data);
+            onLogin(data.user);
         } catch (error) {
             console.error(error);
 

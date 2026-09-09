@@ -2,15 +2,28 @@ import { useState } from "react";
 import "./Registration.css";
 
 function Registration({ onBack, onRegistered }) {
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
+
     const [errors, setErrors] = useState({});
 
     function validateForm() {
         const newErrors = {};
+
+        if (!firstName.trim()) {
+            setErrors("Lūdzu, ievadi vārdu.");
+            return false;
+        }
+
+        if (!lastName.trim()) {
+            setErrors("Lūdzu, ievadi uzvārdu.");
+            return false;
+        }
 
         if (!username.trim()) {
             newErrors.username = "Ievadi lietotājvārdu.";
@@ -56,8 +69,10 @@ function Registration({ onBack, onRegistered }) {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        username,
-                        email,
+                        first_name: firstName.trim(),
+                        last_name: lastName.trim(),
+                        username: username.trim(),
+                        email: email.trim(),
                         password,
                     }),
                 }
@@ -113,6 +128,24 @@ function Registration({ onBack, onRegistered }) {
                     }}
                 >
                     <div className="input-group">
+                        <label>
+                            Vārds
+                            <input
+                                type="text"
+                                value={firstName}
+                                onChange={(event) => setFirstName(event.target.value)}
+                            />
+                        </label>
+
+                        <label>
+                            Uzvārds
+                            <input
+                                type="text"
+                                value={lastName}
+                                onChange={(event) => setLastName(event.target.value)}
+                            />
+                        </label>
+
                         <label>Lietotājvārds</label>
                         <input
                             type="text"

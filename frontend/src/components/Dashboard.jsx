@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import propfolioLogo from "../assets/propfolio-logo.svg";
 import "./Dashboard.css"
 
 function Dashboard({ user, onLogout }) {
@@ -30,78 +31,102 @@ function Dashboard({ user, onLogout }) {
     }, []);
 
     return (
-        <section className="dashboard-page">
-            <div className="dashboard-header">
-                <div>
-                    <h1>Sveiks, {user?.username}!</h1>
-                    <p>
-                        Šeit varēsi pārvaldīt savus īpašumus un investīciju analīzes.
-                    </p>
-                </div>
+        <div className="dashboard-shell">
 
-                <button
-                    type="button"
-                    className="logout-button"
-                    onClick={onLogout}
-                >
-                    Iziet
-                </button>
+            <div className="dashboard-topbar">
+                <div className="dashboard-topbar-inner">
+                    <img
+                        src={propfolioLogo}
+                        alt="Propfolio"
+                        className="dashboard-logo"
+                    />
+
+                    <button
+                        type="button"
+                        className="profile-button"
+                        aria-label="Atvērt profila izvēlni"
+                    >
+                        {user?.first_name?.charAt(0).toUpperCase()}
+                        {user?.last_name?.charAt(0).toUpperCase()}
+                    </button>
+                </div>
             </div>
 
-            <div className="dashboard-section">
-                <div className="dashboard-section-header">
+            <main className="dashboard-page">
+
+                <div className="dashboard-header">
                     <div>
-                        <h2>Mani īpašumi</h2>
-                        <p>Tavi saglabātie nekustamie īpašumi parādīsies šeit.</p>
+                        <h1>Sveiki, {user?.first_name}!</h1>
+                        <p>
+                            Šeit varēsi pārvaldīt savus īpašumus un investīciju analīzes.
+                        </p>
                     </div>
 
                     <button
                         type="button"
-                        className="add-property-button">
-                        + Pievienot īpašumu
+                        className="logout-button"
+                        onClick={onLogout}
+                    >
+                        Iziet
                     </button>
                 </div>
 
-                {properties.length === 0 ? (
-                    <div className="dashboard-empty">
-                        <h3>Šeit vēl nav saglabātu īpašumu</h3>
-                        <p>
-                            Izveido savu pirmo īpašuma analīzi un saglabā to profilā.
-                        </p>
+                <div className="dashboard-section">
+                    <div className="dashboard-section-header">
+                        <div>
+                            <h2>Mani īpašumi</h2>
+                            <p>Tavi saglabātie nekustamie īpašumi parādīsies šeit.</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="add-property-button">
+                            + Pievienot īpašumu
+                        </button>
                     </div>
-                ) : (
-                    <div className="property-list">
-                        {properties.map((property) => (
-                            <div
-                                className="property-card"
-                                key={property.property_id}
-                            >
-                                <h3>{property.property_name}</h3>
 
-                                <p>
-                                    Finansējums:{" "}
-                                    {property.financing_type === "cash"
-                                        ? "Paša līdzekļi"
-                                        : "Hipotēka"}
-                                </p>
+                    {properties.length === 0 ? (
+                        <div className="dashboard-empty">
+                            <h3>Šeit vēl nav saglabātu īpašumu</h3>
+                            <p>
+                                Izveido savu pirmo īpašuma analīzi un saglabā to profilā.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="property-list">
+                            {properties.map((property) => (
+                                <div
+                                    className="property-card"
+                                    key={property.property_id}
+                                >
+                                    <h3>{property.property_name}</h3>
 
-                                <p>
-                                    Pirkuma cena: {" "}
-                                    {Number(property.purchase_price).toLocaleString("lv-LV")}  €
-                                </p>
+                                    <p>
+                                        Finansējums:{" "}
+                                        {property.financing_type === "cash"
+                                            ? "Paša līdzekļi"
+                                            : "Hipotēka"}
+                                    </p>
 
-                                <p>Platība: {property.area} m²</p>
+                                    <p>
+                                        Pirkuma cena: {" "}
+                                        {Number(property.purchase_price).toLocaleString("lv-LV")}  €
+                                    </p>
 
-                                <p>
-                                    Īres maksa: {" "}
-                                    {Number(property.monthly_rent).toLocaleString("lv-LV")} €/mēn.
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </section >
+                                    <p>Platība: {property.area} m²</p>
+
+                                    <p>
+                                        Īres maksa: {" "}
+                                        {Number(property.monthly_rent).toLocaleString("lv-LV")} €/mēn.
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+            </main>
+        </div>
     );
 }
 

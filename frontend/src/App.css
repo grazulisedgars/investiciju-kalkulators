@@ -5,6 +5,12 @@
   padding: 2rem 3rem 4rem;
 }
 
+.app-dashboard {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
 
 /* Header */
 

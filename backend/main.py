@@ -118,6 +118,8 @@ def register_user(
         )
 
     new_user = User(
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
         username=user_data.username,
         email=user_data.email,
         password_hash=hash_password(user_data.password)
@@ -140,6 +142,8 @@ def register_user(
 
     return {
         "id": new_user.id,
+        "first_name": new_user.first_name,
+        "last_name": new_user.last_name,
         "username": new_user.username,
         "email": new_user.email
     }
@@ -188,6 +192,8 @@ def login_user(
     return {
         "user": {
             "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
             "username": user.username,
             "email": user.email
         }
@@ -235,6 +241,8 @@ def get_current_user(
 
     return {
         "id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "username": user.username,
         "email": user.email
     }
