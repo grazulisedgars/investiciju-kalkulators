@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import propfolioLogo from "../assets/propfolio-logo.svg";
 import "./Dashboard.css"
+import userIcon from "../assets/icons/user.svg";
+import linkIcon from "../assets/icons/link.svg";
+import logoutIcon from "../assets/icons/logout.svg";
+import chevronDown from "../assets/icons/chevron-down.svg";
 
 function Dashboard({ user, onLogout }) {
     const [properties, setProperties] = useState([]);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
 
     useEffect(() => {
         async function loadProperties() {
@@ -41,14 +46,61 @@ function Dashboard({ user, onLogout }) {
                         className="dashboard-logo"
                     />
 
-                    <button
-                        type="button"
-                        className="profile-button"
-                        aria-label="Atvērt profila izvēlni"
-                    >
-                        {user?.first_name?.charAt(0).toUpperCase()}
-                        {user?.last_name?.charAt(0).toUpperCase()}
-                    </button>
+                    <div className="profile-menu-wrapper">
+                        <button
+                            type="button"
+                            className="profile-toggle"
+                            aria-label="Atvērt profila izvēlni"
+                            onClick={() => setShowProfileMenu(!showProfileMenu)}
+                        >
+                            <span className="profile-button">
+                                {user?.first_name?.charAt(0).toUpperCase()}
+                                {user?.last_name?.charAt(0).toUpperCase()}
+                            </span>
+
+                            {showProfileMenu && (
+                                <img
+                                    src={chevronDown}
+                                    alt=""
+                                    className="profile-chevron"
+                                />
+                            )}
+                        </button>
+
+                        {showProfileMenu && (
+                            <div className="profile-menu">
+                                <button type="button">
+                                    <img
+                                        src={userIcon}
+                                        alt=""
+                                        className="profile-menu-icon"
+                                    />
+                                    Mans profils
+                                </button>
+
+                                <button type="button">
+                                    <img
+                                        src={linkIcon}
+                                        alt=""
+                                        className="profile-menu-icon"
+                                    />
+                                    Mainīt paroli
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={onLogout}
+                                >
+                                    <img
+                                        src={logoutIcon}
+                                        alt=""
+                                        className="profile-menu-icon"
+                                    />
+                                    Iziet
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -61,14 +113,6 @@ function Dashboard({ user, onLogout }) {
                             Šeit varēsi pārvaldīt savus īpašumus un investīciju analīzes.
                         </p>
                     </div>
-
-                    <button
-                        type="button"
-                        className="logout-button"
-                        onClick={onLogout}
-                    >
-                        Iziet
-                    </button>
                 </div>
 
                 <div className="dashboard-section">
