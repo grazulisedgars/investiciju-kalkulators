@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import propfolioLogo from "../assets/propfolio-logo.svg";
+import propfolioLogo from "../assets/icons/propfolio-logo.svg";
 import "./Dashboard.css"
 import userIcon from "../assets/icons/user.svg";
 import linkIcon from "../assets/icons/link.svg";
@@ -105,28 +105,53 @@ function Dashboard({ user, onLogout }) {
             </div>
 
             <main className="dashboard-page">
-
-                <div className="dashboard-header">
+                <section className="dashboard-welcome">
                     <div>
                         <h1>Sveiki, {user?.first_name}!</h1>
                         <p>
-                            Šeit varēsi pārvaldīt savus īpašumus un investīciju analīzes.
+                            Šeit ir tavs nekustamā īpašuma portfelis.
                         </p>
                     </div>
-                </div>
 
-                <div className="dashboard-section">
-                    <div className="dashboard-section-header">
-                        <div>
-                            <h2>Mani īpašumi</h2>
-                            <p>Tavi saglabātie nekustamie īpašumi parādīsies šeit.</p>
+                    <button
+                        type="button"
+                        className="add-property-button"
+                    >
+                        <span>+</span>
+                        Pievienot īpašumu
+                    </button>
+                </section>
+
+                <section className="properties-section">
+                    <div className="properties-section-header">
+                        <h2>Tavi īpašumi ({properties.length})</h2>
+
+                        <div className="property-limit">
+                            <div className="property-limit-usage">
+                                <span>
+                                    Izmantoti {properties.length} no 3 īpašumiem
+                                </span>
+
+                                <div className="property-limit-bar">
+                                    <div
+                                        className="property-limit-progress"
+                                        style={{
+                                            width: `${Math.min(
+                                                (properties.length / 3) * 100,
+                                                100
+                                            )}%`,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <span className="property-limit-pro">
+                                Ja vēlies pievienot vairāk,{" "}
+                                <a href="#">
+                                    apskati Pro plānu →
+                                </a>
+                            </span>
                         </div>
-
-                        <button
-                            type="button"
-                            className="add-property-button">
-                            + Pievienot īpašumu
-                        </button>
                     </div>
 
                     {properties.length === 0 ? (
@@ -138,39 +163,97 @@ function Dashboard({ user, onLogout }) {
                         </div>
                     ) : (
                         <div className="property-list">
-                            {properties.map((property) => (
-                                <div
-                                    className="property-card"
-                                    key={property.property_id}
-                                >
-                                    <h3>{property.property_name}</h3>
+                            {properties.map((property) => {
+                                const renovationCosts =
+                                    Number(property.area || 0) *
+                                    Number(property.renovation_cost_per_m2 || 0);
 
-                                    <p>
-                                        Finansējums:{" "}
-                                        {property.financing_type === "cash"
-                                            ? "Paša līdzekļi"
-                                            : "Hipotēka"}
-                                    </p>
+                                const totalInvestment =
+                                    Number(property.purchase_price || 0) +
+                                    renovationCosts;
 
-                                    <p>
-                                        Pirkuma cena: {" "}
-                                        {Number(property.purchase_price).toLocaleString("lv-LV")}  €
-                                    </p>
+                                const annualGrossRent =
+                                    Number(property.month_rent || 0) *
+                                    12 *
+                                    (Number(property.occupancy || 0) / 100);
 
-                                    <p>Platība: {property.area} m²</p>
+                                const grossYield =
+                                    totalInvestment > 0
+                                        ? (annualGrossRent / totalInvestment) * 100
+                                        : 0;
 
-                                    <p>
-                                        Īres maksa: {" "}
-                                        {Number(property.monthly_rent).toLocaleString("lv-LV")} €/mēn.
-                                    </p>
-                                </div>
-                            ))}
+                                return (
+                                    <article
+                                        className="property-card"
+                                        key={property.property_id}
+                                    >
+                                        <div className="property-card-image">
+                                            <div className="property-image-placeholder">
+                                                Īpašuma attēls
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                className="property-card-menu"
+                                                aria-label="Īpašuma izvēlne"
+                                            >
+                                                ⋮
+                                            </button>
+                                        </div>
+
+                                        <div className="property-card-content">
+                                            <h3>{property.property_name}</h3>
+
+                                            <p className="property-address">
+                                                Adrese nav norādīta
+                                            </p>
+
+                                            <div className="property-card-divider" />
+
+                                            <div className="property-stats">
+                                                <div>
+                                                    <span>Pirkuma cena</span>
+                                                    <strong>
+                                                        €
+                                                        {Number(
+                                                            property.purchase_price
+                                                        ).toLocaleString("lv-LV")}
+                                                    </strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Platība</span>
+                                                    <strong>
+                                                        {property.area} m²
+                                                    </strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Bruto ienesīgums</span>
+                                                    <strong>
+                                                        {grossYield.toFixed(1)}%
+                                                    </strong>
+                                                </div>
+                                            </div>
+
+                                            <div className="property-card-footer">
+                                                <span>
+                                                    Pēdējo reizi atjaunots
+                                                </span>
+
+                                                <span className="property-card-arrow">
+                                                    →
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </article>
+                                );
+                            })}
                         </div>
                     )}
-                </div>
-
-            </main>
-        </div>
+                </section>
+            </main >
+        </div >
     );
 }
 

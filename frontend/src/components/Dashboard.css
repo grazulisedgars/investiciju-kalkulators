@@ -23,12 +23,6 @@
     padding: 1rem 0;
 }
 
-.dashboard-page {
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
-}
-
 .dashboard-logo {
     display: block;
     width: 290px;
@@ -210,15 +204,71 @@
 
 .property-list {
     display: grid;
-    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.4rem;
     margin-top: 1.5rem;
 }
 
 .property-card {
-    padding: 1.25rem;
+    overflow: hidden;
+
     border: 1px solid #dfe7e1;
     border-radius: 14px;
+
     background: #ffffff;
+
+    box-shadow: 0 6px 18px rgba(24, 41, 35, 0.05);
+}
+
+.property-card-image {
+    position: relative;
+
+    height: 180px;
+
+    background: #edf3ef;
+}
+
+.property-image-placeholder {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #8b9892;
+    font-size: 0.9rem;
+}
+
+.property-card-menu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    width: 34px;
+    height: 34px;
+
+    border: 1px solid #dfe7e1;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #1f2d28;
+
+    font-size: 1.3rem;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.property-card-content {
+    padding: 1rem 1.1rem 0.9rem;
+}
+
+.property-card-content h3 {
+    margin: 0;
+
+    font-size: 1.15rem;
+    color: #18231f;
 }
 
 .property-card h3 {
@@ -229,4 +279,193 @@
 .property-card p {
     margin: 0.4rem 0;
     color: #5f665f;
+}
+
+.property-address {
+    margin: 0.45rem 0 0;
+
+    font-size: 0.88rem;
+    color: #718078;
+}
+
+.property-card-divider {
+    height: 1px;
+
+    margin: 1rem 0;
+
+    background: #e4ebe7;
+}
+
+.property-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.property-stats>div {
+    padding: 0 0.85rem;
+    border-right: 1px solid #e4ebe7;
+}
+
+.property-stats>div:first-child {
+    padding-left: 0;
+}
+
+.property-stats>div:last-child {
+    padding-right: 0;
+    border-right: none;
+}
+
+.property-stats span {
+    display: block;
+
+    margin-bottom: 0.3rem;
+
+    font-size: 0.75rem;
+    color: #75827c;
+}
+
+.property-stats strong {
+    display: block;
+
+    font-size: 1rem;
+    color: #18231f;
+}
+
+.property-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 1.25rem;
+
+    font-size: 0.75rem;
+    color: #96a19b;
+}
+
+.property-card-arrow {
+    color: #145b42;
+    font-size: 1.35rem;
+}
+
+.dashboard-page {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.2rem 0 4rem;
+}
+
+.dashboard-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.dashboard-welcome h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    line-height: 1.15;
+    letter-spacing: -0.04em;
+    color: #17211d;
+}
+
+.dashboard-welcome p {
+    margin: 0.7rem 0 0;
+    font-size: 1.05rem;
+    color: #66736d;
+}
+
+.add-property-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    padding: 0.95rem 1.35rem;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #176447;
+    color: #ffffff;
+
+    font-size: 0.95rem;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.add-property-button span {
+    font-size: 1.45rem;
+    line-height: 1;
+    font-weight: 300;
+}
+
+.add-property-button:hover {
+    background: #12543b;
+}
+
+.properties-section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.properties-section-header h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    letter-spacing: -0.03em;
+    color: #17211d;
+}
+
+.property-limit {
+    display: flex;
+    align-items: flex-end;
+    gap: 2rem;
+}
+
+.property-limit-usage {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+
+    font-size: 0.84rem;
+    color: #29352f;
+}
+
+.property-limit-bar {
+    width: 200px;
+    height: 5px;
+
+    border-radius: 999px;
+    background: #e1e9e4;
+
+    overflow: hidden;
+}
+
+.property-limit-progress {
+    height: 100%;
+
+    border-radius: inherit;
+    background: #4fa877;
+
+    transition: width 0.25s ease;
+}
+
+.property-limit-pro {
+    padding-bottom: 0.05rem;
+
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #66736d;
+    white-space: nowrap;
+}
+
+.property-limit-pro a {
+    color: #3b68a8;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
