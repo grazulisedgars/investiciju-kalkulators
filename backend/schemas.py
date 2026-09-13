@@ -41,3 +41,14 @@ class PropertyCreate(BaseModel):
     monthly_rent: float = 0
     occupancy: float = 100
     down_payment_percent: float | None = None
+    image_url: str | None = None
+
+
+class PropertyUpdate(BaseModel):
+    property_name: str
+    purchase_price: float
+    area: float
+    renovation_cost_per_m2: float = 0
+    monthly_rent: float = 0
+    occupancy: float = 100
+    down_payment_percent: float | None = None

@@ -1,4 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException, Response, Cookie
+import os
+import shutil
+from fastapi import (
+    FastAPI,
+    Depends,
+    HTTPException,
+    Response,
+    Cookie,
+    UploadFile,
+    File,
+)
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from calculations import (
     calculate_price_per_m2,
@@ -12,7 +23,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User, Property
-from schemas import UserRegister, UserLogin, PropertyCreate
+from schemas import UserRegister, UserLogin, PropertyCreate, PropertyUpdate
 from security import (
     hash_password,
     verify_password,
@@ -21,6 +32,16 @@ from security import (
 )
 
 app = FastAPI()
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads",
+)
+
+UPLOAD_DIR = "uploads/properties"
+
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -310,6 +331,7 @@ def create_property(
     new_property = Property(
         user_id=user.id,
         property_name=f"Īpašums #{property_count + 1}",
+        image_url=property_data.image_url,
         financing_type=property_data.financing_type,
         purchase_price=property_data.purchase_price,
         area=property_data.area,
@@ -317,6 +339,7 @@ def create_property(
         monthly_rent=property_data.monthly_rent,
         occupancy=property_data.occupancy,
         down_payment_percent=property_data.down_payment_percent,
+
     )
 
     db.add(new_property)
@@ -327,6 +350,7 @@ def create_property(
         "property_id": new_property.property_id,
         "user_id": new_property.user_id,
         "property_name": new_property.property_name,
+        "image_url": new_property.image_url,
         "financing_type": new_property.financing_type,
         "purchase_price": new_property.purchase_price,
         "area": new_property.area,
@@ -373,3 +397,194 @@ def get_properties(
     )
 
     return properties
+# --------------------------------------------------------------------------
+
+
+@app.post("/properties/{property_id}/image")
+def upload_property_image(
+    property_id: int,
+    image: UploadFile = File(...),
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nac derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    if property.image_url:
+        old_image_path = property.image_url.lstrip("/")
+
+        if os.path.exists(old_image_path):
+            os.remove(old_image_path)
+
+    file_path = os.path.join(
+        UPLOAD_DIR,
+        f"property_{property_id}_{image.filename}"
+    )
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+
+    image_url = f"/uploads/properties/property_{property.property_id}_{image.filename}"
+
+    property.image_url = image_url
+
+    db.commit()
+    db.refresh(property)
+
+    return {
+        "message": "Attēls veiksmīgi saglabāts.",
+        "image_url": property.image_url,
+    }
+
+# --------------------------------------------------------------------------
+
+
+@app.patch("/properties/{property_id}")
+def update_property(
+    property_id: int,
+    property_data: PropertyUpdate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    property.property_name = property_data.property_name
+    property.purchase_price = property_data.purchase_price
+    property.area = property_data.area
+    property.renovation_cost_per_m2 = property_data.renovation_cost_per_m2
+    property.monthly_rent = property_data.monthly_rent
+    property.occupancy = property_data.occupancy
+    property.down_payment_percent = property_data.down_payment_percent
+
+    db.commit()
+    db.refresh(property)
+
+    return property
+# --------------------------------------------------------------------------
+
+
+@app.delete("/properties/{property_id}")
+def delete_property(
+    property_id: int,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    if property.image_url:
+        image_path = property.image_url.lstrip("/")
+
+        if os.path.exists(image_path):
+            os.remove(image_path)
+
+    db.delete(property)
+    db.commit()
+
+    return {
+        "message": "Īpašums veiksmīgi izdzēsts.",
+        "property_id": property_id,
+    }

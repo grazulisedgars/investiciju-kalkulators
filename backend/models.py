@@ -60,6 +60,11 @@ class Property(Base):
         nullable=False
     )
 
+    image_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True
+    )
+
     financing_type: Mapped[str] = mapped_column(
         String(20),
         nullable=False

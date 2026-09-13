@@ -9,6 +9,9 @@ import chevronDown from "../assets/icons/chevron-down.svg";
 function Dashboard({ user, onLogout }) {
     const [properties, setProperties] = useState([]);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [openPropertyMenu, setOpenPropertyMenu] = useState(null);
+    const [editingProperty, setEditingProperty] = useState(null);
+    const [propertyToDelete, setPropertyToDelete] = useState(null);
 
     useEffect(() => {
         async function loadProperties() {
@@ -34,6 +37,132 @@ function Dashboard({ user, onLogout }) {
 
         loadProperties();
     }, []);
+
+    async function handleImageUpload(propertyId, file) {
+        if (!file) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/properties/${propertyId}/image`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    body: formData,
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data);
+                return;
+            }
+
+            setProperties((currentProperties) =>
+                currentProperties.map((property) =>
+                    property.property_id === propertyId
+                        ? {
+                            ...property,
+                            image_url: data.image_url,
+                        }
+                        : property
+                )
+            );
+        } catch (error) {
+            console.error("Attēla augšupielādes kļūda:", error);
+        }
+    }
+
+    async function handlePropertyUpdate() {
+        try {
+            const response = await fetch(
+                `http://localhost:8000/properties/${editingProperty.property_id}`,
+                {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        property_name: editingProperty.property_name,
+                        purchase_price: Number(editingProperty.purchase_price),
+                        area: Number(editingProperty.area),
+                        renovation_cost_per_m2: Number(
+                            editingProperty.renovation_cost_per_m2
+                        ),
+                        monthly_rent: Number(editingProperty.monthly_rent),
+                        occupancy: Number(editingProperty.occupancy),
+                        down_payment_percent:
+                            editingProperty.down_payment_percent === "" ||
+                                editingProperty.down_payment_percent === null
+                                ? null
+                                : Number(
+                                    editingProperty.down_payment_percent
+                                ),
+                    }),
+                }
+            );
+
+            const data = await response.json();
+            console.log("Updated property:", data);
+
+            if (!response.ok) {
+                console.error(data);
+                return;
+            }
+
+            setProperties((currentProperties) =>
+                currentProperties.map((property) =>
+                    property.property_id === data.property_id
+                        ? data
+                        : property
+                )
+            );
+
+            setEditingProperty(null);
+        } catch (error) {
+            console.error("Īpašuma atjaunošanas kļūda", error);
+        }
+    }
+
+    async function handleDeleteProperty() {
+        if (!propertyToDelete) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/properties/${propertyToDelete.property_id}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data);
+                return;
+            }
+
+            setProperties((currentProperties) =>
+                currentProperties.filter(
+                    (property) =>
+                        property.property_id !== propertyToDelete.property_id
+                )
+            );
+
+            setPropertyToDelete(null);
+        } catch (error) {
+            console.error("Īpašuma dzēšanas kļūda", error);
+        }
+    }
 
     return (
         <div className="dashboard-shell">
@@ -173,7 +302,7 @@ function Dashboard({ user, onLogout }) {
                                     renovationCosts;
 
                                 const annualGrossRent =
-                                    Number(property.month_rent || 0) *
+                                    Number(property.monthly_rent || 0) *
                                     12 *
                                     (Number(property.occupancy || 0) / 100);
 
@@ -188,17 +317,86 @@ function Dashboard({ user, onLogout }) {
                                         key={property.property_id}
                                     >
                                         <div className="property-card-image">
-                                            <div className="property-image-placeholder">
-                                                Īpašuma attēls
+                                            {property.image_url ? (
+                                                <img
+                                                    src={`http://localhost:8000${property.image_url}`}
+                                                    alt={property.property_name}
+                                                    className="property-image"
+                                                />
+                                            ) : (
+                                                <div className="property-image-placeholder">
+                                                    Īpašuma attēls
+                                                </div>
+                                            )}
+                                            <div className="property-card-menu-wrapper">
+                                                <button
+                                                    type="button"
+                                                    className="property-card-menu"
+                                                    aria-label="Īpašuma izvēlne"
+                                                    onClick={() =>
+                                                        setOpenPropertyMenu(
+                                                            openPropertyMenu === property.property_id
+                                                                ? null
+                                                                : property.property_id
+                                                        )
+                                                    }
+                                                >
+                                                    ⋮
+                                                </button>
+
+                                                {openPropertyMenu === property.property_id && (
+                                                    <div className="property-card-dropdown">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setOpenPropertyMenu(null);
+
+                                                                document
+                                                                    .getElementById(
+                                                                        `property-image-${property.property_id}`
+                                                                    )
+                                                                    ?.click();
+                                                            }}
+                                                        >
+                                                            Mainīt bildi
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setEditingProperty(property);
+                                                                setOpenPropertyMenu(null);
+                                                            }}
+                                                        >
+                                                            Rediģēt īpašumu
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            className="property-delete-button"
+                                                            onClick={() => {
+                                                                setPropertyToDelete(property);
+                                                                setOpenPropertyMenu(null);
+                                                            }}
+                                                        >
+                                                            Dzēst īpašumu
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <button
-                                                type="button"
-                                                className="property-card-menu"
-                                                aria-label="Īpašuma izvēlne"
-                                            >
-                                                ⋮
-                                            </button>
+                                            <input
+                                                id={`property-image-${property.property_id}`}
+                                                className="property-image-input"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(event) =>
+                                                    handleImageUpload(
+                                                        property.property_id,
+                                                        event.target.files[0]
+                                                    )
+                                                }
+                                            />
                                         </div>
 
                                         <div className="property-card-content">
@@ -252,8 +450,173 @@ function Dashboard({ user, onLogout }) {
                         </div>
                     )}
                 </section>
-            </main >
-        </div >
+            </main>
+
+            {editingProperty && (
+                <div className="edit-property-overlay">
+                    <div className="edit-property-modal">
+                        <h2>Rediģēt īpašumu</h2>
+
+                        <label>
+                            Īpašuma nosaukums
+                            <input
+                                type="text"
+                                value={editingProperty.property_name}
+                                onChange={(event) =>
+                                    setEditingProperty({
+                                        ...editingProperty,
+                                        property_name: event.target.value,
+                                    })
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Pirkuma cena
+                            <input
+                                type="number"
+                                value={editingProperty.purchase_price}
+                                onChange={(event) =>
+                                    setEditingProperty({
+                                        ...editingProperty,
+                                        purchase_price: event.target.value,
+                                    })
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Platība
+                            <input
+                                type="number"
+                                value={editingProperty.area}
+                                onChange={(event) =>
+                                    setEditingProperty({
+                                        ...editingProperty,
+                                        area: event.target.value,
+                                    })
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Remonts €/m²
+                            <input
+                                type="number"
+                                value={editingProperty.renovation_cost_per_m2}
+                                onChange={(event) =>
+                                    setEditingProperty({
+                                        ...editingProperty,
+                                        renovation_cost_per_m2: event.target.value,
+                                    })
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Īres maksa mēnesī
+                            <input
+                                type="number"
+                                value={editingProperty.monthly_rent}
+                                onChange={(event) =>
+                                    setEditingProperty({
+                                        ...editingProperty,
+                                        monthly_rent: event.target.value,
+                                    })
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Aizpildījums %
+                            <input
+                                type="number"
+                                value={editingProperty.occupancy}
+                                onChange={(event) =>
+                                    setEditingProperty({
+                                        ...editingProperty,
+                                        occupancy: event.target.value,
+                                    })
+                                }
+                            />
+                        </label>
+
+                        {editingProperty.financing_type === "mortgage" && (
+                            <label>
+                                Pirmā iemaksa %
+                                <input
+                                    type="number"
+                                    value={editingProperty.down_payment_percent || ""}
+                                    onChange={(event) =>
+                                        setEditingProperty({
+                                            ...editingProperty,
+                                            down_payment_percent: event.target.value,
+                                        })
+                                    }
+                                />
+                            </label>
+                        )}
+
+                        <div className="edit-property-actions">
+                            <button
+                                type="button"
+                                className="edit-property-cancel"
+                                onClick={() => setEditingProperty(null)}
+                            >
+                                Atcelt
+                            </button>
+
+                            <button
+                                type="button"
+                                className="edit-property-save"
+                                onClick={handlePropertyUpdate}
+                            >
+                                Saglabāt
+                            </button>
+                        </div>
+                    </div>
+                </div >
+            )}
+
+            {propertyToDelete && (
+                <div className="delete-property-overlay">
+                    <div className="delete-property-modal">
+                        <h2>Dzēst īpašumu?</h2>
+
+                        <p>
+                            Vai tiešām vēlies dzēst
+                            {" "}
+                            <strong>
+                                {propertyToDelete.property_name}
+                            </strong>
+                            ?
+                        </p>
+
+                        <p className="delete-property-warning">
+                            Šo darbību nevarēs atsaukt.
+                        </p>
+
+                        <div className="delete-property-actions">
+                            <button
+                                type="button"
+                                className="delete-property-cancel"
+                                onClick={() => setPropertyToDelete(null)}
+                            >
+                                Atcelt
+                            </button>
+
+                            <button
+                                type="button"
+                                className="delete-property-confirm"
+                                onClick={handleDeleteProperty}
+                            >
+                                Dzēst īpašumu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 
