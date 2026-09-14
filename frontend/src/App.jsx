@@ -590,6 +590,14 @@ function App() {
               results={freeAnalysisResults}
               onCreateProfile={() => setShowRegistration(true)}
               propertyFlow={propertyFlow}
+              canSave={
+                Boolean(
+                  purchasePrice &&
+                  area &&
+                  monthlyRent &&
+                  occupancy
+                )
+              }
             />
 
           </section>
@@ -692,6 +700,15 @@ function App() {
               results={freeAnalysisResults}
               onCreateProfile={() => setShowRegistration(true)}
               propertyFlow={propertyFlow}
+              canSave={
+                Boolean(
+                  purchasePrice &&
+                  area &&
+                  monthlyRent &&
+                  occupancy &&
+                  downPaymentPercent
+                )
+              }
             />
           </section>
         )}

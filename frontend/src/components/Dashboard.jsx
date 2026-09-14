@@ -5,6 +5,10 @@ import userIcon from "../assets/icons/user.svg";
 import linkIcon from "../assets/icons/link.svg";
 import logoutIcon from "../assets/icons/logout.svg";
 import chevronDown from "../assets/icons/chevron-down.svg";
+import portfolioPropertiesIcon from "../assets/icons/portfolio-properties.svg";
+import portfolioValueIcon from "../assets/icons/portfolio-value.svg";
+import portfolioRentIcon from "../assets/icons/portfolio-rent.svg";
+import portfolioYieldIcon from "../assets/icons/portfolio-yield.svg";
 
 function Dashboard({
     user,
@@ -95,6 +99,7 @@ function Dashboard({
                     },
                     body: JSON.stringify({
                         property_name: editingProperty.property_name,
+                        address: editingProperty.address || null,
                         purchase_price: Number(editingProperty.purchase_price),
                         area: Number(editingProperty.area),
                         renovation_cost_per_m2: Number(
@@ -168,6 +173,74 @@ function Dashboard({
             console.error("Īpašuma dzēšanas kļūda", error);
         }
     }
+
+    async function handleDeleteImage(propertyId) {
+        try {
+            const response = await fetch(
+                `http://localhost:8000/properties/${propertyId}/image`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error("Bildes dzēšanas kļūda:", data);
+                return;
+            }
+
+            setProperties((currentProperties) =>
+                currentProperties.map((property) =>
+                    property.property_id === propertyId
+                        ? {
+                            ...property,
+                            image_url: null,
+                        }
+                        : property
+                )
+            );
+
+            setOpenPropertyMenu(null);
+        } catch (error) {
+            console.error("Bildes dzēšanas kļūda:", error);
+        }
+    }
+
+    const totalPortfolioValue = properties.reduce(
+        (total, property) =>
+            total + Number(property.purchase_price || 0),
+        0
+    );
+
+    const totalMonthlyRent = properties.reduce(
+        (total, property) =>
+            total + Number(property.monthly_rent || 0),
+        0
+    );
+
+    const averageGrossYield =
+        properties.length > 0
+            ? properties.reduce((total, property) => {
+                const totalInvestment =
+                    Number(property.purchase_price || 0) +
+                    Number(property.area || 0) *
+                    Number(property.renovation_cost_per_m2 || 0);
+
+                const annualGrossRent =
+                    Number(property.monthly_rent || 0) *
+                    12 *
+                    (Number(property.occupancy || 0) / 100);
+
+                const grossYield =
+                    totalInvestment > 0
+                        ? (annualGrossRent / totalInvestment) * 100
+                        : 0;
+
+                return total + grossYield;
+            }, 0) / properties.length
+            : 0;
 
     return (
         <div className="dashboard-shell">
@@ -249,7 +322,8 @@ function Dashboard({
 
                     <button
                         type="button"
-                        className="add-property-button"
+                        className={`add-property-button ${showProfileMenu ? "add-property-button-shifted" : ""
+                            }`}
                         onClick={() => setShowAddPropertyModal(true)}
                         disabled={properties.length >= 3}
                     >
@@ -368,6 +442,17 @@ function Dashboard({
                                                             Mainīt bildi
                                                         </button>
 
+                                                        {property.image_url && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    handleDeleteImage(property.property_id)
+                                                                }
+                                                            >
+                                                                Dzēst bildi
+                                                            </button>
+                                                        )}
+
                                                         <button
                                                             type="button"
                                                             onClick={() => {
@@ -410,7 +495,7 @@ function Dashboard({
                                             <h3>{property.property_name}</h3>
 
                                             <p className="property-address">
-                                                Adrese nav norādīta
+                                                {property.address || "Adrese nav norādīta"}
                                             </p>
 
                                             <div className="property-card-divider" />
@@ -443,7 +528,16 @@ function Dashboard({
 
                                             <div className="property-card-footer">
                                                 <span>
-                                                    Pēdējo reizi atjaunots
+                                                    Pēdējo reizi atjaunots {" "}
+                                                    {property.updated_at
+                                                        ? new Date(property.updated_at).toLocaleDateString("lv-LV", {
+                                                            day: "2-digit",
+                                                            month: "2-digit",
+                                                            year: "numeric",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                        })
+                                                        : "-"}
                                                 </span>
 
                                                 <span className="property-card-arrow">
@@ -456,8 +550,126 @@ function Dashboard({
                             })}
                         </div>
                     )}
+
+                    <section className="portfolio-summary">
+                        <div className="portfolio-summary-header">
+                            <div>
+                                <h2>Portfeļa pārskats</h2>
+                                <p>Kopējie rādītāji visiem taviem īpašumiem.</p>
+                            </div>
+
+                            <span>
+                                Dati uz {new Date().toLocaleDateString("lv-LV")}
+                            </span>
+                        </div>
+
+                        <div className="portfolio-summary-grid">
+
+                            <div className="portfolio-summary-card">
+                                <div className="portfolio-summary-icon">
+                                    <img
+                                        src={portfolioPropertiesIcon}
+                                        alt=""
+                                    />
+                                </div>
+
+                                <div>
+                                    <span>Īpašumu skaits</span>
+                                    <strong>{properties.length}</strong>
+                                </div>
+                            </div>
+
+                            <div className="portfolio-summary-card">
+                                <div className="portfolio-summary-icon">
+                                    <img
+                                        src={portfolioValueIcon}
+                                        alt=""
+                                    />
+                                </div>
+
+                                <div>
+                                    <span>Kopējā vērtība</span>
+                                    <strong>
+                                        €
+                                        {properties
+                                            .reduce(
+                                                (total, property) =>
+                                                    total + Number(property.purchase_price || 0),
+                                                0
+                                            )
+                                            .toLocaleString("lv-LV")}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div className="portfolio-summary-card">
+                                <div className="portfolio-summary-icon">
+                                    <img
+                                        src={portfolioRentIcon}
+                                        alt=""
+                                    />
+                                </div>
+
+                                <div>
+                                    <span>Kopējā mēneša īre</span>
+                                    <strong>
+                                        €
+                                        {properties
+                                            .reduce(
+                                                (total, property) =>
+                                                    total + Number(property.monthly_rent || 0),
+                                                0
+                                            )
+                                            .toLocaleString("lv-LV")}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div className="portfolio-summary-card">
+                                <div className="portfolio-summary-icon">
+                                    <img
+                                        src={portfolioYieldIcon}
+                                        alt=""
+                                    />
+                                </div>
+
+                                <div>
+                                    <span>Vidējais bruto ienesīgums</span>
+
+                                    <strong>
+                                        {properties.length > 0
+                                            ? (
+                                                properties.reduce((total, property) => {
+                                                    const totalInvestment =
+                                                        Number(property.purchase_price || 0) +
+                                                        Number(property.area || 0) *
+                                                        Number(
+                                                            property.renovation_cost_per_m2 || 0
+                                                        );
+
+                                                    const annualGrossRent =
+                                                        Number(property.monthly_rent || 0) *
+                                                        12 *
+                                                        (Number(property.occupancy || 0) / 100);
+
+                                                    const grossYield =
+                                                        totalInvestment > 0
+                                                            ? (annualGrossRent / totalInvestment) * 100
+                                                            : 0;
+
+                                                    return total + grossYield;
+                                                }, 0) / properties.length
+                                            ).toFixed(1)
+                                            : "0.0"}
+                                        %
+                                    </strong>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
                 </section>
-            </main>
+            </main >
 
             {editingProperty && (
                 <div className="edit-property-overlay">
@@ -477,6 +689,22 @@ function Dashboard({
                                 }
                             />
                         </label>
+
+                        <label>
+                            Adrese
+                            <input
+                                type="text"
+                                value={editingProperty.address || ""}
+                                onChange={(event) =>
+                                    setEditingProperty({
+                                        ...editingProperty,
+                                        address: event.target.value,
+                                    })
+                                }
+                                placeholder="Piemēram, Brīvības iela 102, Rīga"
+                            />
+                        </label>
+
 
                         <label>
                             Pirkuma cena
@@ -583,96 +811,101 @@ function Dashboard({
                         </div>
                     </div>
                 </div >
-            )}
+            )
+            }
 
-            {propertyToDelete && (
-                <div className="delete-property-overlay">
-                    <div className="delete-property-modal">
-                        <h2>Dzēst īpašumu?</h2>
+            {
+                propertyToDelete && (
+                    <div className="delete-property-overlay">
+                        <div className="delete-property-modal">
+                            <h2>Dzēst īpašumu?</h2>
 
-                        <p>
-                            Vai tiešām vēlies dzēst
-                            {" "}
-                            <strong>
-                                {propertyToDelete.property_name}
-                            </strong>
-                            ?
-                        </p>
+                            <p>
+                                Vai tiešām vēlies dzēst
+                                {" "}
+                                <strong>
+                                    {propertyToDelete.property_name}
+                                </strong>
+                                ?
+                            </p>
 
-                        <p className="delete-property-warning">
-                            Šo darbību nevarēs atsaukt.
-                        </p>
+                            <p className="delete-property-warning">
+                                Šo darbību nevarēs atsaukt.
+                            </p>
 
-                        <div className="delete-property-actions">
+                            <div className="delete-property-actions">
+                                <button
+                                    type="button"
+                                    className="delete-property-cancel"
+                                    onClick={() => setPropertyToDelete(null)}
+                                >
+                                    Atcelt
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="delete-property-confirm"
+                                    onClick={handleDeleteProperty}
+                                >
+                                    Dzēst īpašumu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {
+                showAddPropertyModal && (
+                    <div className="add-property-overlay">
+                        <div className="add-property-modal">
+                            <h2>Pievienot īpašumu</h2>
+
+                            <p>
+                                Kā plāno finansēt šo investīciju?
+                            </p>
+
+                            <div className="add-property-options">
+                                <button
+                                    type="button"
+                                    className="add-property-option"
+                                    onClick={() => {
+                                        setShowAddPropertyModal(false);
+                                        onAddProperty("cash");
+                                    }}
+                                >
+                                    <strong>Par saviem līdzekļiem</strong>
+                                    <span>
+                                        Īpašums tiek iegādāts bez hipotekārā kredīta.
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="add-property-option"
+                                    onClick={() => {
+                                        setShowAddPropertyModal(false);
+                                        onAddProperty("mortgage");
+                                    }}
+                                >
+                                    <strong>Ar hipotēku</strong>
+                                    <span>
+                                        Daļa no pirkuma tiek finansēta ar bankas kredītu.
+                                    </span>
+                                </button>
+                            </div>
                             <button
                                 type="button"
-                                className="delete-property-cancel"
-                                onClick={() => setPropertyToDelete(null)}
+                                className="add-property-cancel-button"
+                                onClick={() => setShowAddPropertyModal(false)}
                             >
                                 Atcelt
                             </button>
-
-                            <button
-                                type="button"
-                                className="delete-property-confirm"
-                                onClick={handleDeleteProperty}
-                            >
-                                Dzēst īpašumu
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
-
-            {showAddPropertyModal && (
-                <div className="add-property-overlay">
-                    <div className="add-property-modal">
-                        <h2>Pievienot īpašumu</h2>
-
-                        <p>
-                            Kā plāno finansēt šo investīciju?
-                        </p>
-
-                        <div className="add-property-options">
-                            <button
-                                type="button"
-                                className="add-property-option"
-                                onClick={() => {
-                                    setShowAddPropertyModal(false);
-                                    onAddProperty("cash");
-                                }}
-                            >
-                                <strong>Par saviem līdzekļiem</strong>
-                                <span>
-                                    Īpašums tiek iegādāts bez hipotekārā kredīta.
-                                </span>
-                            </button>
-
-                            <button
-                                type="button"
-                                className="add-property-option"
-                                onClick={() => {
-                                    setShowAddPropertyModal(false);
-                                    onAddProperty("mortgage");
-                                }}
-                            >
-                                <strong>Ar hipotēku</strong>
-                                <span>
-                                    Daļa no pirkuma tiek finansēta ar bankas kredītu.
-                                </span>
-                            </button>
-                        </div>
-                        <button
-                            type="button"
-                            className="add-property-cancel-button"
-                            onClick={() => setShowAddPropertyModal(false)}
-                        >
-                            Atcelt
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 

@@ -56,8 +56,8 @@
 .profile-menu {
     position: absolute;
 
-    top: 72px;
-    right: 0;
+    top: calc(100% + 14px);
+    right: 0px;
 
     width: 220px;
 
@@ -70,7 +70,7 @@
 
     box-shadow: 0 14px 35px rgba(0, 0, 0, 0.10);
 
-    z-index: 20;
+    z-index: 100;
 }
 
 
@@ -409,6 +409,10 @@
     padding: 2.2rem 0 4rem;
 }
 
+.dashboard-profile {
+    position: relative;
+}
+
 .dashboard-welcome {
     display: flex;
     align-items: center;
@@ -436,18 +440,26 @@
     align-items: center;
     gap: 0.75rem;
 
-    padding: 0.95rem 1.35rem;
+    min-width: 205px;
+    justify-content: center;
+
+    padding: 0.75rem 1.5rem;
 
     border: none;
     border-radius: 9px;
 
-    background: #176447;
+    background: #0f5138;
     color: #ffffff;
 
     font-size: 0.95rem;
     font-weight: 600;
 
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.add-property-button-shifted {
+    transform: translateX(-230px);
 }
 
 .add-property-button:disabled {
@@ -469,7 +481,7 @@
 }
 
 .add-property-button:hover {
-    background: #12543b;
+    background: #0b432e;
 }
 
 .properties-section-header {
@@ -753,4 +765,137 @@
 
 .add-property-cancel-button:hover {
     background: #f4f7f5;
+}
+
+/* =========================
+   PORTFEĻA PĀRSKATS
+   ========================= */
+
+.portfolio-summary {
+    margin-top: 2.5rem;
+    padding: 1.8rem;
+
+    background: #dfeee6;
+    border: 1px solid #cfe1d7;
+    border-radius: 16px;
+}
+
+.portfolio-summary-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+
+    margin-bottom: 1.5rem;
+}
+
+.portfolio-summary-header h2 {
+    margin: 0;
+
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+
+    color: #14231d;
+}
+
+.portfolio-summary-header p {
+    margin: 0.35rem 0 0;
+
+    font-size: 0.88rem;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #52675e;
+}
+
+.portfolio-summary-header>span {
+    padding-top: 0.15rem;
+
+    font-size: 0.78rem;
+    font-weight: 400;
+
+    color: #60746b;
+    white-space: nowrap;
+}
+
+
+/* KPI KARTĪŠU REŽĢIS */
+
+.portfolio-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+
+/* KPI KARTĪTE */
+
+.portfolio-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    min-width: 0;
+    padding: 1rem 1.1rem;
+
+    background: #ffffff;
+
+    border: 1px solid #d8e2dd;
+    border-radius: 10px;
+}
+
+
+/* IKONAS FONS */
+
+.portfolio-summary-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    background: #e1f0e8;
+    border-radius: 9px;
+}
+
+.portfolio-summary-icon img {
+    width: 22px;
+    height: 22px;
+
+    display: block;
+}
+
+
+/* KPI TEKSTS */
+
+.portfolio-summary-card>div:last-child {
+    min-width: 0;
+}
+
+.portfolio-summary-card span {
+    display: block;
+
+    margin-bottom: 0.3rem;
+
+    font-size: 0.76rem;
+    font-weight: 400;
+    line-height: 1.25;
+
+    color: #5f7068;
+}
+
+.portfolio-summary-card strong {
+    display: block;
+
+    font-size: 1.18rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+
+    color: #111b17;
 }

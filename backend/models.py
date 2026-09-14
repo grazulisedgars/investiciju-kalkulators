@@ -60,6 +60,11 @@ class Property(Base):
         nullable=False
     )
 
+    address: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True
+    )
+
     image_url: Mapped[str | None] = mapped_column(
         String(500),
         nullable=True
@@ -100,5 +105,12 @@ class Property(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
     )

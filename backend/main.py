@@ -30,6 +30,7 @@ from security import (
     create_access_token,
     decode_access_token,
 )
+from datetime import datetime, timezone
 
 app = FastAPI()
 
@@ -526,12 +527,15 @@ def update_property(
         )
 
     property.property_name = property_data.property_name
+    property.address = property_data.address
     property.purchase_price = property_data.purchase_price
     property.area = property_data.area
     property.renovation_cost_per_m2 = property_data.renovation_cost_per_m2
     property.monthly_rent = property_data.monthly_rent
     property.occupancy = property_data.occupancy
     property.down_payment_percent = property_data.down_payment_percent
+
+    property.updated_at = datetime.now(timezone.utc)
 
     db.commit()
     db.refresh(property)
@@ -596,3 +600,55 @@ def delete_property(
         "message": "Īpašums veiksmīgi izdzēsts.",
         "property_id": property_id,
     }
+# --------------------------------------------------------------------------
+
+
+@app.delete("/properties/{property_id}/image")
+def delete_property_image(
+    property_id: int,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized"
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized"
+        )
+
+    user_id = payload.get("sub")
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    if property.image_url:
+        image_path = property.image_url.lstrip("/")
+
+        if os.path.exists(image_path):
+            os.remove(image_path)
+
+    property.image_url = None
+
+    db.commit()
+    db.refresh(property)
+
+    return property

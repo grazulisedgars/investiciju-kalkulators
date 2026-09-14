@@ -46,6 +46,7 @@ class PropertyCreate(BaseModel):
 
 class PropertyUpdate(BaseModel):
     property_name: str
+    address: str | None = None
     purchase_price: float
     area: float
     renovation_cost_per_m2: float = 0

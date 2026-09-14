@@ -115,8 +115,17 @@
     cursor: pointer;
 }
 
-.analysis-cta button:hover {
-    background: #34684b;
+.analysis-cta button:disabled {
+    background: #b8c2bd;
+    border-color: #b8c2bd;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.analysis-cta button:disabled:hover {
+    background: #b8c2bd;
+    border-color: #b8c2bd;
 }
 
 .analysis-actions {

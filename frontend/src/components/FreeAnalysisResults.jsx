@@ -1,6 +1,11 @@
 import "./FreeAnalysisResults.css";
 
-function FreeAnalysisResults({ results, onCreateProfile, propertyFlow, }) {
+function FreeAnalysisResults({
+    results,
+    onCreateProfile,
+    propertyFlow,
+    canSave,
+}) {
     if (!results) {
         return null;
     }
@@ -52,6 +57,7 @@ function FreeAnalysisResults({ results, onCreateProfile, propertyFlow, }) {
                     <button
                         type="button"
                         onClick={onCreateProfile}
+                        disabled={!canSave}
                     >
                         Saglabāt analīzi
                     </button>
