@@ -88,3 +88,8 @@
     line-height: 1.4;
     color: #777;
 }
+
+.required-mark {
+    color: #c9342f;
+    font-weight: 700;
+}

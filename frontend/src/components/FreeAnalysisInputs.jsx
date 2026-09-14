@@ -33,7 +33,10 @@ function FreeAnalysisInputs({
             </div>
 
             <div className="input-group">
-                <label>Īres maksa mēnesī (€)</label>
+                <label>
+                    Īres maksa mēnesī (€)
+                    <span className="required-mark"> *</span>
+                </label>
                 <input
                     type="number"
                     min="0"
@@ -43,7 +46,10 @@ function FreeAnalysisInputs({
             </div>
 
             <div className="input-group">
-                <label>Plānotais aizpildījums (%)</label>
+                <label>
+                    Plānotais aizpildījums (%)
+                    <span className="required-mark"> *</span>
+                </label>
                 <input
                     type="number"
                     min="0"

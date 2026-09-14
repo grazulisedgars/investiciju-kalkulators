@@ -11,7 +11,10 @@ function MortgageInputs({
             <h2>Finansējuma informācija</h2>
 
             <div className="input-group">
-                <label>Pirmā iemaksa (%)</label>
+                <label>
+                    Pirmā iemaksa (%)
+                    <span className="required-mark"> *</span>
+                </label>
 
                 <input
                     type="number"

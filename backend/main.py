@@ -158,7 +158,7 @@ def register_user(
         httponly=True,
         samesite="lax",
         secure=False,
-        max_age=60 * 60,
+        max_age=60 * 60 * 24 * 7
     )
 
     return {
@@ -207,7 +207,7 @@ def login_user(
         httponly=True,
         samesite="lax",
         secure="False",
-        max_age=60*60,
+        max_age=60*60*24*7
     )
 
     return {
@@ -324,9 +324,17 @@ def create_property(
             detail="Lietotājs nav atrasts."
         )
 
-    property_count = db.query(Property).filter(
-        Property.user_id == user.id
-    ).count()
+    property_count = (
+        db.query(Property)
+        .filter(Property.user_id == user.id)
+        .count()
+    )
+
+    if property_count >= 3:
+        raise HTTPException(
+            status_code=403,
+            detail="Bezmaksas profilā vari saglabāt ne vairāk kā 3 īpašumus."
+        )
 
     new_property = Property(
         user_id=user.id,

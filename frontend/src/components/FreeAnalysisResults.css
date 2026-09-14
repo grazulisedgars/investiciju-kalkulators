@@ -119,6 +119,42 @@
     background: #34684b;
 }
 
+.analysis-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.analysis-actions button {
+    padding: 0.85rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.analysis-cancel-button {
+    border: 1px solid #d7e1dc;
+    background: #ffffff;
+    color: #33433c;
+}
+
+.analysis-cancel-button:hover {
+    background: #e7eeea;
+}
+
+.analysis-save-button {
+    border: 1px solid #176447;
+    background: #176447;
+    color: #ffffff;
+}
+
+.analysis-save-button:hover {
+    background: #12543b;
+    border-color: #12543b;
+}
 
 /* Mobile */
 

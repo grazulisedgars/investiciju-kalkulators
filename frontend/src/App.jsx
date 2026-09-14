@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import propfolioLogo from "./assets/icons/propfolio-logo.svg";
 import FinancingChoice from "./components/FinancingChoice";
 import PropertyInfo from "./components/PropertyInfo";
 import FreeAnalysisInputs from "./components/FreeAnalysisInputs";
@@ -28,6 +29,7 @@ function App() {
   const [showDashboard, setShowDashboard] = useState(false);
 
   const [showLogin, setShowLogin] = useState(false);
+  const [propertyFlow, setPropertyFlow] = useState(null);
 
   const totalRenovationCosts =
     Number(area || 0) * Number(renovationCostPerM2 || 0);
@@ -169,6 +171,56 @@ function App() {
     setDownPaymentPercent("");
   }
 
+  function goBackFromCalculator() {
+    resetCalculator();
+
+    if (propertyFlow === "dashboard") {
+      setShowDashboard(true);
+      setFinancing(null);
+      return;
+    }
+
+    setFinancing(null);
+  }
+
+  async function saveDashboardProperty() {
+    try {
+      const response = await fetch("http://localhost:8000/properties", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          financing_type: financing,
+          purchase_price: Number(purchasePrice),
+          area: Number(area),
+          renovation_cost_per_m2: Number(renovationCostPerM2 || 0),
+          monthly_rent: Number(monthlyRent),
+          occupancy: Number(occupancy),
+          down_payment_percent:
+            financing === "mortgage"
+              ? Number(downPaymentPercent)
+              : null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Īpašuma saglabāšanas kļūda:", data);
+        return;
+      }
+
+      resetCalculator();
+      setFinancing(null);
+      setPropertyFlow(null);
+      setShowDashboard(true);
+    } catch (error) {
+      console.error("Īpašuma saglabāšanas kļūda:", error);
+    }
+  }
+
   return (
     <main className={`app ${showDashboard ? "app-dashboard" : ""}`}>
 
@@ -179,43 +231,49 @@ function App() {
           className={`header ${financing !== null ? "header-compact" : ""}`}
         >
           <div className="logo">
-            PROPFOLIO
+            <img
+              src={propfolioLogo}
+              alt="PROPFOLIO"
+              className="header-logo-image"
+            />
           </div>
 
-          <nav className="navigation">
-            <a
-              href="#how-it-works"
-              onClick={goToHowItWorks}
-            >
-              Kā tas darbojas
-            </a>
+          {propertyFlow !== "dashboard" && (
+            <nav className="navigation">
+              <a
+                href="#how-it-works"
+                onClick={goToHowItWorks}
+              >
+                Kā tas darbojas
+              </a>
 
-            <button
-              type="button"
-              className="register-button"
-              onClick={() => {
-                setShowRegistration(true);
-                setShowLogin(false);
-                setShowDashboard(false);
-                setFinancing(null);
-              }}
-            >
-              Reģistrēties
-            </button>
+              <button
+                type="button"
+                className="register-button"
+                onClick={() => {
+                  setShowRegistration(true);
+                  setShowLogin(false);
+                  setShowDashboard(false);
+                  setFinancing(null);
+                }}
+              >
+                Reģistrēties
+              </button>
 
-            <button
-              type="button"
-              className="login-button"
-              onClick={() => {
-                setShowLogin(true);
-                setShowRegistration(false);
-                setShowDashboard(false);
-                setFinancing(null);
-              }}
-            >
-              Ieiet
-            </button>
-          </nav>
+              <button
+                type="button"
+                className="login-button"
+                onClick={() => {
+                  setShowLogin(true);
+                  setShowRegistration(false);
+                  setShowDashboard(false);
+                  setFinancing(null);
+                }}
+              >
+                Ieiet
+              </button>
+            </nav>
+          )}
         </header>
       )}
 
@@ -423,6 +481,17 @@ function App() {
             setFinancing(null);
             resetCalculator();
           }}
+          onAddProperty={(financingType) => {
+            resetCalculator();
+
+            setPropertyFlow("dashboard");
+            setFinancing(financingType);
+
+            setShowDashboard(false);
+            setShowRegistration(false);
+            setShowLogin(false);
+          }
+          }
         />
       )}
 
@@ -446,24 +515,54 @@ function App() {
         financing === "cash" && (
           <section className="calculator-page">
 
-            <button
-              className="back-button"
-              onClick={goBackToHome}
-            >
-              ← Atpakaļ
-            </button>
-
             <div className="calculator-page-header">
 
-              <h1>
-                Investīcija ar paša līdzekļiem
-              </h1>
+              <div className="calculator-page-title">
+                <h1>
+                  Investīcija ar paša līdzekļiem
+                </h1>
 
-              <p>
-                Ievadi īpašuma datus un saņem galvenos Investīcijas
-                rādītājus dažu sekunžu laikā.
-              </p>
+                <p>
+                  Ievadi īpašuma datus un saņem galvenos Investīcijas
+                  rādītājus dažu sekunžu laikā.
+                </p>
+              </div>
+
+              {propertyFlow === "dashboard" && (
+                <div className="calculator-dashboard-actions">
+                  <button
+                    type="button"
+                    className="calculator-cancel-button"
+                    onClick={goBackFromCalculator}
+                  >
+                    Atcelt
+                  </button>
+
+                  <button
+                    type="button"
+                    className="calculator-save-button"
+                    onClick={saveDashboardProperty}
+                    disabled={
+                      !purchasePrice ||
+                      !area ||
+                      !monthlyRent ||
+                      !occupancy
+                    }
+                  >
+                    Saglabāt īpašumu
+                  </button>
+                </div>
+              )}
             </div>
+
+            {propertyFlow !== "dashboard" && (
+              <button
+                className="back-button"
+                onClick={goBackFromCalculator}
+              >
+                ← Atpakaļ
+              </button>
+            )}
 
             <div className="calculator-input-grid">
 
@@ -490,6 +589,7 @@ function App() {
             <FreeAnalysisResults
               results={freeAnalysisResults}
               onCreateProfile={() => setShowRegistration(true)}
+              propertyFlow={propertyFlow}
             />
 
           </section>
@@ -502,23 +602,55 @@ function App() {
         !showDashboard &&
         financing === "mortgage" && (
           <section className="calculator-page">
-            <button
-              className="back-button"
-              onClick={goBackToHome}
-            >
-              ← Atpakaļ
-            </button>
 
             <div className="calculator-page-header">
-              <h1>
-                Investīcija ar hipotēku
-              </h1>
+              <div className="calculator-page-title">
+                <h1>
+                  Investīcija ar hipotēku
+                </h1>
 
-              <p>
-                Ievadi īpašuma un finansējuma datus un saņem galvenos
-                investīcijas rādītājus dažu sekunžu laikā.
-              </p>
+                <p>
+                  Ievadi īpašuma un finansējuma datus un saņem galvenos
+                  investīcijas rādītājus dažu sekunžu laikā.
+                </p>
+              </div>
+
+              {propertyFlow === "dashboard" && (
+                <div className="calculator-dashboard-actions">
+                  <button
+                    type="button"
+                    className="calculator-cancel-button"
+                    onClick={goBackFromCalculator}
+                  >
+                    Atcelt
+                  </button>
+
+                  <button
+                    type="button"
+                    className="calculator-save-button"
+                    onClick={saveDashboardProperty}
+                    disabled={
+                      !purchasePrice ||
+                      !area ||
+                      !monthlyRent ||
+                      !occupancy ||
+                      !downPaymentPercent
+                    }
+                  >
+                    Saglabāt īpašumu
+                  </button>
+                </div>
+              )}
             </div>
+
+            {propertyFlow !== "dashboard" && (
+              <button
+                className="back-button"
+                onClick={goBackFromCalculator}
+              >
+                ← Atpakaļ
+              </button>
+            )}
 
             <div className="calculator-input-grid">
               <PropertyInfo
@@ -559,6 +691,7 @@ function App() {
             <FreeAnalysisResults
               results={freeAnalysisResults}
               onCreateProfile={() => setShowRegistration(true)}
+              propertyFlow={propertyFlow}
             />
           </section>
         )}

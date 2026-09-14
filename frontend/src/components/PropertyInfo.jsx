@@ -51,7 +51,10 @@ function PropertyInfo({
             <h2>Īpašuma pamatinformācija</h2>
 
             <div className="input-group">
-                <label>Īpašuma iegādes cena (€)</label>
+                <label>
+                    Īpašuma iegādes cena (€)
+                    <span className="required-mark">*</span>
+                </label>
                 <input
                     type="number"
                     min="0"
@@ -66,7 +69,10 @@ function PropertyInfo({
             </div>
 
             <div className="input-group">
-                <label>Platība (m²)</label>
+                <label>
+                    Platība (m²)
+                    <span className="required-mark">*</span>
+                </label>
                 <input
                     type="number"
                     min="0"

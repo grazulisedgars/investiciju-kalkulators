@@ -450,6 +450,18 @@
     cursor: pointer;
 }
 
+.add-property-button:disabled {
+    background: #b8c2bd;
+    border-color: #b8c2bd;
+    color: #ffffff;
+    cursor: not-allowed;
+}
+
+.add-property-button:disabled:hover {
+    background: #b8c2bd;
+    border-color: #b8c2bd;
+}
+
 .add-property-button span {
     font-size: 1.45rem;
     line-height: 1;
@@ -663,4 +675,82 @@
 .delete-property-confirm:hover {
     background: #aa2925;
     border-color: #aa2925;
+}
+
+.add-property-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 120;
+}
+
+.add-property-modal {
+    width: min(520px, 90%);
+    padding: 1.8rem;
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.add-property-modal h2 {
+    margin: 0 0 0.7rem;
+    color: #17211d;
+}
+
+.add-property-modal>p {
+    margin: 0 0 1.5rem;
+    color: #66736d;
+}
+
+.add-property-options {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.add-property-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid #dbe5df;
+    border-radius: 12px;
+    background: #ffffff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.add-property-option:hover {
+    border-color: #176447;
+    background: #f4f8f5;
+}
+
+.add-property-option strong {
+    font-size: 1rem;
+    color: #17211d;
+}
+
+.add-property-option span {
+    font-size: 0.88rem;
+    color: #718078;
+}
+
+.add-property-cancel-button {
+    width: 100%;
+    margin-top: 1.2rem;
+    padding: 0.85rem;
+    border: 1px solid #d7e1dc;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #33433c;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.add-property-cancel-button:hover {
+    background: #f4f7f5;
 }

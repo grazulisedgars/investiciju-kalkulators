@@ -1,6 +1,6 @@
 import "./FreeAnalysisResults.css";
 
-function FreeAnalysisResults({ results, onCreateProfile }) {
+function FreeAnalysisResults({ results, onCreateProfile, propertyFlow, }) {
     if (!results) {
         return null;
     }
@@ -37,27 +37,26 @@ function FreeAnalysisResults({ results, onCreateProfile }) {
 
             </div>
 
-            <div className="analysis-cta">
+            {propertyFlow !== "dashboard" && (
+                <div className="analysis-cta">
+                    <div className="cta-content">
+                        <h3>Vēlies detalizētāku analīzi?</h3>
 
-                <div className="cta-content">
-                    <h3>Vēlies detalizētāku analīzi?</h3>
+                        <p>
+                            Izveido bezmaksas profilu un iegūsti neto ienesīgumu,
+                            iegādes papildu izmaksas, izdevumu analīzi un iespēju
+                            saglabāt īpašumus.
+                        </p>
+                    </div>
 
-                    <p>
-                        Izveido bezmaksas profilu un iegūsti neto ienesīgumu,
-                        iegādes papildu izmaksas, izdevumu analīzi un iespēju
-                        saglabāt īpašumus.
-                    </p>
+                    <button
+                        type="button"
+                        onClick={onCreateProfile}
+                    >
+                        Saglabāt analīzi
+                    </button>
                 </div>
-
-                <button
-                    type="button"
-                    onClick={onCreateProfile}
-                >
-                    Izveidot bezmaksas profilu
-                </button>
-
-            </div>
-
+            )}
         </section>
     );
 }

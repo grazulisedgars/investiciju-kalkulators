@@ -6,12 +6,17 @@ import linkIcon from "../assets/icons/link.svg";
 import logoutIcon from "../assets/icons/logout.svg";
 import chevronDown from "../assets/icons/chevron-down.svg";
 
-function Dashboard({ user, onLogout }) {
+function Dashboard({
+    user,
+    onLogout,
+    onAddProperty,
+}) {
     const [properties, setProperties] = useState([]);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [openPropertyMenu, setOpenPropertyMenu] = useState(null);
     const [editingProperty, setEditingProperty] = useState(null);
     const [propertyToDelete, setPropertyToDelete] = useState(null);
+    const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
 
     useEffect(() => {
         async function loadProperties() {
@@ -245,6 +250,8 @@ function Dashboard({ user, onLogout }) {
                     <button
                         type="button"
                         className="add-property-button"
+                        onClick={() => setShowAddPropertyModal(true)}
+                        disabled={properties.length >= 3}
                     >
                         <span>+</span>
                         Pievienot īpašumu
@@ -613,6 +620,55 @@ function Dashboard({ user, onLogout }) {
                                 Dzēst īpašumu
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {showAddPropertyModal && (
+                <div className="add-property-overlay">
+                    <div className="add-property-modal">
+                        <h2>Pievienot īpašumu</h2>
+
+                        <p>
+                            Kā plāno finansēt šo investīciju?
+                        </p>
+
+                        <div className="add-property-options">
+                            <button
+                                type="button"
+                                className="add-property-option"
+                                onClick={() => {
+                                    setShowAddPropertyModal(false);
+                                    onAddProperty("cash");
+                                }}
+                            >
+                                <strong>Par saviem līdzekļiem</strong>
+                                <span>
+                                    Īpašums tiek iegādāts bez hipotekārā kredīta.
+                                </span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className="add-property-option"
+                                onClick={() => {
+                                    setShowAddPropertyModal(false);
+                                    onAddProperty("mortgage");
+                                }}
+                            >
+                                <strong>Ar hipotēku</strong>
+                                <span>
+                                    Daļa no pirkuma tiek finansēta ar bankas kredītu.
+                                </span>
+                            </button>
+                        </div>
+                        <button
+                            type="button"
+                            className="add-property-cancel-button"
+                            onClick={() => setShowAddPropertyModal(false)}
+                        >
+                            Atcelt
+                        </button>
                     </div>
                 </div>
             )}
