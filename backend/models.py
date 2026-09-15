@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import DateTime, String, ForeignKey
+from sqlalchemy import DateTime, String, ForeignKey, Float
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 
@@ -77,6 +77,11 @@ class Property(Base):
 
     purchase_price: Mapped[float] = mapped_column(
         nullable=False
+    )
+
+    market_value: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True
     )
 
     area: Mapped[float] = mapped_column(

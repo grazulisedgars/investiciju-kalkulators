@@ -102,6 +102,10 @@ function Dashboard({
                         address: editingProperty.address || null,
                         purchase_price: Number(editingProperty.purchase_price),
                         area: Number(editingProperty.area),
+                        market_value:
+                            editingProperty.market_value === ""
+                                ? null
+                                : Number(editingProperty.market_value),
                         renovation_cost_per_m2: Number(
                             editingProperty.renovation_cost_per_m2
                         ),
@@ -241,6 +245,19 @@ function Dashboard({
                 return total + grossYield;
             }, 0) / properties.length
             : 0;
+
+    const propertiesWithMarketValue = properties.filter(
+        (property) =>
+            property.market_value !== null &&
+            property.market_value !== undefined &&
+            property.market_value !== ""
+    );
+
+    const totalMarketValue = propertiesWithMarketValue.reduce(
+        (total, property) =>
+            total + Number(property.market_value),
+        0
+    );
 
     return (
         <div className="dashboard-shell">
@@ -588,17 +605,29 @@ function Dashboard({
                                 </div>
 
                                 <div>
-                                    <span>Kopējā vērtība</span>
+                                    <span>Kopējā tirgus vērtība</span>
+
                                     <strong>
-                                        €
-                                        {properties
-                                            .reduce(
-                                                (total, property) =>
-                                                    total + Number(property.purchase_price || 0),
-                                                0
-                                            )
-                                            .toLocaleString("lv-LV")}
+                                        {propertiesWithMarketValue.length > 0
+                                            ? `€${totalMarketValue.toLocaleString("lv-LV")}`
+                                            : "Nav norādīta"}
                                     </strong>
+
+                                    {propertiesWithMarketValue.length > 0 &&
+                                        propertiesWithMarketValue.length < properties.length && (
+                                            <small className="portfolio-summary-note">
+                                                Tirgus vērtība norādīta{" "}
+                                                {propertiesWithMarketValue.length} no{" "}
+                                                {properties.length} īpašumiem
+                                            </small>
+                                        )}
+
+                                    {properties.length > 0 &&
+                                        propertiesWithMarketValue.length === 0 && (
+                                            <small className="portfolio-summary-note">
+                                                Pievieno tirgus vērtību īpašuma datos
+                                            </small>
+                                        )}
                                 </div>
                             </div>
 
@@ -707,7 +736,7 @@ function Dashboard({
 
 
                         <label>
-                            Pirkuma cena
+                            Pirkuma cena (€)
                             <input
                                 type="number"
                                 value={editingProperty.purchase_price}
@@ -715,6 +744,22 @@ function Dashboard({
                                     setEditingProperty({
                                         ...editingProperty,
                                         purchase_price: event.target.value,
+                                    })
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Tirgus vērtība (€)
+                            <input
+                                type="number"
+                                min="0"
+                                placeholder="Piemēram, 25000"
+                                value={editingProperty.market_value ?? ""}
+                                onChange={(event) =>
+                                    setEditingProperty({
+                                        ...editingProperty,
+                                        market_value: event.target.value,
                                     })
                                 }
                             />

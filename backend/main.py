@@ -529,6 +529,7 @@ def update_property(
     property.property_name = property_data.property_name
     property.address = property_data.address
     property.purchase_price = property_data.purchase_price
+    property.market_value = property_data.market_value
     property.area = property_data.area
     property.renovation_cost_per_m2 = property_data.renovation_cost_per_m2
     property.monthly_rent = property_data.monthly_rent
