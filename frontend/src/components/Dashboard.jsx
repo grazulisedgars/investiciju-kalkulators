@@ -21,6 +21,8 @@ function Dashboard({
     const [editingProperty, setEditingProperty] = useState(null);
     const [propertyToDelete, setPropertyToDelete] = useState(null);
     const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
+    const [showFaq, setShowFaq] = useState(false);
+    const [openFaq, setOpenFaq] = useState(null);
 
     useEffect(() => {
         async function loadProperties() {
@@ -258,6 +260,24 @@ function Dashboard({
             total + Number(property.market_value),
         0
     );
+
+    function handleFaqToggle() {
+        if (showFaq) {
+            setShowFaq(false);
+            return;
+        }
+
+        setShowFaq(true);
+
+        setTimeout(() => {
+            document
+                .getElementById("dashboard-faq")
+                ?.scrollIntoView({
+                    behaviour: "smooth",
+                    block: "start",
+                });
+        }, 0);
+    }
 
     return (
         <div className="dashboard-shell">
@@ -607,7 +627,13 @@ function Dashboard({
                                 <div>
                                     <span>Kopējā tirgus vērtība</span>
 
-                                    <strong>
+                                    <strong
+                                        className={
+                                            propertiesWithMarketValue.length === 0
+                                                ? "portfolio-value-missing"
+                                                : ""
+                                        }
+                                    >
                                         {propertiesWithMarketValue.length > 0
                                             ? `€${totalMarketValue.toLocaleString("lv-LV")}`
                                             : "Nav norādīta"}
@@ -694,9 +720,320 @@ function Dashboard({
                                     </strong>
                                 </div>
                             </div>
-
                         </div>
                     </section>
+
+                    <div className="dashboard-help">
+                        <div className="dashboard-help-content">
+                            <div className="dashboard-help-icon">
+                                ?
+                            </div>
+
+                            <div className="dashboard-help-text">
+                                <strong>Jautājumi vai nepieciešama palīdzība?</strong>
+                                <p>
+                                    Apskati mūsu biežāk uzdotos jautājumus vai sazinies ar mums.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="dashboard-help-actions">
+                            <button
+                                type="button"
+                                className="faq-button"
+                                onClick={handleFaqToggle}
+                            >
+                                {showFaq ? "Aizvērt FAQ" : "Apskatīt FAQ"}
+                            </button>
+
+                            <a
+                                href="mailto:propfolio.lv@gmail.com?subject=Jautājums par PROPFOLIO"
+                                className="contact-link"
+                            >
+                                Sazināties
+                                <span>→</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {showFaq && (
+                        <section
+                            id="dashboard-faq"
+                            className="dashboard-faq"
+                        >
+                            <div className="dashboard-faq-header">
+                                <h2>Biežāk uzdotie jautājumi</h2>
+                                <p>
+                                    Atbildes uz biežāk uzdotajiem jautājumiem par PROPFOLIO
+                                    un investīciju aprēķiniem.
+                                </p>
+                            </div>
+
+                            <div className="dashboard-faq-list">
+
+                                <div className="dashboard-faq-entry">
+                                    <button
+                                        type="button"
+                                        className={`dashboard-faq-item ${openFaq === "what-is-propfolio"
+                                            ? "dashboard-faq-item-open"
+                                            : ""
+                                            }`}
+                                        onClick={() =>
+                                            setOpenFaq(
+                                                openFaq === "what-is-propfolio"
+                                                    ? null
+                                                    : "what-is-propfolio"
+                                            )
+                                        }
+                                    >
+                                        <span>Kas ir PROPFOLIO?</span>
+                                        <span>
+                                            {openFaq === "what-is-propfolio" ? "-" : "+"}
+                                        </span>
+                                    </button>
+
+                                    {openFaq === "what-is-propfolio" && (
+                                        <div className="dashboard-faq-answer">
+                                            <p>
+                                                PROPFOLIO ir nekustamā īpašuma investīciju analīzes
+                                                rīks, kas palīdz vienuviet apkopot īpašumu datus un
+                                                izvērtēt to potenciālo ienesīgumu.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+
+                                <div className="dashboard-faq-entry">
+                                    <button
+                                        type="button"
+                                        className={`dashboard-faq-item ${openFaq === "gross-yield"
+                                            ? "dashboard-faq-item-open"
+                                            : ""
+                                            }`}
+                                        onClick={() =>
+                                            setOpenFaq(
+                                                openFaq === "gross-yield"
+                                                    ? null
+                                                    : "gross-yield"
+                                            )
+                                        }
+                                    >
+                                        <span>Kas ir bruto ienesīgums?</span>
+
+                                        <span>
+                                            {openFaq === "gross-yield" ? "−" : "+"}
+                                        </span>
+                                    </button>
+
+                                    {openFaq === "gross-yield" && (
+                                        <div className="dashboard-faq-answer">
+                                            <p>
+                                                Tas parāda, cik lielus gada īres ieņēmumus īpašums
+                                                potenciāli rada attiecībā pret kopējo investīciju.
+                                            </p>
+
+                                            <p>
+                                                Gada bruto īres ieņēmumi ÷ kopējā investīcija × 100.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="dashboard-faq-entry">
+                                    <button
+                                        type="button"
+                                        className={`dashboard-faq-item ${openFaq === "total-investment"
+                                            ? "dashboard-faq-item-open"
+                                            : ""
+                                            }`}
+                                        onClick={() =>
+                                            setOpenFaq(
+                                                openFaq === "total-investment"
+                                                    ? null
+                                                    : "total-investment"
+                                            )
+                                        }
+                                    >
+                                        <span>Kā tiek aprēķināta kopējā investīcija?</span>
+
+                                        <span>
+                                            {openFaq === "total-investment" ? "−" : "+"}
+                                        </span>
+                                    </button>
+
+                                    {openFaq === "total-investment" && (
+                                        <div className="dashboard-faq-answer">
+                                            <p>
+                                                Kopējā investīcija ir īpašuma pirkuma cena un
+                                                plānotās remonta izmaksas, ja tādas ir.
+                                            </p>
+
+                                            <p>
+                                                Piemēram, ja īpašums maksā €50 000 un remontam
+                                                nepieciešami €10 000, kopējā investīcija ir €60 000.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="dashboard-faq-entry">
+                                    <button
+                                        type="button"
+                                        className={`dashboard-faq-item ${openFaq === "purchase-vs-market-value"
+                                            ? "dashboard-faq-item-open"
+                                            : ""
+                                            }`}
+                                        onClick={() =>
+                                            setOpenFaq(
+                                                openFaq === "purchase-vs-market-value"
+                                                    ? null
+                                                    : "purchase-vs-market-value"
+                                            )
+                                        }
+                                    >
+                                        <span>
+                                            Kāda ir atšķirība starp pirkuma cenu un tirgus vērtību?
+                                        </span>
+
+                                        <span>
+                                            {openFaq === "purchase-vs-market-value" ? "−" : "+"}
+                                        </span>
+                                    </button>
+
+                                    {openFaq === "purchase-vs-market-value" && (
+                                        <div className="dashboard-faq-answer">
+                                            <p>
+                                                Pirkuma cena ir summa, par kuru īpašums tika iegādāts.
+                                                Tirgus vērtība ir īpašuma aptuvenā pašreizējā vērtība tirgū.
+                                            </p>
+
+                                            <p>
+                                                Tirgus vērtība laika gaitā var mainīties un var būt
+                                                gan augstāka, gan zemāka par sākotnējo pirkuma cenu.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="dashboard-faq-entry">
+                                    <button
+                                        type="button"
+                                        className={`dashboard-faq-item ${openFaq === "mortgage-gross-yield"
+                                            ? "dashboard-faq-item-open"
+                                            : ""
+                                            }`}
+                                        onClick={() =>
+                                            setOpenFaq(
+                                                openFaq === "mortgage-gross-yield"
+                                                    ? null
+                                                    : "mortgage-gross-yield"
+                                            )
+                                        }
+                                    >
+                                        <span>Vai hipotēka maina bruto ienesīgumu?</span>
+
+                                        <span>
+                                            {openFaq === "mortgage-gross-yield" ? "−" : "+"}
+                                        </span>
+                                    </button>
+
+                                    {openFaq === "mortgage-gross-yield" && (
+                                        <div className="dashboard-faq-answer">
+                                            <p>
+                                                Nē. Bruto ienesīgums raksturo paša īpašuma potenciālo
+                                                ienesīgumu, tāpēc tas nemainās atkarībā no tā, vai
+                                                īpašums iegādāts par saviem līdzekļiem vai ar hipotēku.
+                                            </p>
+
+                                            <p>
+                                                Tomēr finansējuma nosacījumi ietekmē investora faktisko
+                                                naudas plūsmu un ieguldītā kapitāla atdevi. Šie rādītāji
+                                                tiek analizēti atsevišķi no bruto ienesīguma.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="dashboard-faq-entry">
+                                    <button
+                                        type="button"
+                                        className={`dashboard-faq-item ${openFaq === "occupancy"
+                                            ? "dashboard-faq-item-open"
+                                            : ""
+                                            }`}
+                                        onClick={() =>
+                                            setOpenFaq(
+                                                openFaq === "occupancy"
+                                                    ? null
+                                                    : "occupancy"
+                                            )
+                                        }
+                                    >
+                                        <span>Kā īpašuma aizpildījums ietekmē aprēķinus?</span>
+
+                                        <span>
+                                            {openFaq === "occupancy" ? "−" : "+"}
+                                        </span>
+                                    </button>
+
+                                    {openFaq === "occupancy" && (
+                                        <div className="dashboard-faq-answer">
+                                            <p>
+                                                Aizpildījums parāda, cik lielu daļu no gada īpašumu
+                                                paredzēts izīrēt. Tas ļauj aprēķinos ņemt vērā periodus,
+                                                kad īpašums varētu būt bez īrnieka.
+                                            </p>
+
+                                            <p>
+                                                Piemēram, ja mēneša īres maksa ir €500 un aizpildījums
+                                                ir 90%, paredzamie gada bruto īres ieņēmumi ir
+                                                €500 × 12 × 90% = €5 400.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="dashboard-faq-entry">
+                                    <button
+                                        type="button"
+                                        className={`dashboard-faq-item ${openFaq === "free-property-limit"
+                                            ? "dashboard-faq-item-open"
+                                            : ""
+                                            }`}
+                                        onClick={() =>
+                                            setOpenFaq(
+                                                openFaq === "free-property-limit"
+                                                    ? null
+                                                    : "free-property-limit"
+                                            )
+                                        }
+                                    >
+                                        <span>Cik īpašumus varu pievienot bezmaksas profilā?</span>
+
+                                        <span>
+                                            {openFaq === "free-property-limit" ? "−" : "+"}
+                                        </span>
+                                    </button>
+
+                                    {openFaq === "free-property-limit" && (
+                                        <div className="dashboard-faq-answer">
+                                            <p>
+                                                Bezmaksas PROPFOLIO profilā vari pievienot un saglabāt
+                                                līdz 3 īpašumiem.
+                                            </p>
+
+                                            <p>
+                                                Ja vēlies analizēt vairāk īpašumu, būs nepieciešams
+                                                PRO abonements, kas ļaus pievienot neierobežotu
+                                                īpašumu skaitu.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+                    )}
                 </section>
             </main >
 
