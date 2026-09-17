@@ -20,12 +20,12 @@
     align-items: center;
     justify-content: space-between;
 
-    padding: 1rem 0;
+    padding: 0;
 }
 
 .dashboard-logo {
     display: block;
-    width: 290px;
+    width: 250px;
     height: auto;
 }
 
@@ -34,9 +34,8 @@
 }
 
 .profile-menu-icon {
-    width: 22px;
-    height: 22px;
-
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
 }
 
@@ -56,19 +55,19 @@
 .profile-menu {
     position: absolute;
 
-    top: calc(100% + 14px);
-    right: 0px;
+    top: calc(100% + 10px);
+    right: 0;
 
-    width: 220px;
+    width: 175px;
 
-    padding: 0.65rem;
+    padding: 0.4rem;
 
     border: 1px solid #dfe7e1;
-    border-radius: 14px;
+    border-radius: 10px;
 
     background: #ffffff;
 
-    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.10);
 
     z-index: 100;
 }
@@ -79,17 +78,18 @@
 
     display: flex;
     align-items: center;
-    gap: 0.9rem;
+    gap: 0.65rem;
 
-    padding: 0.85rem 0.9rem;
+    padding: 0.65rem 0.7rem;
 
     border: none;
-    border-radius: 8px;
+    border-radius: 7px;
 
     background: transparent;
     color: #20332c;
 
-    font-size: 0.98rem;
+    font-size: 0.85rem;
+    font-weight: 400;
     text-align: left;
 
     cursor: pointer;
@@ -106,8 +106,8 @@
     align-items: center;
     justify-content: center;
 
-    width: 58px;
-    height: 58px;
+    width: 50px;
+    height: 50px;
 
     border-radius: 50%;
 
@@ -127,20 +127,24 @@
 .dashboard-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 2rem;
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.35rem;
 }
 
 .dashboard-header h1 {
     margin: 0;
-    font-size: 1.85rem;
-    letter-spacing: -0.8px;
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.6px;
+    line-height: 1;
 }
 
 .dashboard-header>div>p:last-child {
-    margin: 0.35rem 0 0;
-    color: #666;
+    margin: 0.2rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.3;
+    color: #66756f;
 }
 
 .dashboard-section {
@@ -206,7 +210,7 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.2rem;
-    margin-top: 1rem;
+    margin-top: 0;
 }
 
 .property-card {
@@ -321,14 +325,15 @@
 
 .property-card-content h3 {
     margin: 0;
-
-    font-size: 1.15rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
     color: #18231f;
 }
 
 .property-card h3 {
     margin-top: 0;
-    margin-bottom: 1rem;
+    margin-bottom: 0.35rem;
 }
 
 .property-card p {
@@ -337,9 +342,9 @@
 }
 
 .property-address {
-    margin: 0.45rem 0 0;
-
-    font-size: 0.88rem;
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.3;
     color: #718078;
 }
 
@@ -370,11 +375,12 @@
 
 .property-stats span {
     display: block;
+    margin-bottom: 0.2rem;
 
-    margin-bottom: 0.3rem;
-
-    font-size: 0.75rem;
+    font-size: 0.65rem;
+    line-height: 1.2;
     color: #75827c;
+    white-space: nowrap;
 }
 
 .property-stats strong {
@@ -389,9 +395,9 @@
     align-items: center;
     justify-content: space-between;
 
-    margin-top: 0.8rem;
+    margin-top: 0.55rem;
 
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: #96a19b;
 }
 
@@ -404,7 +410,7 @@
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
-    padding: 2.2rem 0 4rem;
+    padding: 1.2rem 0 3rem;
 }
 
 .dashboard-profile {
@@ -416,48 +422,50 @@
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
-    margin-bottom: 3rem;
+    margin-bottom: 1.5rem;
 }
 
 .dashboard-welcome h1 {
     margin: 0;
-    font-size: 2.2rem;
-    line-height: 1.15;
-    letter-spacing: -0.04em;
+    font-size: 1.8rem;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
     color: #17211d;
 }
 
 .dashboard-welcome p {
-    margin: 0.7rem 0 0;
-    font-size: 1.05rem;
+    margin: 0.25rem 0 0;
+    font-size: 1rem;
+    line-height: 1.3;
     color: #66736d;
 }
 
 .add-property-button {
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
-
-    min-width: 205px;
     justify-content: center;
+    gap: 0.6rem;
 
-    padding: 0.75rem 1.5rem;
+    min-width: 185px;
+
+    padding: 0.6rem 1.15rem;
 
     border: none;
-    border-radius: 9px;
+    border-radius: 7px;
 
     background: #0f5138;
     color: #ffffff;
 
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 500;
 
     cursor: pointer;
     transition: transform 0.2s ease;
 }
 
 .add-property-button-shifted {
-    transform: translateX(-230px);
+    transform: translateX(-200px);
 }
 
 .add-property-button:disabled {
@@ -473,7 +481,7 @@
 }
 
 .add-property-button span {
-    font-size: 1.45rem;
+    font-size: 1.25rem;
     line-height: 1;
     font-weight: 300;
 }
@@ -487,13 +495,14 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 3rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .properties-section-header h2 {
     margin: 0;
-    font-size: 1.75rem;
-    letter-spacing: -0.03em;
+    font-size: 1.45rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
     color: #17211d;
 }
 
@@ -770,12 +779,12 @@
    ========================= */
 
 .portfolio-summary {
-    margin-top: 2.5rem;
-    padding: 1.8rem;
+    margin-top: 1rem;
+    padding: 0.85rem 1.2rem;
 
     background: #dfeee6;
     border: 1px solid #cfe1d7;
-    border-radius: 16px;
+    border-radius: 12px;
 }
 
 .portfolio-summary-header {
@@ -783,28 +792,23 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 2rem;
-
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.6rem;
 }
 
 .portfolio-summary-header h2 {
     margin: 0;
-
-    font-size: 1.45rem;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.03em;
-
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
     color: #14231d;
 }
 
 .portfolio-summary-header p {
-    margin: 0.35rem 0 0;
-
-    font-size: 0.88rem;
+    margin: 0.2rem 0 0;
+    font-size: 0.78rem;
     font-weight: 400;
-    line-height: 1.4;
-
+    line-height: 1.35;
     color: #52675e;
 }
 
@@ -836,7 +840,7 @@
     gap: 1rem;
 
     min-width: 0;
-    padding: 1rem 1.1rem;
+    padding: 0.65rem 0.9rem;
 
     background: #ffffff;
 
@@ -882,24 +886,21 @@
 
 .portfolio-summary-card span {
     display: block;
+    margin-bottom: 0.2rem;
 
-    margin-bottom: 0.3rem;
-
-    font-size: 0.76rem;
+    font-size: 0.7rem;
     font-weight: 400;
-    line-height: 1.25;
-
+    line-height: 1.2;
     color: #5f7068;
 }
 
 .portfolio-summary-card strong {
     display: block;
 
-    font-size: 1.18rem;
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
     color: #111b17;
 }
 
@@ -1048,13 +1049,12 @@
 
 .dashboard-faq-item {
     width: 100%;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
 
-    padding: 1rem 0;
+    padding: 0.75rem 0;
 
     background: transparent;
     border: none;
@@ -1062,8 +1062,9 @@
 
     color: #1b2923;
     font: inherit;
-    font-size: 1rem;
+    font-size: 0.88rem;
     font-weight: 500;
+    line-height: 1.3;
     text-align: left;
 
     cursor: pointer;
@@ -1082,14 +1083,14 @@
     max-width: 850px;
     margin: 0;
 
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     font-weight: 400;
-    line-height: 1.65;
+    line-height: 1.55;
     color: #46564f;
 }
 
 .dashboard-faq-answer p+p {
-    margin-top: 0.25rem;
+    margin-top: 0.2rem;
 }
 
 .dashboard-faq-item:first-child {
