@@ -1,43 +1,43 @@
 import "./FinancingChoice.css";
+import mortgageIcon from "../assets/icons/mortgage-icon.svg";
+import cashIcon from "../assets/icons/cash-icon.svg";
 
 function FinancingChoice({ setFinancing }) {
     return (
         <div className="financing-choice">
             <button
-                className="financing-option"
+                className="financing-option financing-option-mortgage"
                 onClick={() => setFinancing("mortgage")}
             >
-                <span className="financing-kicker">
-                    BANKAS FINANSĒJUMS
-                </span>
+                <img
+                    src={mortgageIcon}
+                    alt=""
+                    className="financing-icon"
+                />
 
                 <span className="financing-title">
                     Ar hipotēku
                 </span>
 
-                <span className="financing-description">
-                    Aprēķini pirmo iemaksu, kredīta izmaksas un
-                    investīcijas atdevi ar bankas finansējumu.
-                </span>
+                <span className="financing-arrow">→</span>
             </button>
 
 
             <button
-                className="financing-option"
+                className="financing-option financing-option-cash"
                 onClick={() => setFinancing("cash")}
             >
-                <span className="financing-kicker">
-                    SAVS KAPITĀLS
-                </span>
+                <img
+                    src={cashIcon}
+                    alt=""
+                    className="financing-icon"
+                />
 
                 <span className="financing-title">
                     Ar saviem līdzekļiem
                 </span>
 
-                <span className="financing-description">
-                    Izvērtē ieguldījumu bez kredīta un nosaki kopējo
-                    nepieciešamo sākuma kapitālu.
-                </span>
+                <span className="financing-arrow">→</span>
             </button>
         </div>
     );

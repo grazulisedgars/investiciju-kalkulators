@@ -10,6 +10,7 @@ import MortgageSummary from "./components/MortgageSummary";
 import Registration from "./components/Registration";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
+import propfolioBackground from "./assets/propfolio-background11.png";
 
 function App() {
   const [financing, setFinancing] = useState(null);
@@ -222,7 +223,23 @@ function App() {
   }
 
   return (
-    <main className={`app ${showDashboard ? "app-dashboard" : ""}`}>
+    <main
+      className={`app ${showDashboard
+        ? "app-dashboard"
+        : financing === null && !showRegistration && !showLogin
+          ? "app-hero"
+          : ""
+        }`}
+
+      style={
+        financing === null &&
+          !showDashboard &&
+          !showRegistration &&
+          !showLogin
+          ? { "--hero-background": `url(${propfolioBackground})` }
+          : {}
+      }
+    >
 
       {/* Header */}
 
@@ -245,6 +262,14 @@ function App() {
                 onClick={goToHowItWorks}
               >
                 Kā tas darbojas
+              </a>
+
+              <a href="#about">
+                Par mums
+              </a>
+
+              <a href="#faq">
+                FAQ
               </a>
 
               <button
@@ -313,6 +338,45 @@ function App() {
                 />
               </div>
 
+              <div className="hero-benefits">
+                <div className="hero-benefit">
+                  <div className="hero-benefit-icon">
+                    <span className="benefit-bars">
+                      <i></i>
+                      <i></i>
+                      <i></i>
+                    </span>
+                  </div>
+
+                  <div>
+                    <strong>Vienkārši un saprotami</strong>
+                    <span>Reālos datos balstīti aprēķini</span>
+                  </div>
+                </div>
+
+                <div className="hero-benefit">
+                  <div className="hero-benefit-icon">
+                    <span className="benefit-clock">◷</span>
+                  </div>
+
+                  <div>
+                    <strong>Pieņem labākus lēmumus</strong>
+                    <span>Salīdzini scenārijus un riskus</span>
+                  </div>
+                </div>
+
+                <div className="hero-benefit">
+                  <div className="hero-benefit-icon">
+                    <span className="benefit-shield">✓</span>
+                  </div>
+
+                  <div>
+                    <strong>Tavs investora rīks</strong>
+                    <span>Plāno, analizē, ieguldi gudrāk</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             {/* Calculator preview */}
@@ -322,10 +386,6 @@ function App() {
               <div className="preview-header">
                 <span>
                   INVESTĪCIJAS ANALĪZE
-                </span>
-
-                <span>
-                  ●
                 </span>
               </div>
 
@@ -378,6 +438,11 @@ function App() {
                 </div>
 
               </div>
+
+              <p className="preview-example-note">
+                <span className="preview-info-icon">i</span>
+                Rādītie dati ir piemērs
+              </p>
 
             </div>
 

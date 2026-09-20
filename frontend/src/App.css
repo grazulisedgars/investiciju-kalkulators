@@ -11,6 +11,22 @@
   padding: 0;
 }
 
+.app-hero {
+  position: relative;
+
+  max-width: none;
+  height: 100vh;
+
+
+  padding-left: max(3rem, calc((100vw - 1200px) / 2));
+  padding-right: max(3rem, calc((100vw - 1200px) / 2));
+
+  background-image: var(--hero-background);
+  background-size: 100% auto;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
 
 /* Header */
 
@@ -18,7 +34,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5rem;
+  transform: translateY(-2.25rem);
+  margin-bottom: 1.8rem;
 }
 
 .header-logo-image {
@@ -54,13 +71,15 @@
 }
 
 .register-button {
-  padding: 0.65rem 1rem;
+  padding: 0.6rem 1rem;
   border: 1px solid #3f7d5a;
   border-radius: 9px;
   background: #3f7d5a;
   color: #ffffff;
-  font-size: 0.95rem;
+
+  font-size: 0.85rem;
   font-weight: 600;
+
   cursor: pointer;
 }
 
@@ -70,13 +89,16 @@
 }
 
 .login-button {
-  padding: 0.65rem 1rem;
+  padding: 0.6rem 1rem;
   border: 1px solid #3f7d5a;
   border-radius: 9px;
-  background: transparent;
+
+  background: rgba(255, 255, 255, 0.8);
   color: #3f7d5a;
-  font-size: 0.95rem;
+
+  font-size: 0.85rem;
   font-weight: 600;
+
   cursor: pointer;
 }
 
@@ -90,10 +112,17 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
-  gap: 4rem;
+  grid-template-columns: 620px 420px;
+  gap: 1.5rem;
   align-items: start;
-  min-height: 560px;
+
+  width: 100%;
+  max-width: 1060px;
+  margin: 0 auto;
+
+  transform: translate(3rem, -2.5rem);
+
+  min-height: 0;
 }
 
 
@@ -101,11 +130,12 @@
 
 .hero-content {
   max-width: 620px;
-  margin-top: -2rem;
+  margin-top: 0;
+  transform: translateY(-0.5rem);
 }
 
 .eyebrow {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.8rem;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -114,10 +144,10 @@
 
 .hero h1 {
   margin: 0;
-  max-width: 650px;
-  font-size: clamp(3rem, 6vw, 4.5rem);
+  max-width: 620px;
+  font-size: 3rem;
   line-height: 1.02;
-  letter-spacing: -3px;
+  letter-spacing: -2px;
   font-weight: 750;
 }
 
@@ -126,22 +156,22 @@
 }
 
 .hero-description {
-  max-width: 540px;
-  margin-top: 1.5rem;
-  font-size: 1.1rem;
-  line-height: 1.65;
-  color: #666;
-}
+  max-width: 500px;
+  margin-top: 1.25rem;
 
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #66706d;
+}
 
 /* Financing */
 
 .financing-section {
-  margin-top: 2.5rem;
+  margin-top: 1.3rem;
 }
 
 .financing-section h2 {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   font-size: 1rem;
   font-weight: 600;
 }
@@ -150,15 +180,19 @@
 /* Calculator preview */
 
 .calculator-preview {
-  align-self: center;
-  width: 100%;
-  max-width: 420px;
+  align-self: start;
   justify-self: end;
 
+  transform: translate(-0.5rem, 1.5rem);
+
+  width: 100%;
+  max-width: 420px;
+
   padding: 1.75rem;
+
   border: 1px solid #dce8df;
   border-radius: 18px;
-  background: #f0f6f2;
+  background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.07);
 }
 
@@ -224,6 +258,37 @@
 .preview-kpis strong {
   font-size: 1.5rem;
   color: #3f7d5a;
+}
+
+.preview-example-note {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+
+  margin: 1.5rem 0 0;
+
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: #6f8179;
+}
+
+.preview-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 16px;
+  height: 16px;
+
+  border-radius: 50%;
+  background: #4d8b68;
+  color: #ffffff;
+
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1;
 }
 
 /* Calculator page */
@@ -344,7 +409,7 @@
 /* How it works */
 
 .how-it-works {
-  margin-top: 6rem;
+  margin-top: 15rem;
   padding: 5rem 4rem;
   border-radius: 24px;
 
@@ -408,6 +473,139 @@
   line-height: 1.65;
 
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* Hero benefits */
+
+.hero-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+
+  width: 100%;
+  max-width: 900px;
+
+  margin-top: 1.4rem;
+}
+
+.hero-benefit {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.hero-benefit-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+  background: rgba(232, 241, 236, 0.9);
+}
+
+.hero-benefit-icon img {
+  width: 26px;
+  height: 26px;
+}
+
+.hero-benefit h3 {
+  margin: 0 0 0.15rem;
+
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.hero-benefit p {
+  margin: 0;
+
+  font-size: 0.72rem;
+  line-height: 1.25;
+
+  color: #66736d;
+}
+
+.hero-benefit strong {
+  display: block;
+
+  margin-bottom: 0.2rem;
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+
+  color: #17211d;
+}
+
+.hero-benefit span {
+  display: block;
+
+  font-size: 0.7rem;
+  line-height: 1.3;
+
+  color: #65716c;
+}
+
+
+/* First icon */
+
+.benefit-bars {
+  display: flex !important;
+  align-items: flex-end;
+  gap: 3px;
+  height: 23px;
+}
+
+.benefit-bars i {
+  display: block;
+  width: 5px;
+  border-radius: 2px;
+  background: #0f7959;
+}
+
+.benefit-bars i:nth-child(1) {
+  height: 10px;
+}
+
+.benefit-bars i:nth-child(2) {
+  height: 17px;
+}
+
+.benefit-bars i:nth-child(3) {
+  height: 23px;
+}
+
+
+/* Clock */
+
+.benefit-clock {
+  font-size: 1.8rem !important;
+  line-height: 1;
+  color: #0f7959 !important;
+}
+
+
+/* Shield placeholder */
+
+.benefit-shield {
+  width: 26px;
+  height: 30px;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #0f7959;
+  border-radius: 7px 7px 11px 11px;
+
+  font-size: 0.85rem !important;
+  font-weight: 700;
+  color: #0f7959 !important;
 }
 
 /* Mobile */
