@@ -1,8 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Kalam:wght@300;400&display=swap");
+
 .app {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 3rem 4rem;
+  padding: 2rem 3rem 0;
 }
 
 .app-dashboard {
@@ -11,19 +13,34 @@
   padding: 0;
 }
 
-.app-hero {
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 620px 420px;
+  gap: 1.5rem;
+  align-items: start;
+
+  width: 100%;
+  max-width: 1060px;
+  margin: 0 auto;
+
+  transform: translate(3rem, -2.5rem);
+}
+
+.hero-background {
   position: relative;
 
-  max-width: none;
-  height: 100vh;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-top: -2rem;
 
-
+  padding-top: 2rem;
   padding-left: max(3rem, calc((100vw - 1200px) / 2));
   padding-right: max(3rem, calc((100vw - 1200px) / 2));
 
   background-image: var(--hero-background);
-  background-size: 100% auto;
-  background-position: top center;
+  background-size: 100% 100%;
+  background-position: center bottom;
   background-repeat: no-repeat;
 }
 
@@ -111,6 +128,7 @@
 /* Hero */
 
 .hero {
+  position: relative;
   display: grid;
   grid-template-columns: 620px 420px;
   gap: 1.5rem;
@@ -122,7 +140,7 @@
 
   transform: translate(3rem, -2.5rem);
 
-  min-height: 0;
+  min-height: calc(max(100vh, 56.25vw) - 6rem);
 }
 
 
@@ -406,78 +424,166 @@
 }
 
 
-/* How it works */
+/* =========================
+   HOW IT WORKS
+   ========================= */
 
 .how-it-works {
-  margin-top: 15rem;
-  padding: 5rem 4rem;
-  border-radius: 24px;
+  position: relative;
 
-  background: #244c38;
-  color: #fff;
+  max-width: 1440px;
+  margin: -10rem auto 0;
+  padding: 3.2rem 4rem 3.4rem;
+
+  background: #174f3b;
+  border-radius: 28px;
+
+  color: #ffffff;
 }
+
+
+/* =========================
+   HEADER
+   ========================= */
 
 .how-header {
-  max-width: 700px;
+  position: relative;
 }
 
-.section-label {
-  margin: 0 0 1.25rem;
+.how-it-works .section-label {
+  margin: 0 0 1rem;
 
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.6px;
 
-  color: #a9c9b5;
+  color: #a9dfbd;
 }
 
 .how-header h2 {
+  max-width: 700px;
   margin: 0;
 
-  font-size: 2.7rem;
-  line-height: 1.15;
-  letter-spacing: -1.5px;
+  font-size: 2.15rem;
+  line-height: 1.1;
+  letter-spacing: -1.2px;
+  font-weight: 700;
+
+  color: #ffffff;
 }
+
+
+/* Intro text top-right */
+
+.how-intro {
+  position: absolute;
+  top: 4.2rem;
+  right: 4rem;
+
+  width: 270px;
+  margin: 0;
+
+  font-size: 0.88rem;
+  line-height: 1.55;
+
+  color: #d6e7df;
+}
+
+
+/* =========================
+   STEPS
+   ========================= */
 
 .steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 3rem;
 
-  margin-top: 4rem;
+  margin-top: 3rem;
 }
 
 .step {
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  min-width: 0;
+}
+
+
+/* 01 + icon + line */
+
+.step-top {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+
+  margin-bottom: 1.2rem;
 }
 
 .step-number {
-  display: block;
-  margin-bottom: 2rem;
+  flex-shrink: 0;
 
-  font-size: 0.8rem;
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #77b88f;
+
+  font-size: 0.78rem;
   font-weight: 700;
-  color: #a9c9b5;
+
+  color: #ffffff;
 }
 
+.step-icon {
+  flex-shrink: 0;
+
+  width: 34px;
+  height: 34px;
+
+  object-fit: contain;
+}
+
+.step-line {
+  flex: 1;
+  height: 1px;
+
+  margin-left: 0.2rem;
+
+  background: rgba(190, 224, 204, 0.28);
+}
+
+
+/* =========================
+   STEP TEXT
+   ========================= */
+
 .step h3 {
-  margin: 0 0 0.75rem;
-  font-size: 1.1rem;
+  margin: 0 0 0.65rem;
+
+  font-size: 1rem;
+  line-height: 1.3;
+  font-weight: 650;
+
+  color: #ffffff;
 }
 
 .step p {
+  max-width: 360px;
   margin: 0;
 
-  font-size: 0.9rem;
-  line-height: 1.65;
+  font-size: 0.86rem;
+  line-height: 1.55;
 
-  color: rgba(255, 255, 255, 0.7);
+  color: #d6e7df;
 }
 
 /* Hero benefits */
 
 .hero-benefits {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
@@ -606,6 +712,548 @@
   font-size: 0.85rem !important;
   font-weight: 700;
   color: #0f7959 !important;
+}
+
+.hero-scroll-link {
+  position: absolute;
+
+  left: 50%;
+  bottom: 11rem;
+
+  transform: translateX(-50%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+
+  color: #174f3b;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  z-index: 10;
+}
+
+.hero-scroll-arrow {
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.hero-scroll-link:hover {
+  color: #3f7d5a;
+}
+
+.hero-scroll-link:hover .hero-scroll-arrow {
+  transform: translateY(4px);
+}
+
+/* =========================
+   PAR PROPFOLIO
+========================= */
+
+.about-section {
+  width: 100%;
+  max-width: 1400px;
+  margin: 1rem auto 0;
+
+  display: grid;
+  grid-template-columns: 0.8fr 1.25fr 1.2fr;
+  align-items: start;
+  gap: 2rem;
+
+  position: relative;
+  overflow: hidden;
+
+  padding: 3rem 0 3rem 3.5rem;
+
+  background: #f1f7f3;
+  border-radius: 28px;
+}
+
+/* Dekoratīvs zaļais elements kreisajā apakšā */
+
+.about-section::before {
+  content: "";
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  left: -120px;
+  bottom: -170px;
+
+  border-radius: 50%;
+  border: 55px solid rgba(63, 125, 90, 0.07);
+
+  pointer-events: none;
+}
+
+
+/* =========================
+   KREISĀ PUSE
+========================= */
+
+.about-heading {
+  position: relative;
+  z-index: 1;
+}
+
+.about-heading .section-label {
+  margin: 0 0 1.4rem;
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+
+  color: #3f7d5a;
+}
+
+.about-heading h2 {
+  margin: 0;
+
+  font-size: 1.9rem;
+  line-height: 1.25;
+  letter-spacing: -1.5px;
+  font-weight: 700;
+
+  color: #17211d;
+}
+
+.about-heading h2 span {
+  color: #3f7d5a;
+}
+
+/* =========================
+   VIDUS DAĻA
+========================= */
+
+.about-text {
+  position: relative;
+  z-index: 1;
+
+  padding-left: 2.2rem;
+  border-left: 1px solid #cbded3;
+}
+
+.about-text h3 {
+  margin: 0 0 1rem;
+
+  font-size: 1.17rem;
+  line-height: 1.3;
+  font-weight: 650;
+
+  color: #17211d;
+}
+
+.about-description {
+  margin: 0 0 0.65rem;
+  text-align: justify;
+
+  font-size: 0.85rem;
+  line-height: 1.65;
+
+  color: #596862;
+}
+
+.about-description:last-of-type {
+  margin-bottom: 1.2rem;
+}
+
+
+/* Zaļais callout */
+
+.about-highlight {
+  margin-top: 1.2rem;
+  padding: 1rem 1.2rem;
+
+  background: #e4f1ea;
+  border-radius: 12px;
+
+  color: #174f3b;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 650;
+}
+
+
+/* =========================
+   BILDE
+========================= */
+
+.about-image {
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+
+  overflow: hidden;
+
+  border-radius: 20px;
+}
+
+.about-image img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: 60% center;
+}
+
+.about-image-caption {
+  position: absolute;
+  top: 2.8rem;
+  left: 3.5rem;
+  z-index: 2;
+
+  margin: 0;
+
+  font-family: "Kalam", cursive;
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.15;
+
+  color: #2f7657;
+
+  transform: rotate(-4deg);
+}
+
+.about-image-caption::after {
+  content: "";
+  display: block;
+
+  width: 58%;
+  height: 7px;
+
+  margin-top: 0.05rem;
+  margin-left: 1.6rem;
+
+  border-top: 2px solid #2f7657;
+  border-radius: 50% 50% 0 0;
+
+  transform: rotate(-3deg);
+}
+
+.faq-section {
+  max-width: 1440px;
+  margin: 1.5rem auto 0;
+  padding: 4rem 4.5rem;
+
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 5rem;
+  align-items: start;
+
+  background: #eef6f1;
+  border-radius: 28px;
+}
+
+.faq-heading {
+  padding-left: 2rem;
+  border-left: 1px solid #cbded3;
+}
+
+.faq-heading .section-label {
+  margin: 0 0 1.2rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  color: #3f7d5a;
+}
+
+.faq-heading h2 {
+  margin: 0;
+
+  font-size: 2.8rem;
+  line-height: 1.05;
+  letter-spacing: -1.5px;
+  font-weight: 700;
+
+  color: #17211d;
+}
+
+.faq-heading h2 span {
+  color: #3f7d5a;
+}
+
+.faq-intro {
+  max-width: 340px;
+  margin: 1.25rem 0 0;
+
+  font-size: 0.95rem;
+  line-height: 1.6;
+
+  color: #66706d;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.faq-item {
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid #d8e7de;
+  border-radius: 12px;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.faq-item:hover {
+  border-color: #b9d2c3;
+}
+
+.faq-item.open {
+  background: #ffffff;
+  border-color: #bfd7c8;
+}
+
+
+/* Jautājuma rinda */
+
+.faq-question {
+  width: 100%;
+  padding: 0.85rem 1.15rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+
+  border: 0;
+  background: transparent;
+
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  color: #17211d;
+
+  cursor: pointer;
+}
+
+
+/* + / − labajā pusē */
+
+.faq-plus {
+  flex-shrink: 0;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #c7ddd0;
+  border-radius: 50%;
+
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1;
+
+  color: #3f7d5a;
+  background: #f3f8f5;
+}
+
+
+/* Atbilde */
+
+.faq-answer {
+  padding: 0 3.8rem 1.1rem 1.15rem;
+}
+
+.faq-answer p {
+  max-width: 620px;
+  margin: 0;
+
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #66706d;
+}
+
+.footer {
+  width: 100vw;
+
+  margin-top: 1.5rem;
+  margin-left: calc(50% - 50vw);
+
+  padding: 0;
+
+  background: #ffffff;
+  border-top: 1px solid #dce8e1;
+}
+
+.footer-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 3rem;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Logo */
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.footer-logo {
+  width: 145px;
+  height: auto;
+}
+
+.footer-brand span {
+  font-size: 0.7rem;
+  color: #78817e;
+}
+
+
+/* Navigation */
+
+.footer-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.footer-nav a {
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  color: #66706d;
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+  color: #3f7d5a;
+}
+
+
+/* Contact */
+
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+
+  font-size: 0.7rem;
+  color: #78817e;
+}
+
+.footer-contact a {
+  color: #3f7d5a;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-contact a:hover {
+  text-decoration: underline;
+}
+
+/* Smaller laptops / screens */
+
+@media (max-width: 1400px) {
+
+  .hero-background {
+    height: 100vh;
+
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+    gap: 2rem;
+
+    width: 100%;
+    max-width: 1100px;
+
+    transform: translate(4.5rem, -1.5rem);
+    min-height: calc(100vh - 8rem);
+  }
+
+  .hero-scroll-link {
+    bottom: 1rem;
+  }
+
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  .hero h1 {
+    font-size: 2.8rem;
+  }
+
+  .calculator-preview {
+    width: 100%;
+    max-width: 420px;
+    justify-self: end;
+    transform: translate(-0.5rem, 0);
+  }
+
+  .financing-choice {
+    width: 100%;
+  }
+
+  .hero-benefits {
+    width: 100%;
+    margin-top: -10rem;
+    margin-left: 0.5rem;
+  }
+
+  /* svarīgais labojums */
+  .how-it-works {
+    margin-top: 1.5rem;
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 900px) {
+
+  .about-section {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+
+    margin-top: 1rem;
+    padding: 2.5rem 2rem;
+  }
+
+  .about-content {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .about-intro h2 {
+    font-size: 2.2rem;
+  }
+
+  .about-image {
+    height: 280px;
+  }
 }
 
 /* Mobile */
