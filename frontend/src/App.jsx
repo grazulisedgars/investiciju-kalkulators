@@ -855,7 +855,7 @@ function App() {
       {!showRegistration &&
         !showDashboard &&
         financing === "cash" && (
-          <section className="calculator-page">
+          <section className="calculator-page cash-calculator-page">
 
             <div className="calculator-page-header">
 

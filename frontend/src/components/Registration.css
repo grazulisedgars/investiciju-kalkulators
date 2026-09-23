@@ -1,26 +1,44 @@
 .registration-page {
+    position: relative;
+
     width: 100%;
-    max-width: 760px;
+    max-width: 1000px;
+    min-height: calc(100vh - 4rem);
+
     margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(2rem);
+}
+
+.registration-page .back-button {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .registration-card {
-    padding: 2rem;
+    width: 100%;
+
+    padding: 2.25rem 2.75rem;
 
     border: 1px solid #dce8df;
     border-radius: 18px;
 
     background: #ffffff;
+
 }
 
 .registration-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
 }
 
 .registration-eyebrow {
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.4rem;
 
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.14em;
 
@@ -30,22 +48,30 @@
 .registration-header h1 {
     margin: 0;
 
-    font-size: 2.2rem;
+    font-size: 2rem;
     line-height: 1.15;
     letter-spacing: -1px;
 }
 
 .registration-header>p:last-child {
-    max-width: 560px;
-    margin: 0.75rem 0 0;
+    max-width: 600px;
+    margin: 0.5rem 0 0;
 
-    line-height: 1.5;
+    font-size: 0.95rem;
+    line-height: 1.4;
+
     color: #666;
 }
 
+
+/* FORM */
+
 .registration-form {
     display: grid;
-    gap: 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    column-gap: 1.25rem;
+    row-gap: 0.85rem;
 }
 
 .registration-form .input-group {
@@ -54,9 +80,9 @@
 
 .registration-form label {
     display: block;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.3rem;
 
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
 
     color: #333;
@@ -64,14 +90,14 @@
 
 .registration-form input {
     width: 100%;
-    padding: 0.85rem 0.95rem;
+    padding: 0.7rem 0.85rem;
 
     border: 1px solid #d5d5d5;
     border-radius: 9px;
 
     background: #ffffff;
 
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 .registration-form input:focus {
@@ -80,9 +106,14 @@
     box-shadow: 0 0 0 3px rgba(63, 125, 90, 0.1);
 }
 
+
+/* SUBMIT */
+
 .registration-submit {
-    margin-top: 0.5rem;
-    padding: 0.9rem 1.2rem;
+    grid-column: 1 / -1;
+
+    margin-top: 0.35rem;
+    padding: 0.8rem 1.2rem;
 
     border: none;
     border-radius: 9px;
@@ -90,7 +121,7 @@
     background: #3f7d5a;
     color: #ffffff;
 
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
 
     cursor: pointer;
@@ -100,8 +131,35 @@
     background: #34684b;
 }
 
+
+/* ERRORS */
+
 .form-error {
-    margin: 0.45rem 0 0;
-    font-size: 0.82rem;
+    margin: 0.3rem 0 0;
+
+    font-size: 0.78rem;
     color: #b42318;
+}
+
+.registration-general-error {
+    grid-column: 1 / -1;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .registration-card {
+        padding: 1.25rem;
+    }
+
+    .registration-form {
+        grid-template-columns: 1fr;
+    }
+
+    .registration-submit,
+    .registration-general-error {
+        grid-column: 1;
+    }
 }

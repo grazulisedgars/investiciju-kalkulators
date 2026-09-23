@@ -314,7 +314,7 @@
 .calculator-input-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: stretch;
 }
 
@@ -421,6 +421,34 @@
 .calculator-save-button:disabled:hover {
   background: #b8c2bd;
   border-color: #b8c2bd;
+}
+
+/* Cash calculator - compact desktop view */
+
+.cash-calculator-page .calculator-page-header {
+  margin-bottom: 0.8rem;
+}
+
+.cash-calculator-page .back-button {
+  margin-bottom: 0.8rem;
+}
+
+.cash-calculator-page .calculator-input-grid {
+  gap: 1rem;
+}
+
+.cash-calculator-page .free-analysis-results {
+  margin-top: 1rem;
+}
+
+.cash-calculator-page .property-info,
+.cash-calculator-page .free-analysis-inputs {
+  height: auto;
+}
+
+.cash-calculator-page .calculator-input-grid {
+  gap: 1rem;
+  align-items: stretch;
 }
 
 
@@ -1193,6 +1221,7 @@
   }
 
   .hero-scroll-link {
+    left: 45%;
     bottom: 1rem;
   }
 
@@ -1226,6 +1255,62 @@
   .how-it-works {
     margin-top: 1.5rem;
   }
+
+  /* Calculator layout - laptop */
+
+  .calculator-page {
+    max-width: 1100px;
+    padding-bottom: 1rem;
+  }
+
+  .calculator-page-header {
+    margin-bottom: 1rem;
+  }
+
+  .calculator-page .back-button {
+    margin-bottom: 1rem;
+  }
+
+  .calculator-input-grid {
+    gap: 1rem 1.5rem;
+  }
+
+  /* Compact calculator cards - laptop */
+
+  .property-info,
+  .mortgage-inputs {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .property-info h2,
+  .mortgage-inputs h2 {
+    margin-bottom: 1rem;
+    font-size: 1.35rem;
+  }
+
+  .property-info .input-group,
+  .mortgage-inputs .input-group {
+    margin-bottom: 0.8rem;
+  }
+
+  .property-info .input-group label,
+  .mortgage-inputs label {
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+
+  .property-info .input-group input,
+  .mortgage-inputs input {
+    padding: 0.65rem 0.8rem;
+  }
+
+  .property-info .calculation-result,
+  .mortgage-inputs .mortgage-result {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+  }
+
+
 }
 
 /* =========================

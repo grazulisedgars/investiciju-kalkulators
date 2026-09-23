@@ -1,6 +1,6 @@
 .free-analysis-results {
-    margin-top: 1.5rem;
-    padding: 1.75rem;
+    margin-top: 1rem;
+    padding: 1.25rem 1.5rem;
 
     border: 1px solid #dce8df;
     border-radius: 16px;
@@ -9,7 +9,7 @@
 }
 
 .results-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .results-header h2 {
@@ -33,7 +33,7 @@
 }
 
 .result-item {
-    padding: 1.25rem;
+    padding: 0.85rem 1.25rem;
 
     border-right: 1px solid #e5ebe7;
 }
@@ -44,7 +44,7 @@
 
 .result-item span {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 
     font-size: 0.85rem;
     color: #666;
@@ -74,8 +74,8 @@
     align-items: center;
     gap: 2rem;
 
-    margin-top: 1.5rem;
-    padding: 1.5rem;
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
 
     border-radius: 12px;
 
@@ -87,7 +87,7 @@
 }
 
 .cta-content h3 {
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.25rem;
 
     font-size: 1.15rem;
 }

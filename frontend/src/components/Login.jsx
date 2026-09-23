@@ -65,7 +65,7 @@ function Login({ onBack, onLogin }) {
                 <div className="login-header">
                     <p className="login-eyebrow">PROPFOLIO</p>
 
-                    <h1>Ielogojies savā profilā</h1>
+                    <h1>Ieiet savā profilā</h1>
 
                     <p>
                         Piekļūsti saviem saglabātajiem īpašumiem un investīciju

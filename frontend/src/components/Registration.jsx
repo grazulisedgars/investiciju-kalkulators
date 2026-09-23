@@ -128,26 +128,29 @@ function Registration({ onBack, onRegistered }) {
                     }}
                 >
                     <div className="input-group">
-                        <label>
-                            Vārds
-                            <input
-                                type="text"
-                                value={firstName}
-                                onChange={(event) => setFirstName(event.target.value)}
-                            />
-                        </label>
-
-                        <label>
-                            Uzvārds
-                            <input
-                                type="text"
-                                value={lastName}
-                                onChange={(event) => setLastName(event.target.value)}
-                            />
-                        </label>
-
-                        <label>Lietotājvārds</label>
+                        <label htmlFor="firstName">Vārds</label>
                         <input
+                            id="firstName"
+                            type="text"
+                            value={firstName}
+                            onChange={(event) => setFirstName(event.target.value)}
+                        />
+                    </div>
+
+                    <div className="input-group">
+                        <label htmlFor="lastName">Uzvārds</label>
+                        <input
+                            id="lastName"
+                            type="text"
+                            value={lastName}
+                            onChange={(event) => setLastName(event.target.value)}
+                        />
+                    </div>
+
+                    <div className="input-group">
+                        <label htmlFor="username">Lietotājvārds</label>
+                        <input
+                            id="username"
                             type="text"
                             value={username}
                             onChange={(event) => setUsername(event.target.value)}
@@ -159,8 +162,9 @@ function Registration({ onBack, onRegistered }) {
                     </div>
 
                     <div className="input-group">
-                        <label>E-pasts</label>
+                        <label htmlFor="email">E-pasts</label>
                         <input
+                            id="email"
                             type="email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
@@ -172,8 +176,9 @@ function Registration({ onBack, onRegistered }) {
                     </div>
 
                     <div className="input-group">
-                        <label>Parole</label>
+                        <label htmlFor="password">Parole</label>
                         <input
+                            id="password"
                             type="password"
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
@@ -185,8 +190,9 @@ function Registration({ onBack, onRegistered }) {
                     </div>
 
                     <div className="input-group">
-                        <label>Atkārtot paroli</label>
+                        <label htmlFor="confirmPassword">Atkārtot paroli</label>
                         <input
+                            id="confirmPassword"
                             type="password"
                             value={confirmPassword}
                             onChange={(event) => setConfirmPassword(event.target.value)}
@@ -198,14 +204,14 @@ function Registration({ onBack, onRegistered }) {
                     </div>
 
                     <button
-                        type="submite"
+                        type="submit"
                         className="registration-submit"
                     >
                         Izveidot profilu
                     </button>
 
                     {errors.general && (
-                        <p className="form-error">
+                        <p className="form-error registration-general-error">
                             {errors.general}
                         </p>
                     )}
