@@ -145,6 +145,57 @@
     grid-column: 1 / -1;
 }
 
+@media (min-width: 1401px) {
+
+    .registration-page {
+        max-width: 1200px;
+        transform: translateY(4rem);
+    }
+
+    .registration-card {
+        padding: 3.2rem 3.5rem;
+        border-radius: 22px;
+    }
+
+    .registration-eyebrow {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .registration-header h1 {
+        font-size: 3rem;
+    }
+
+    .registration-header>p:last-child {
+        max-width: 850px;
+        font-size: 1.2rem;
+        margin-top: 0.8rem;
+    }
+
+    .registration-form {
+        gap: 1.6rem;
+    }
+
+    .registration-form label {
+        font-size: 1.05rem;
+    }
+
+    .registration-form input {
+        padding: 1.1rem 1.1rem;
+        font-size: 1.1rem;
+    }
+
+    .registration-submit {
+        padding: 1.1rem 1.4rem;
+        font-size: 1.1rem;
+    }
+
+    .registration-page .back-button {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+    }
+}
 
 /* MOBILE */
 

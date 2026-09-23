@@ -1198,7 +1198,498 @@
   text-decoration: underline;
 }
 
-/* Smaller laptops / screens */
+/* Medium desktop hero - 1441px līdz 1599px */
+@media (min-width: 1441px) and (max-width: 1599px) {
+
+  .hero {
+    transform: translate(2.5rem, 1rem);
+  }
+
+  .hero-benefits {
+    margin-top: -12rem;
+  }
+
+  .hero-scroll-link {
+    left: 46%;
+    bottom: 6rem;
+  }
+
+  .how-it-works {
+    margin-top: 4rem;
+  }
+
+  .hero-background {
+    background-position: center -3rem;
+  }
+}
+
+/* Large desktop - 1920 x 1080 */
+
+@media (min-width: 1600px) {
+
+  .app {
+    max-width: none;
+  }
+
+  .hero {
+    grid-template-columns: 680px 460px;
+    max-width: 1180px;
+
+    transform: translate(2.5rem, 3rem);
+  }
+
+  .hero-benefits {
+    margin-top: -17rem;
+    gap: 2.5rem;
+  }
+
+  .hero-benefit {
+    gap: 0.9rem;
+  }
+
+  .hero-benefit-icon {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+  }
+
+  .hero-benefit>div:last-child strong {
+    font-size: 1.05rem;
+  }
+
+  .hero-benefit>div:last-child span {
+    font-size: 0.9rem;
+  }
+
+  .hero h1 {
+    font-size: 3.6rem;
+    line-height: 1.08;
+  }
+
+  .hero-description {
+    font-size: 1.05rem;
+    max-width: 580px;
+  }
+
+  .financing-section h2 {
+    font-size: 1.15rem;
+  }
+
+  .financing-choice {
+    width: 100%;
+  }
+
+  .financing-option {
+    min-height: 76px;
+    padding: 1.1rem 1.4rem;
+  }
+
+  .financing-title {
+    font-size: 1.2rem;
+    font-weight: 650;
+  }
+
+  .calculator-preview {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .financing-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .financing-arrow {
+    font-size: 1.45rem;
+  }
+
+  .how-it-works {
+    margin-top: 2rem;
+  }
+
+  .hero-background {
+    background-position: center -3rem;
+  }
+
+  .hero-scroll-link {
+    left: 47%;
+    bottom: 8.5rem;
+    transform: translateX(-50%);
+
+    font-size: 1rem;
+    font-weight: 700;
+    gap: 0.4rem;
+  }
+
+  .hero-scroll-arrow {
+    font-size: 1.6rem;
+  }
+
+  .app:has(.calculator-page) {
+    max-width: none;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+
+  .calculator-page {
+    width: 100%;
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* HERO TEXT - large desktop */
+
+  .eyebrow {
+    font-size: 1rem;
+  }
+
+  .hero-description {
+    font-size: 1.2rem;
+    line-height: 1.5;
+  }
+
+  .financing-section h2 {
+    font-size: 1.25rem;
+  }
+
+
+  /* INVESTMENT PREVIEW CARD */
+
+  .preview-header span {
+    font-size: 0.95rem;
+  }
+
+  .preview-label {
+    font-size: 1rem;
+  }
+
+  .preview-property strong {
+    font-size: 1.45rem;
+  }
+
+  .preview-kpis span {
+    font-size: 1rem;
+  }
+
+  .preview-kpis strong {
+    font-size: 1.5rem;
+  }
+
+  .preview-example-note {
+    font-size: 0.9rem;
+  }
+
+  .preview-info-icon {
+    font-size: 0.8rem;
+  }
+
+
+  /* BENEFITS */
+
+  .hero-benefit>div:last-child strong {
+    font-size: 1.15rem;
+  }
+
+  .hero-benefit>div:last-child span {
+    font-size: 1rem;
+  }
+
+
+  /* BOTTOM CTA */
+
+  .hero-scroll-link {
+    font-size: 1.05rem;
+  }
+
+  .hero-scroll-arrow {
+    font-size: 1.7rem;
+  }
+
+  /* HEADER - large desktop */
+
+  .navigation a {
+    font-size: 1rem;
+  }
+
+  .register-button,
+  .login-button {
+    font-size: 1rem;
+  }
+
+  /* Calculator typography - large desktop */
+
+  .calculator-page .back-button {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .calculator-page-title p {
+    font-size: 1.15rem;
+    line-height: 1.5;
+  }
+
+  /* Lauku nosaukumi */
+  .calculator-page .input-group label,
+  .calculator-page .mortgage-inputs label,
+  .calculator-page .free-analysis-inputs label {
+    font-size: 1.1rem;
+  }
+
+  /* Teksts input laukos */
+  .calculator-page input {
+    font-size: 1.15rem;
+  }
+
+  /* Aprēķinu nosaukumi */
+  .calculator-page .calculation-result p,
+  .calculator-page .mortgage-result p,
+  .calculator-page .summary-result p,
+  .calculator-page .renovation-result p {
+    font-size: 1.1rem;
+  }
+
+  /* Aprēķinu vērtības */
+  .calculator-page .calculation-result strong,
+  .calculator-page .mortgage-result strong,
+  .calculator-page .summary-result strong,
+  .calculator-page .renovation-result strong {
+    font-size: 1.4rem;
+  }
+
+  /* Mazais paskaidrojuma teksts */
+  .calculator-page .input-hint {
+    font-size: 1rem;
+  }
+
+  /* Investment summary - large desktop */
+
+  .calculator-page .free-analysis-results {
+    padding: 1.5rem 1.75rem;
+  }
+
+  .calculator-page .results-header {
+    margin-bottom: 1rem;
+  }
+
+  .calculator-page .results-header h2 {
+    font-size: 1.75rem;
+  }
+
+  .calculator-page .result-item {
+    padding: 1.2rem 1.4rem;
+  }
+
+  .calculator-page .result-item span {
+    margin-bottom: 0.4rem;
+    font-size: 1rem;
+  }
+
+  .calculator-page .result-item strong {
+    font-size: 1.5rem;
+  }
+
+  /* Apakšējais CTA */
+
+  .calculator-page .analysis-cta {
+    margin-top: 1rem;
+    padding: 1.25rem 1.4rem;
+  }
+
+  .calculator-page .cta-content {
+    max-width: 700px;
+  }
+
+  .calculator-page .cta-content h3 {
+    margin-bottom: 0.4rem;
+    font-size: 1.3rem;
+  }
+
+  .calculator-page .cta-content p {
+    font-size: 1.05rem;
+    line-height: 1.45;
+  }
+
+  .calculator-page .analysis-cta button {
+    padding: 0.95rem 1.4rem;
+    font-size: 1.05rem;
+  }
+
+  /* Cash calculator - large desktop */
+
+  .cash-calculator-page .property-info,
+  .cash-calculator-page .free-analysis-inputs {
+    padding: 2rem;
+  }
+
+  .cash-calculator-page .input-group input {
+    padding: 1rem 1.05rem;
+  }
+
+  /* HOW IT WORKS - large desktop */
+
+  .how-it-works {
+    max-width: 1400px;
+    padding: 3.8rem 4.2rem;
+  }
+
+  .how-header .section-label {
+    font-size: 0.9rem;
+  }
+
+  .how-header h2 {
+    font-size: 2.6rem;
+    line-height: 1.12;
+  }
+
+  .how-intro {
+    font-size: 1.1rem;
+    line-height: 1.5;
+  }
+
+  .steps {
+    margin-top: 2.5rem;
+    gap: 2.5rem;
+  }
+
+  .step-number {
+    font-size: 1rem;
+  }
+
+  .step-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .step h3 {
+    font-size: 1.25rem;
+  }
+
+  .step p {
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+
+
+  /* ABOUT PROPFOLIO - large desktop */
+
+  .about-section {
+    max-width: 1400px;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+    gap: 2.5rem;
+  }
+
+  .about-heading .section-label {
+    font-size: 0.9rem;
+  }
+
+  .about-heading h2 {
+    font-size: 3.1rem;
+    line-height: 1.1;
+  }
+
+  .about-text h3 {
+    font-size: 1.4rem;
+  }
+
+  .about-description {
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .about-highlight {
+    font-size: 1.05rem;
+    line-height: 1.45;
+    padding: 1.25rem 1.4rem;
+  }
+
+  .about-image-caption {
+    font-size: 1.35rem;
+  }
+
+  /* FAQ - large desktop */
+
+  .faq-section {
+    max-width: 1400px;
+    padding: 4rem 4.2rem;
+  }
+
+  .faq-heading .section-label {
+    font-size: 0.9rem;
+  }
+
+  .faq-heading h2 {
+    font-size: 2.8rem;
+    line-height: 1.1;
+  }
+
+  .faq-intro {
+    font-size: 1.1rem;
+    line-height: 1.55;
+  }
+
+
+  /* FAQ questions */
+
+  .faq-question {
+    padding: 1.35rem 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .faq-icon {
+    font-size: 1.4rem;
+  }
+
+
+  /* FAQ answers */
+
+  .faq-answer p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .faq-answer-inner {
+    padding: 0 1.5rem 1.4rem;
+  }
+
+  /* FOOTER - large desktop */
+
+  .footer-logo {
+    width: 190px;
+  }
+
+  .footer-nav a {
+    font-size: 1.05rem;
+  }
+
+  .footer-contact {
+    font-size: 1.05rem;
+  }
+
+  .footer-contact a {
+    font-size: 1.05rem;
+  }
+
+  .footer-bottom {
+    font-size: 0.95rem;
+  }
+
+  .footer-inner {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .footer-brand span {
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+}
+
+/* Smaller laptops / screens 1400px */
 
 @media (max-width: 1400px) {
 
