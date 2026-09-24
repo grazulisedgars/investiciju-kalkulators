@@ -89,6 +89,65 @@
     box-shadow: 0 8px 20px rgba(15, 81, 56, 0.12);
 }
 
+/* Large desktop */
+
+@media (min-width: 1600px) {
+
+    .financing-choice {
+        grid-template-columns: 320px 320px;
+        gap: 1rem;
+    }
+
+    .financing-option {
+        min-height: 84px;
+        padding: 1.25rem 1.6rem;
+    }
+
+    .financing-title {
+        font-size: 1.3rem;
+        font-weight: 650;
+    }
+
+    .financing-icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    .financing-arrow {
+        font-size: 1.6rem;
+    }
+}
+
+/* Small desktop */
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+
+    .financing-choice {
+        grid-template-columns: 250px 250px;
+        gap: 0.7rem;
+        width: auto;
+        max-width: none;
+    }
+
+    .financing-option {
+        min-width: 0;
+        min-height: 58px;
+        padding: 0.65rem 0.8rem;
+    }
+
+    .financing-title {
+        font-size: 0.85rem;
+    }
+
+    .financing-icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .financing-arrow {
+        font-size: 1.05rem;
+    }
+}
 
 /* Mobile */
 

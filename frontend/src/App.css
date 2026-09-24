@@ -1198,20 +1198,46 @@
   text-decoration: underline;
 }
 
+/* HERO - 1440px desktop */
+
+@media (min-width: 1400px) and (max-width: 1440px) {
+
+  /* Hero galvenais saturs zemāk */
+  .hero {
+    transform: translate(2.5rem, 2.5rem);
+  }
+
+  /* 3 benefits augstāk */
+  .hero-benefits {
+    margin-top: -13rem;
+  }
+
+  /* How it works zem Hero */
+  .how-it-works {
+    margin-top: 4rem;
+  }
+
+  .hero-scroll-link {
+    left: 47%;
+    bottom: 4rem;
+    transform: translateX(-50%);
+  }
+}
+
 /* Medium desktop hero - 1441px līdz 1599px */
 @media (min-width: 1441px) and (max-width: 1599px) {
 
   .hero {
-    transform: translate(2.5rem, 1rem);
+    transform: translate(2.5rem, 2.5rem);
   }
 
   .hero-benefits {
-    margin-top: -12rem;
+    margin-top: -13rem;
   }
 
   .hero-scroll-link {
-    left: 46%;
-    bottom: 6rem;
+    left: 47%;
+    bottom: 4rem;
   }
 
   .how-it-works {
@@ -1219,7 +1245,7 @@
   }
 
   .hero-background {
-    background-position: center -3rem;
+    background-position: center bottom;
   }
 }
 
@@ -1239,7 +1265,7 @@
   }
 
   .hero-benefits {
-    margin-top: -17rem;
+    margin-top: -15rem;
     gap: 2.5rem;
   }
 
@@ -1253,54 +1279,14 @@
     flex-shrink: 0;
   }
 
-  .hero-benefit>div:last-child strong {
-    font-size: 1.05rem;
-  }
-
-  .hero-benefit>div:last-child span {
-    font-size: 0.9rem;
-  }
-
   .hero h1 {
-    font-size: 3.6rem;
-    line-height: 1.08;
-  }
-
-  .hero-description {
-    font-size: 1.05rem;
-    max-width: 580px;
-  }
-
-  .financing-section h2 {
-    font-size: 1.15rem;
-  }
-
-  .financing-choice {
-    width: 100%;
-  }
-
-  .financing-option {
-    min-height: 76px;
-    padding: 1.1rem 1.4rem;
-  }
-
-  .financing-title {
-    font-size: 1.2rem;
-    font-weight: 650;
+    font-size: 3.9rem;
+    line-height: 1.06;
   }
 
   .calculator-preview {
     width: 100%;
     max-width: 460px;
-  }
-
-  .financing-icon {
-    width: 30px;
-    height: 30px;
-  }
-
-  .financing-arrow {
-    font-size: 1.45rem;
   }
 
   .how-it-works {
@@ -1316,13 +1302,9 @@
     bottom: 8.5rem;
     transform: translateX(-50%);
 
-    font-size: 1rem;
+    font-size: 1.15rem;
     font-weight: 700;
     gap: 0.4rem;
-  }
-
-  .hero-scroll-arrow {
-    font-size: 1.6rem;
   }
 
   .app:has(.calculator-page) {
@@ -1341,80 +1323,92 @@
   /* HERO TEXT - large desktop */
 
   .eyebrow {
-    font-size: 1rem;
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
   }
 
   .hero-description {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     line-height: 1.5;
+    margin-top: 1.6rem;
+  }
+
+  .financing-section {
+    margin-top: 1.8rem;
   }
 
   .financing-section h2 {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
+    margin-top: 1.4rem;
   }
 
 
   /* INVESTMENT PREVIEW CARD */
 
   .preview-header span {
-    font-size: 0.95rem;
+    font-size: 1.05rem;
   }
 
   .preview-label {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
   .preview-property strong {
-    font-size: 1.45rem;
+    font-size: 1.6rem;
   }
 
   .preview-kpis span {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
   .preview-kpis strong {
-    font-size: 1.5rem;
+    font-size: 1.65rem;
   }
 
   .preview-example-note {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .preview-info-icon {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
 
   /* BENEFITS */
 
   .hero-benefit>div:last-child strong {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
   }
 
   .hero-benefit>div:last-child span {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
 
   /* BOTTOM CTA */
 
-  .hero-scroll-link {
-    font-size: 1.05rem;
-  }
-
   .hero-scroll-arrow {
-    font-size: 1.7rem;
+    font-size: 1.8rem;
   }
 
   /* HEADER - large desktop */
 
+  .header-logo-image {
+    width: 340px;
+  }
+
+  .navigation {
+    gap: 1.8rem;
+  }
+
   .navigation a {
-    font-size: 1rem;
+    font-size: 1.15rem;
   }
 
   .register-button,
   .login-button {
-    font-size: 1rem;
+    padding: 0.75rem 1.2rem;
+    font-size: 1.05rem;
   }
 
   /* Calculator typography - large desktop */
@@ -1534,16 +1528,16 @@
   }
 
   .how-header .section-label {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .how-header h2 {
-    font-size: 2.6rem;
+    font-size: 3rem;
     line-height: 1.12;
   }
 
   .how-intro {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1.5;
   }
 
@@ -1553,7 +1547,7 @@
   }
 
   .step-number {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
   .step-icon {
@@ -1562,11 +1556,11 @@
   }
 
   .step h3 {
-    font-size: 1.25rem;
+    font-size: 1.4rem;
   }
 
   .step p {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     line-height: 1.55;
   }
 
@@ -1581,31 +1575,31 @@
   }
 
   .about-heading .section-label {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .about-heading h2 {
-    font-size: 3.1rem;
+    font-size: 3.4rem;
     line-height: 1.1;
   }
 
   .about-text h3 {
-    font-size: 1.4rem;
+    font-size: 1.55rem;
   }
 
   .about-description {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     line-height: 1.65;
   }
 
   .about-highlight {
-    font-size: 1.05rem;
-    line-height: 1.45;
+    font-size: 1.15rem;
+    line-height: 1.5;
     padding: 1.25rem 1.4rem;
   }
 
   .about-image-caption {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
   }
 
   /* FAQ - large desktop */
@@ -1616,16 +1610,16 @@
   }
 
   .faq-heading .section-label {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .faq-heading h2 {
-    font-size: 2.8rem;
+    font-size: 3.2rem;
     line-height: 1.1;
   }
 
   .faq-intro {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1.55;
   }
 
@@ -1634,10 +1628,10 @@
 
   .faq-question {
     padding: 1.35rem 1.5rem;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 
-  .faq-icon {
+  .faq-plus {
     font-size: 1.4rem;
   }
 
@@ -1645,7 +1639,7 @@
   /* FAQ answers */
 
   .faq-answer p {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     line-height: 1.6;
   }
 
@@ -1656,36 +1650,73 @@
   /* FOOTER - large desktop */
 
   .footer-logo {
-    width: 190px;
+    width: 220px;
+  }
+
+  .footer-nav {
+    gap: 2rem;
   }
 
   .footer-nav a {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
   }
 
   .footer-contact {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
   }
 
   .footer-contact a {
-    font-size: 1.05rem;
-  }
-
-  .footer-bottom {
-    font-size: 0.95rem;
+    font-size: 1.15rem;
   }
 
   .footer-inner {
     max-width: 1400px;
     width: 100%;
     margin: 0 auto;
+
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
     padding-left: 0;
     padding-right: 0;
   }
 
   .footer-brand span {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     line-height: 1.5;
+  }
+}
+
+/* 1920 desktop ar augstāku viewport */
+
+@media (min-width: 1800px) and (min-height: 1150px) {
+
+  .hero {
+    min-height: calc(1080px - 6rem);
+  }
+
+  .how-it-works {
+    margin-top: 4rem;
+  }
+
+}
+
+/* HERO - 1600px desktop */
+
+@media (min-width: 1600px) and (max-width: 1799px) {
+
+  /* Galveno hero saturu paceļam uz augšu */
+  .hero {
+    transform: translate(3.5rem, 0.5rem);
+  }
+
+  /* 3 benefits nolaižam zemāk */
+  .hero-benefits {
+    margin-top: -12rem;
+  }
+
+  /* "Uzzini, kā tas darbojas" nolaižam zemāk */
+  .hero-scroll-link {
+    bottom: 5rem;
   }
 }
 
@@ -1800,9 +1831,361 @@
     margin-top: 0.8rem;
     padding-top: 0.8rem;
   }
-
-
 }
+
+/* HERO - small desktop */
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+
+  /* Galvenais Hero kļūst kompaktāks */
+  .hero {
+    grid-template-columns: 560px 400px;
+    max-width: 1020px;
+  }
+
+  .hero h1 {
+    font-size: 2.7rem;
+    line-height: 1.06;
+  }
+
+  .hero-description {
+    font-size: 0.95rem;
+    max-width: 520px;
+  }
+
+  .financing-section h2 {
+    font-size: 1rem;
+  }
+
+  .financing-title {
+    font-size: 0.95rem;
+  }
+
+  /* Preview kartīte mazāka */
+
+  .calculator-preview {
+    width: 100%;
+    max-width: 400px;
+    padding: 1.4rem;
+  }
+
+  .preview-property strong {
+    font-size: 1.25rem;
+  }
+
+  .preview-kpis strong {
+    font-size: 1.3rem;
+  }
+
+
+  /* Benefits kompaktāki */
+
+  .hero-benefits {
+    max-width: 920px;
+    gap: 1.5rem;
+    margin-top: -8rem;
+  }
+
+  .hero-benefit {
+    gap: 0.65rem;
+  }
+
+  .hero-benefit-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .hero-benefit>div:last-child strong {
+    font-size: 0.9rem;
+  }
+
+  .hero-benefit>div:last-child span {
+    font-size: 0.8rem;
+  }
+}
+
+/* =========================================
+   QHD DESKTOP - 2560 x 1440
+   ========================================= */
+
+@media (min-width: 2200px) {
+
+  /* =========================
+     HEADER
+     ========================= */
+
+  .hero-background {
+    padding-left: max(4rem, calc((100vw - 1800px) / 2));
+    padding-right: max(4rem, calc((100vw - 1800px) / 2));
+  }
+
+  .header-logo-image {
+    width: 390px;
+  }
+
+  .navigation {
+    gap: 2.2rem;
+  }
+
+  .navigation a {
+    font-size: 1.3rem;
+  }
+
+  .register-button,
+  .login-button {
+    padding: 0.85rem 1.4rem;
+    font-size: 1.2rem;
+  }
+
+
+  /* =========================
+     HERO
+     ========================= */
+
+  .hero {
+    grid-template-columns: 780px 540px;
+    max-width: 1380px;
+    gap: 5rem;
+    transform: translate(2.5rem, 0rem);
+  }
+
+  .hero-content {
+    max-width: 780px;
+  }
+
+  .eyebrow {
+    font-size: 1.45rem;
+  }
+
+  .hero h1 {
+    max-width: 760px;
+    font-size: 4.6rem;
+    line-height: 1.05;
+  }
+
+  .hero-description {
+    max-width: 680px;
+    font-size: 1.55rem;
+  }
+
+  .financing-section h2 {
+    font-size: 1.6rem;
+  }
+
+
+  /* =========================
+     PREVIEW CARD
+     ========================= */
+
+  .calculator-preview {
+    max-width: 540px;
+    padding: 2.1rem;
+  }
+
+  .preview-header span {
+    font-size: 1.15rem;
+  }
+
+  .preview-label {
+    font-size: 1.2rem;
+  }
+
+  .preview-property strong {
+    font-size: 1.8rem;
+  }
+
+  .preview-kpis span {
+    font-size: 1.2rem;
+  }
+
+  .preview-kpis strong {
+    font-size: 1.85rem;
+  }
+
+  .preview-example-note {
+    font-size: 1.1rem;
+  }
+
+
+  /* =========================
+     BENEFITS
+     ========================= */
+
+  .hero-benefits {
+    max-width: 1100px;
+    gap: 3rem;
+  }
+
+  .hero-benefit-icon {
+    width: 54px;
+    height: 54px;
+  }
+
+  .hero-benefit>div:last-child strong {
+    font-size: 1.4rem;
+  }
+
+  .hero-benefit>div:last-child span {
+    font-size: 1.2rem;
+  }
+
+  .hero-scroll-link {
+    font-size: 1.25rem;
+    bottom: 5rem;
+  }
+
+
+  /* =========================
+     HOW IT WORKS
+     ========================= */
+
+  .how-it-works {
+    max-width: 1800px;
+    padding: 4.5rem 5rem;
+  }
+
+  .how-header h2 {
+    max-width: 850px;
+    font-size: 3.5rem;
+  }
+
+  .how-header .section-label {
+    font-size: 1.1rem;
+  }
+
+  .how-intro {
+    width: 340px;
+    font-size: 1.3rem;
+  }
+
+  .steps {
+    gap: 4rem;
+  }
+
+  .step h3 {
+    font-size: 1.55rem;
+  }
+
+  .step p {
+    max-width: 440px;
+    font-size: 1.25rem;
+  }
+
+
+  /* =========================
+     ABOUT
+     ========================= */
+
+  .about-section {
+    max-width: 1800px;
+
+    /* saglabājam tavas izvēlētās proporcijas */
+    grid-template-columns: 0.8fr 1.25fr 1.2fr;
+
+    padding: 5rem 0 5rem 5rem;
+    gap: 3.5rem;
+  }
+
+  .about-heading .section-label {
+    font-size: 1.1rem;
+  }
+
+  .about-heading h2 {
+    font-size: 3.9rem;
+  }
+
+  .about-text h3 {
+    font-size: 1.75rem;
+  }
+
+  .about-description {
+    font-size: 1.25rem;
+    line-height: 1.65;
+  }
+
+  .about-highlight {
+    font-size: 1.25rem;
+    padding: 1.5rem 1.6rem;
+  }
+
+  .about-image-caption {
+    font-size: 1.7rem;
+  }
+
+
+  /* =========================
+     FAQ
+     ========================= */
+
+  .faq-section {
+    max-width: 1800px;
+    padding: 5rem 5.5rem;
+    gap: 6rem;
+  }
+
+  .faq-heading .section-label {
+    font-size: 1.1rem;
+  }
+
+  .faq-heading h2 {
+    font-size: 3.7rem;
+  }
+
+  .faq-intro {
+    max-width: 420px;
+    font-size: 1.3rem;
+  }
+
+  .faq-question {
+    padding: 1.6rem 1.75rem;
+    font-size: 1.3rem;
+  }
+
+  .faq-plus {
+    width: 34px;
+    height: 34px;
+    font-size: 1.5rem;
+  }
+
+  .faq-answer p {
+    max-width: 760px;
+    font-size: 1.2rem;
+  }
+
+
+  /* =========================
+     FOOTER
+     ========================= */
+
+  .footer-inner {
+    max-width: 1800px;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  .footer-logo {
+    width: 250px;
+  }
+
+  .footer-brand span {
+    font-size: 1.25rem;
+  }
+
+  .footer-nav {
+    gap: 2.5rem;
+  }
+
+  .footer-nav a {
+    font-size: 1.25rem;
+  }
+
+  .footer-contact,
+  .footer-contact a {
+    font-size: 1.25rem;
+  }
+}
+
 
 /* =========================
    MOBILE
