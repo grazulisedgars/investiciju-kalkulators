@@ -10,8 +10,10 @@
 }
 
 .edit-property-modal {
-    width: 100%;
-    max-width: 520px;
+    width: 90%;
+    max-width: 850px;
+    max-height: 92vh;
+    overflow-y: auto;
     background: #ffffff;
     color: #173e30;
     border-radius: 16px;
@@ -135,4 +137,96 @@
 .edit-property-field label,
 .edit-property-field input {
     color: #111111;
+}
+
+/* Modāļa ritināšana */
+
+.edit-property-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Sadaļas */
+
+.edit-property-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e0e9e3;
+}
+
+.edit-property-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.edit-property-section h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #111111;
+}
+
+/* Divi ievades lauki vienā rindā */
+
+.edit-property-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+/* Saglabāšanas poga */
+
+.edit-property-save {
+    background: #145b42;
+    color: #ffffff;
+    border: 1px solid #145b42;
+    border-radius: 8px;
+
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.edit-property-save:hover:not(:disabled) {
+    background: #0e4531;
+}
+
+.edit-property-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.edit-property-error {
+    margin-top: 16px;
+    padding: 12px;
+    background: #fff1f0;
+    color: #b42318;
+    border: 1px solid #fecdca;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+/* Mobilā versija */
+
+@media (max-width: 600px) {
+    .edit-property-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .edit-property-fields-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-property-actions {
+        flex-wrap: wrap;
+    }
 }

@@ -92,6 +92,81 @@
     margin-top: 16px;
 }
 
+/* Īpašuma tirgus vērtības kartīte */
+
+.free-overview-market-value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin-top: 16px;
+    padding: 22px 24px;
+
+    background: #f4faf6;
+    border: 1px solid #dcebe1;
+    border-radius: 10px;
+}
+
+.free-overview-market-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.free-overview-market-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    width: 46px;
+    height: 46px;
+
+    background: #e1f0e7;
+    color: #175a42;
+    border-radius: 10px;
+}
+
+.free-overview-market-info h3 {
+    margin: 0 0 5px;
+    color: #173e30;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.free-overview-market-info p {
+    margin: 0;
+    color: #7a8980;
+    font-size: 12px;
+}
+
+.free-overview-market-result strong {
+    color: #173e30;
+    font-size: 18px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Mobilā versija */
+
+@media (max-width: 600px) {
+    .free-overview-market-value {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+        padding: 18px;
+    }
+
+    .free-overview-market-result {
+        padding-left: 62px;
+    }
+
+    .free-overview-market-result strong {
+        font-size: 18px;
+    }
+}
+
 /* Mobilā versija */
 
 @media (max-width: 768px) {

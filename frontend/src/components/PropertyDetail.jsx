@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./PropertyDetail.css";
 import FreeAnalysisOverview from "./FreeAnalysisOverview";
 import PropertyDiary from "./PropertyDiary";
@@ -7,12 +7,88 @@ import {
     CalendarDays,
     ChartNoAxesCombined,
     LockKeyhole,
+    Pencil,
+    EllipsisVertical,
+    ImagePlus,
+    ImageOff,
+    Trash2,
 } from "lucide-react";
 import EditPropertyModal from "./EditPropertyModal";
 
-function PropertyDetail({ property, onBack }) {
+function PropertyDetail({ property, onBack, onPropertyUpdated }) {
     const [activeTab, setActiveTab] = useState("analysis");
     const [editingProperty, setEditingProperty] = useState(null);
+    const [showMoreMenu, setShowMoreMenu] = useState(false);
+
+    const moreMenuRef = useRef(null);
+
+    useEffect(() => {
+        if (!showMoreMenu) return;
+
+        function handleClickOutside(event) {
+            if (
+                moreMenuRef.current &&
+                !moreMenuRef.current.contains(event.target)
+            ) {
+                setShowMoreMenu(false);
+            }
+        }
+
+        function handleEscape(event) {
+            if (event.key === "Escape") {
+                setShowMoreMenu(false);
+            }
+        }
+
+        document.addEventListener("pointerdown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("pointerdown", handleClickOutside);
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [showMoreMenu]);
+
+    async function handlePropertyUpdate(updatedProperty) {
+        const response = await fetch(
+            `http://localhost:8000/properties/${updatedProperty.property_id}`,
+            {
+                method: "PATCH",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    property_name: updatedProperty.property_name.trim(),
+                    address: updatedProperty.address?.trim() || null,
+                    purchase_price: Number(updatedProperty.purchase_price),
+                    area: Number(updatedProperty.area),
+                    market_value:
+                        updatedProperty.market_value === "" ||
+                            updatedProperty.market_value == null
+                            ? null
+                            : Number(updatedProperty.market_value),
+                    renovation_cost_per_m2: Number(
+                        updatedProperty.renovation_cost_per_m2
+                    ),
+                    monthly_rent: Number(updatedProperty.monthly_rent),
+                    occupancy: Number(updatedProperty.occupancy),
+                    down_payment_percent:
+                        updatedProperty.financing_type === "mortgage"
+                            ? Number(updatedProperty.down_payment_percent)
+                            : null,
+                }),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Neizdevās saglabāt īpašuma izmaiņas.")
+        }
+
+        const savedProperty = await response.json();
+
+        onPropertyUpdated(savedProperty);
+    }
 
     if (!property) return null;
 
@@ -58,24 +134,58 @@ function PropertyDetail({ property, onBack }) {
 
                     <div className="property-detail-actions">
 
+                        {/*Rediģēt īpašumu */}
                         <button
                             type="button"
                             className="property-detail-edit"
                             onClick={() => setEditingProperty({ ...property })}
                         >
-                            ✎ Rediģēt īpašumu
+                            <Pencil size={16} strokeWidth={1.8} />
+                            Rediģēt īpašumu
                         </button>
+                    </div>
+
+                    {/*Papildu darbības */}
+                    <div
+                        className="property-detail-more-wrapper"
+                        ref={moreMenuRef}>
 
                         <button
                             type="button"
                             className="property-detail-more"
-                            disabled
-                            title="Papildu darbības pieslēgsim nākamajā solī"
+                            onClick={() => setShowMoreMenu(!showMoreMenu)}
                             aria-label="Papildu darbības"
+                            aria-expanded={showMoreMenu}
                         >
-                            ⋮
+                            <EllipsisVertical size={20} strokeWidth={2} />
                         </button>
 
+                        {showMoreMenu && (
+                            <div className="property-detail-dropdown">
+
+                                <button type="button">
+                                    <ImagePlus size={17} strokeWidth={1.8} />
+                                    <span>Mainīt bildi</span>
+                                </button>
+
+                                {property.image_url && (
+                                    <button type="button">
+                                        <ImageOff size={17} strokeWidth={1.8} />
+                                        <span>Dzēst bildi</span>
+                                    </button>
+                                )}
+
+                                <div className="property-detail-dropdown-divider" />
+
+                                <button
+                                    type="button"
+                                    className="property-detail-delete-option"
+                                >
+                                    <Trash2 size={17} strokeWidth={1.8} />
+                                    <span>Dzēst īpašumu</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -101,7 +211,7 @@ function PropertyDetail({ property, onBack }) {
 
                         <h1>{property.property_name || "Mans īpašums"}</h1>
 
-                        <p>{property.property_address || "Adrese nav norādīta"}</p>
+                        <p>{property.address || "Adrese nav norādīta"}</p>
 
                         <div className="property-detail-info">
 
@@ -191,6 +301,7 @@ function PropertyDetail({ property, onBack }) {
                 editingProperty={editingProperty}
                 setEditingProperty={setEditingProperty}
                 onClose={() => setEditingProperty(null)}
+                onSave={handlePropertyUpdate}
             />
         </div>
     );

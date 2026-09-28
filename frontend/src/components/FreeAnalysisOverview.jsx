@@ -1,3 +1,4 @@
+import { House } from "lucide-react";
 import "./FreeAnalysisOverview.css";
 
 function FreeAnalysisOverview({ property }) {
@@ -76,18 +77,6 @@ function FreeAnalysisOverview({ property }) {
                             <strong>{formatCurrency(renovationTotal)}</strong>
                         </div>
 
-                        <div className="free-overview-row">
-                            <span>Potenciālā tirgus vērtība</span>
-
-                            <strong>
-                                {property.market_value !== null &&
-                                    property.market_value !== undefined &&
-                                    property.market_value !== ""
-                                    ? formatCurrency(property.market_value)
-                                    : "Nav norādīta"}
-                            </strong>
-                        </div>
-
                         <div className="free-overview-row total">
                             <span>Kopējā investīcija</span>
                             <strong>{formatCurrency(totalInvestment)}</strong>
@@ -124,8 +113,34 @@ function FreeAnalysisOverview({ property }) {
 
                     </div>
                 </div>
+            </div>
+
+            {/* Īpašuma tirgus vērtība */}
+            <div className="free-overview-market-value">
+
+                <div className="free-overview-market-info">
+                    <div className="free-overview-market-icon">
+                        <House size={22} strokeWidth={1.8} />
+                    </div>
+
+                    <div>
+                        <h3>Īpašuma tirgus novērtējums</h3>
+                        <p>Lietotāja norādītā potenciālā tirgus vērtība</p>
+                    </div>
+                </div>
+
+                <div className="free-overview-market-result">
+                    <strong>
+                        {property.market_value !== null &&
+                            property.market_value !== undefined &&
+                            property.market_value !== ""
+                            ? formatCurrency(property.market_value)
+                            : "Nav norādīta"}
+                    </strong>
+                </div>
 
             </div>
+
 
             {/*Hipotekārais finansējums */}
             {property.financing_type === "mortgage" && (

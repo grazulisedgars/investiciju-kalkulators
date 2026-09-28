@@ -48,13 +48,6 @@
     font-weight: 600;
 }
 
-
-.property-detail-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
 .property-detail-edit {
     display: flex;
     align-items: center;
@@ -256,6 +249,114 @@
     color: #718078;
     font-size: 14px;
     line-height: 1.7;
+}
+
+/* Three dots dropdown */
+
+.property-detail-more-wrapper {
+    position: relative;
+}
+
+.property-detail-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+
+    width: 190px;
+    padding: 6px;
+
+    background: #ffffff;
+    border: 1px solid #e2e8e5;
+    border-radius: 10px;
+
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+
+    z-index: 100;
+}
+
+.property-detail-dropdown button {
+    display: block;
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+
+    color: #172b23;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.property-detail-dropdown button:hover {
+    background: #f0f5f2;
+}
+
+.property-detail-dropdown-divider {
+    height: 1px;
+    margin: 5px 0;
+    background: #e2e8e5;
+}
+
+.property-detail-dropdown .property-detail-delete-option {
+    color: #c0392b;
+}
+
+.property-detail-dropdown .property-detail-delete-option:hover {
+    background: #fff1f0;
+}
+
+/* Galvenes darbību pogas */
+
+.property-detail-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.property-detail-more-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.property-detail-edit,
+.property-detail-dropdown button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.property-detail-edit {
+    white-space: nowrap;
+}
+
+/* Dropdown ikonu un teksta izlīdzināšana */
+
+.property-detail-dropdown button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+}
+
+.property-detail-dropdown button svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+}
+
+.property-detail-dropdown button span {
+    flex: 1;
+    white-space: nowrap;
 }
 
 /* Mazāki ekrāni */

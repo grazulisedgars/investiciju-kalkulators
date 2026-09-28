@@ -849,6 +849,9 @@ function App() {
       {selectedProperty && !showDashboard && (
         <PropertyDetail
           property={selectedProperty}
+          onPropertyUpdated={(updatedProperty) => {
+            setSelectedProperty(updatedProperty);
+          }}
           onBack={() => {
             setSelectedProperty(null);
             setShowDashboard(true)
