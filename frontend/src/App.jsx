@@ -15,6 +15,7 @@ import propfolioFooterLogo from "./assets/propfolio-footer-logo-traced.svg";
 import propertyDataIcon from "./assets/icons/propfolio-step-01-property-data.svg";
 import calculatorIcon from "./assets/icons/propfolio-step-02-calculator.svg";
 import investmentIcon from "./assets/icons/propfolio-step-03-investment.svg";
+import PropertyDetail from "./components/PropertyDetail";
 
 function App() {
   const [financing, setFinancing] = useState(null);
@@ -32,6 +33,7 @@ function App() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
   const [showLogin, setShowLogin] = useState(false);
   const [propertyFlow, setPropertyFlow] = useState(null);
@@ -237,7 +239,7 @@ function App() {
 
   return (
     <main
-      className={`app ${showDashboard ? "app-dashboard" : ""}`}
+      className={`app ${showDashboard || selectedProperty ? "app-dashboard" : ""}`}
     >
 
       {/* Header */}
@@ -245,7 +247,8 @@ function App() {
       {financing === null &&
         !showDashboard &&
         !showRegistration &&
-        !showLogin && (
+        !showLogin &&
+        !selectedProperty && (
           <div
             className="hero-background"
             style={{ "--hero-background": `url(${propfolioBackground})` }}
@@ -471,6 +474,7 @@ function App() {
       {!showRegistration &&
         !showLogin &&
         !showDashboard &&
+        !selectedProperty &&
         financing === null && (
           <>
             <section className="how-it-works" id="how-it-works">
@@ -820,6 +824,7 @@ function App() {
 
             setCurrentUser(null);
             setShowDashboard(false);
+            setSelectedProperty(null);
             setFinancing(null);
             resetCalculator();
           }}
@@ -834,6 +839,20 @@ function App() {
             setShowLogin(false);
           }
           }
+          onOpenProperty={(property) => {
+            setSelectedProperty(property);
+            setShowDashboard(false);
+          }}
+        />
+      )}
+
+      {selectedProperty && !showDashboard && (
+        <PropertyDetail
+          property={selectedProperty}
+          onBack={() => {
+            setSelectedProperty(null);
+            setShowDashboard(true)
+          }}
         />
       )}
 

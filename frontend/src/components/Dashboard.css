@@ -404,6 +404,10 @@
 .property-card-arrow {
     color: #145b42;
     font-size: 1.35rem;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
 }
 
 .dashboard-page {

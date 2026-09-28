@@ -14,6 +14,7 @@ function Dashboard({
     user,
     onLogout,
     onAddProperty,
+    onOpenProperty,
 }) {
     const [properties, setProperties] = useState([]);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -577,9 +578,14 @@ function Dashboard({
                                                         : "-"}
                                                 </span>
 
-                                                <span className="property-card-arrow">
+                                                <button
+                                                    type="button"
+                                                    className="property-card-arrow"
+                                                    onClick={() => onOpenProperty(property)}
+                                                    aria-label={`Atvērt īpašumu ${property.property_name}`}
+                                                >
                                                     →
-                                                </span>
+                                                </button>
                                             </div>
                                         </div>
                                     </article>

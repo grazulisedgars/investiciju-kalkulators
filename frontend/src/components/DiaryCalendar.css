@@ -1,0 +1,99 @@
+.diary-calendar {
+    width: 100%;
+    max-width: 720px;
+}
+
+.diary-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.diary-calendar-header h3 {
+    margin: 0;
+    text-transform: capitalize;
+    color: #173e30;
+    font-size: 20px;
+}
+
+.diary-calendar-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.diary-calendar-controls button {
+    width: 36px;
+    height: 36px;
+    background: #f1f7f3;
+    border: 1px solid #dce9df;
+    border-radius: 8px;
+    color: #145b42;
+    cursor: pointer;
+}
+
+.diary-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.diary-calendar-weekday {
+    text-align: center;
+    padding: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #7a8980;
+}
+
+.diary-calendar-day {
+    aspect-ratio: 1;
+    border: 1px solid #e1eae4;
+    border-radius: 9px;
+    background: #f9fcfa;
+    color: #173e30;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.diary-calendar-day:hover {
+    background: #e9f4ec;
+    border-color: #a9cfb5;
+}
+
+.diary-calendar-day.selected {
+    background: #145b42;
+    color: #ffffff;
+    border-color: #145b42;
+}
+
+.diary-selected-date {
+    margin-top: 28px;
+    padding: 24px;
+    background: #f7faf8;
+    border: 1px solid #e1eae4;
+    border-radius: 12px;
+}
+
+.diary-selected-date h4 {
+    margin: 0 0 10px;
+    color: #173e30;
+}
+
+.diary-selected-date p {
+    margin-bottom: 18px;
+}
+
+.diary-selected-date button {
+    background: #145b42;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    padding: 11px 18px;
+    cursor: pointer;
+}
+
+.diary-selected-date button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -1,0 +1,138 @@
+.edit-property-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.edit-property-modal {
+    width: 100%;
+    max-width: 520px;
+    background: #ffffff;
+    color: #173e30;
+    border-radius: 16px;
+    padding: 28px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+.edit-property-modal h2 {
+    margin: 0 0 16px;
+    font-size: 22px;
+    color: #173e30;
+}
+
+.edit-property-modal p {
+    color: #527265;
+    margin-bottom: 20px;
+}
+
+/* Modāļa aizvēršanas poga */
+
+.edit-property-close {
+    background: #ffffff;
+    color: #145b42;
+    border: 1px solid #dce6df;
+    border-radius: 8px;
+
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-property-close:hover {
+    background: #f1f8f5;
+    border-color: #145b42;
+}
+
+.edit-property-close:focus-visible {
+    outline: 2px solid #145b42;
+    outline-offset: 3px;
+}
+
+/* Modāļa virsraksts */
+
+.edit-property-modal-header {
+    margin-bottom: 24px;
+}
+
+.edit-property-modal-header h2 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    color: #173e30;
+}
+
+.edit-property-modal-header p {
+    margin: 0;
+    font-size: 13px;
+    color: #75867c;
+}
+
+/* Ievades lauki */
+
+.edit-property-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.edit-property-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.edit-property-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #173e30;
+}
+
+.edit-property-field input {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px 14px;
+    border: 1px solid #dce6df;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #173e30;
+    font-size: 14px;
+
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.edit-property-field input:focus {
+    border-color: #145b42;
+    box-shadow: 0 0 0 3px rgba(20, 91, 66, 0.08);
+}
+
+/* Apakšējās pogas */
+
+.edit-property-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e9e3;
+}
+
+/* Modāļa teksta krāsas */
+
+.edit-property-modal h2,
+.edit-property-modal p,
+.edit-property-field label,
+.edit-property-field input {
+    color: #111111;
+}
