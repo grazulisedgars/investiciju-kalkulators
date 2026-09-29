@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./EditPropertyModal.css";
 
 function EditPropertyModal({
@@ -9,6 +9,22 @@ function EditPropertyModal({
 }) {
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState("");
+
+    useEffect(() => {
+        if (!editingProperty) return;
+
+        function handleEscape(event) {
+            if (event.key === "Escape" && !isSaving) {
+                onClose();
+            }
+        }
+
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [editingProperty, isSaving, onClose]);
 
     async function handleSave() {
         if (isSaving || !editingProperty) return;
@@ -113,7 +129,14 @@ function EditPropertyModal({
     }
 
     return (
-        <div className="edit-property-overlay">
+        <div
+            className="edit-property-overlay"
+            onClick={(event) => {
+                if (event.target === event.currentTarget && !isSaving) {
+                    onClose();
+                }
+            }}
+        >
             <div
                 className="edit-property-modal"
                 role="dialog"
@@ -239,6 +262,7 @@ function EditPropertyModal({
                         type="button"
                         className="edit-property-close"
                         onClick={onClose}
+                        disabled={isSaving}
                     >
                         Atcelt
                     </button>

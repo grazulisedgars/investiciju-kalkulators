@@ -12,6 +12,9 @@ import {
     ImagePlus,
     ImageOff,
     Trash2,
+    House,
+    Landmark,
+    Wallet,
 } from "lucide-react";
 import EditPropertyModal from "./EditPropertyModal";
 
@@ -19,6 +22,10 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
     const [activeTab, setActiveTab] = useState("analysis");
     const [editingProperty, setEditingProperty] = useState(null);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
 
     const moreMenuRef = useRef(null);
 
@@ -48,6 +55,24 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
             document.removeEventListener("keydown", handleEscape);
         };
     }, [showMoreMenu]);
+
+    // Dzēšanas modal aizvēršana ar Escape
+    useEffect(() => {
+        if (!showDeleteModal) return;
+
+        function handleDeleteModalEscape(event) {
+            if (event.key === "Escape" && !isDeleting) {
+                setShowDeleteModal(false);
+                setDeleteError("");
+            }
+        }
+
+        document.addEventListener("keydown", handleDeleteModalEscape);
+
+        return () => {
+            document.removeEventListener("keydown", handleDeleteModalEscape);
+        };
+    }, [showDeleteModal, isDeleting]);
 
     async function handlePropertyUpdate(updatedProperty) {
         const response = await fetch(
@@ -88,6 +113,103 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
         const savedProperty = await response.json();
 
         onPropertyUpdated(savedProperty);
+    }
+
+    async function handleImageUpload(file) {
+        if (!file || !property) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        setShowMoreMenu(false);
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/properties/${property.property_id}/image`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    body: formData,
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Neizdevās augšupielādēt attēlu.");
+            }
+
+            const data = await response.json();
+
+            onPropertyUpdated({
+                ...property,
+                image_url: data.image_url,
+            });
+
+        } catch (error) {
+            console.error("Attēla augšupielādes kļūda:", error);
+            alert(error.message);
+        }
+
+    }
+
+    async function handleDeleteImage() {
+        if (!property || !property.image_url) return;
+
+        setShowMoreMenu(false);
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/properties/${property.property_id}/image`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Neizdevās izdzēst īpašuma attēlu.");
+            }
+
+            onPropertyUpdated({
+                ...property,
+                image_url: null,
+            });
+
+        } catch (error) {
+            console.error("Attēla dzēšanas kļūda:", error);
+            alert(error.message);
+        }
+    }
+
+    async function handleDeleteProperty() {
+        if (!property || isDeleting) return;
+
+        setIsDeleting(true);
+        setDeleteError("");
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/properties/${property.property_id}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Neizdevās izdzēst īpašumu.");
+            }
+
+            setShowDeleteModal(false);
+
+            // Atgriežamies Dashboard skatā
+            onBack();
+
+        } catch (error) {
+            console.error("Īpašuma dzēšanas kļūda:", error);
+            setDeleteError(error.message || "Radās neparadzēta kļūda.");
+        } finally {
+            setIsDeleting(false);
+        }
     }
 
     if (!property) return null;
@@ -146,6 +268,21 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     </div>
 
                     {/*Papildu darbības */}
+                    <input
+                        id={`detail-property-image-${property.property_id}`}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={(event => {
+                            const file = event.target.files?.[0];
+
+                            if (file) {
+                                handleImageUpload(file);
+                            }
+
+                            event.target.value = "";
+                        })}
+                    />
                     <div
                         className="property-detail-more-wrapper"
                         ref={moreMenuRef}>
@@ -163,13 +300,27 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                         {showMoreMenu && (
                             <div className="property-detail-dropdown">
 
-                                <button type="button">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowMoreMenu(false);
+
+                                        document
+                                            .getElementById(
+                                                `detail-property-image-${property.property_id}`
+                                            )
+                                            ?.click();
+                                    }}
+                                >
                                     <ImagePlus size={17} strokeWidth={1.8} />
                                     <span>Mainīt bildi</span>
                                 </button>
 
                                 {property.image_url && (
-                                    <button type="button">
+                                    <button
+                                        type="button"
+                                        onClick={handleDeleteImage}
+                                    >
                                         <ImageOff size={17} strokeWidth={1.8} />
                                         <span>Dzēst bildi</span>
                                     </button>
@@ -180,6 +331,11 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                                 <button
                                     type="button"
                                     className="property-detail-delete-option"
+                                    onClick={() => {
+                                        setShowMoreMenu(false);
+                                        setDeleteError("");
+                                        setShowDeleteModal(true);
+                                    }}
                                 >
                                     <Trash2 size={17} strokeWidth={1.8} />
                                     <span>Dzēst īpašumu</span>
@@ -202,7 +358,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                                 alt={property.property_name || "Īpašuma attēls"}
                             />
                         ) : (
-                            <span>⌂</span>
+                            <House size={28} strokeWidth={1.5} />
                         )}
                     </div>
 
@@ -232,6 +388,19 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
 
                         </div>
 
+                    </div>
+                    <div className="property-detail-financing">
+                        {property.financing_type === "mortgage" ? (
+                            <>
+                                <Landmark size={17} strokeWidth={1.8} />
+                                <span>Ar hipotēku</span>
+                            </>
+                        ) : property.financing_type === "cash" ? (
+                            <>
+                                <Wallet size={17} strokeWidth={1.8} />
+                                <span>Par saviem līdzekļiem</span>
+                            </>
+                        ) : null}
                     </div>
 
                 </div>
@@ -303,6 +472,71 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                 onClose={() => setEditingProperty(null)}
                 onSave={handlePropertyUpdate}
             />
+
+            {showDeleteModal && (
+                <div
+                    className="property-delete-overlay"
+                    onClick={(event) => {
+                        if (
+                            event.target === event.currentTarget &&
+                            !isDeleting
+                        ) {
+                            setShowDeleteModal(false);
+                            setDeleteError("");
+                        }
+                    }}
+                >
+                    <div
+                        className="property-delete-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="property-delete-title"
+                    >
+                        <div className="property-delete-icon">
+                            <Trash2 size={24} strokeWidth={1.8} />
+                        </div>
+
+                        <h2 id="property-delete-title">
+                            Dzēst īpašumu?
+                        </h2>
+
+                        <p>
+                            Vai tiešām vēlies dzēst īpašumu
+                            <strong> {property.property_name}</strong>?
+                        </p>
+
+                        <p className="property-delete-warning">
+                            Šo darbību nevarēs atsaukt.
+                        </p>
+
+                        {deleteError && (
+                            <p className="property-delete-error" role="alert">
+                                {deleteError}
+                            </p>
+                        )}
+
+                        <div className="property-delete-actions">
+                            <button
+                                type="button"
+                                className="property-delete-cancel"
+                                onClick={() => setShowDeleteModal(false)}
+                                disabled={isDeleting}
+                            >
+                                Atcelt
+                            </button>
+
+                            <button
+                                type="button"
+                                className="property-delete-confirm"
+                                onClick={handleDeleteProperty}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? "Dzēš..." : "Dzēst īpašumu"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

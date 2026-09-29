@@ -60,12 +60,38 @@
     font-size: 13px;
 }
 
+.property-detail-edit:hover {
+    background: #f0f7f3;
+    border-color: #a9c7b5;
+}
+
 .property-detail-more {
-    background: transparent;
-    border: none;
-    color: #173e30;
-    font-size: 23px;
-    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 39px;
+    height: 39px;
+
+    padding: 0;
+    border: 1px solid #d9e5dd;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #175a42;
+
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.property-detail-more:hover {
+    background: #f0f7f3;
+    border-color: #a9c7b5;
+}
+
+.property-detail-more:focus-visible {
+    outline: 2px solid #175a42;
+    outline-offset: 3px;
 }
 
 .property-detail-edit:disabled,
@@ -80,6 +106,28 @@
     display: flex;
     align-items: center;
     gap: 20px;
+    position: relative;
+}
+
+.property-detail-financing {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 9px 13px;
+
+    background: #edf6f0;
+    border: 1px solid #d9e9df;
+    border-radius: 8px;
+
+    color: #236447;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .property-detail-image {
@@ -359,6 +407,105 @@
     white-space: nowrap;
 }
 
+/* Īpašuma dzēšanas apstiprinājuma modālis */
+
+.property-delete-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.property-delete-modal {
+    width: 100%;
+    max-width: 440px;
+    padding: 28px;
+
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+}
+
+.property-delete-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    height: 48px;
+    margin-bottom: 18px;
+
+    color: #c0392b;
+    background: #fff1f0;
+    border-radius: 12px;
+}
+
+.property-delete-modal h2 {
+    margin: 0 0 12px;
+    color: #111111;
+    font-size: 21px;
+}
+
+.property-delete-modal p {
+    color: #56665e;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.property-delete-modal p strong {
+    color: #111111;
+}
+
+.property-delete-warning {
+    font-size: 13px !important;
+}
+
+.property-delete-error {
+    color: #c0392b !important;
+}
+
+.property-delete-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.property-delete-actions button {
+    padding: 11px 17px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.property-delete-cancel {
+    background: #ffffff;
+    color: #173e30;
+    border: 1px solid #dfe7e1;
+}
+
+.property-delete-confirm {
+    background: #c0392b;
+    color: #ffffff;
+    border: 1px solid #c0392b;
+}
+
+.property-delete-confirm:hover:not(:disabled) {
+    background: #a93226;
+}
+
+.property-delete-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* Mazāki ekrāni */
 
 @media (max-width: 768px) {
@@ -405,5 +552,11 @@
 
     .property-detail-tabs button {
         white-space: nowrap;
+    }
+
+    .property-detail-financing {
+        position: static;
+        width: fit-content;
+        margin-top: 16px;
     }
 }

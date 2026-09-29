@@ -1,4 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+    ImagePlus,
+    ImageOff,
+    Pencil,
+    Trash2,
+    House,
+} from "lucide-react";
 import propfolioLogo from "../assets/icons/propfolio-logo.svg";
 import "./Dashboard.css"
 import userIcon from "../assets/icons/user.svg";
@@ -19,7 +26,60 @@ function Dashboard({
     const [properties, setProperties] = useState([]);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [openPropertyMenu, setOpenPropertyMenu] = useState(null);
+
+    const profileMenuRef = useRef(null);
+    const propertyMenuRef = useRef(null);
+
+    useEffect(() => {
+        if (!showProfileMenu && openPropertyMenu === null) return;
+
+        function handleClickOutside(event) {
+            const clickedProfileMenu =
+                profileMenuRef.current?.contains(event.target);
+
+            const clickedPropertyMenu =
+                propertyMenuRef.current?.contains(event.target);
+
+            if (!clickedProfileMenu && !clickedPropertyMenu) {
+                setShowProfileMenu(false);
+                setOpenPropertyMenu(null);
+            }
+        }
+
+        function handleEscape(event) {
+            if (event.key === "Escape") {
+                setShowProfileMenu(false);
+                setOpenPropertyMenu(null);
+            }
+        }
+
+        document.addEventListener("pointerdown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("pointerdown", handleClickOutside);
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [showProfileMenu, openPropertyMenu]);
+
     const [editingProperty, setEditingProperty] = useState(null);
+
+    useEffect(() => {
+        if (!editingProperty) return;
+
+        function handleEscape(event) {
+            if (event.key === "Escape") {
+                setEditingProperty(null);
+            }
+        }
+
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [editingProperty]);
+
     const [propertyToDelete, setPropertyToDelete] = useState(null);
     const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
     const [showFaq, setShowFaq] = useState(false);
@@ -291,12 +351,15 @@ function Dashboard({
                         className="dashboard-logo"
                     />
 
-                    <div className="profile-menu-wrapper">
+                    <div className="profile-menu-wrapper" ref={profileMenuRef}>
                         <button
                             type="button"
                             className="profile-toggle"
                             aria-label="Atvērt profila izvēlni"
-                            onClick={() => setShowProfileMenu(!showProfileMenu)}
+                            onClick={() => {
+                                setShowProfileMenu((previous) => !previous);
+                                setOpenPropertyMenu(null);
+                            }}
                         >
                             <span className="profile-button">
                                 {user?.first_name?.charAt(0).toUpperCase()}
@@ -444,21 +507,30 @@ function Dashboard({
                                                 />
                                             ) : (
                                                 <div className="property-image-placeholder">
-                                                    Īpašuma attēls
+                                                    <House size={50} strokeWidth={1.5} />
                                                 </div>
                                             )}
-                                            <div className="property-card-menu-wrapper">
+                                            <div
+                                                className="property-card-menu-wrapper"
+                                                ref={
+                                                    openPropertyMenu === property.property_id
+                                                        ? propertyMenuRef
+                                                        : null
+                                                }
+                                            >
                                                 <button
                                                     type="button"
                                                     className="property-card-menu"
                                                     aria-label="Īpašuma izvēlne"
-                                                    onClick={() =>
-                                                        setOpenPropertyMenu(
-                                                            openPropertyMenu === property.property_id
+                                                    onClick={() => {
+                                                        setOpenPropertyMenu((previous) =>
+                                                            previous === property.property_id
                                                                 ? null
                                                                 : property.property_id
-                                                        )
-                                                    }
+                                                        );
+
+                                                        setShowProfileMenu(false);
+                                                    }}
                                                 >
                                                     ⋮
                                                 </button>
@@ -477,7 +549,8 @@ function Dashboard({
                                                                     ?.click();
                                                             }}
                                                         >
-                                                            Mainīt bildi
+                                                            <ImagePlus size={17} strokeWidth={1.8} />
+                                                            <span>Mainīt bildi</span>
                                                         </button>
 
                                                         {property.image_url && (
@@ -487,7 +560,8 @@ function Dashboard({
                                                                     handleDeleteImage(property.property_id)
                                                                 }
                                                             >
-                                                                Dzēst bildi
+                                                                <ImageOff size={17} strokeWidth={1.8} />
+                                                                <span>Dzēst bildi</span>
                                                             </button>
                                                         )}
 
@@ -498,7 +572,8 @@ function Dashboard({
                                                                 setOpenPropertyMenu(null);
                                                             }}
                                                         >
-                                                            Rediģēt īpašumu
+                                                            <Pencil size={17} strokeWidth={1.8} />
+                                                            <span>Rediģēt īpašumu</span>
                                                         </button>
 
                                                         <button
@@ -509,7 +584,8 @@ function Dashboard({
                                                                 setOpenPropertyMenu(null);
                                                             }}
                                                         >
-                                                            Dzēst īpašumu
+                                                            <Trash2 size={17} strokeWidth={1.8} />
+                                                            <span>Dzēst īpašumu</span>
                                                         </button>
                                                     </div>
                                                 )}
@@ -1044,7 +1120,14 @@ function Dashboard({
             </main >
 
             {editingProperty && (
-                <div className="edit-property-overlay">
+                <div
+                    className="edit-property-overlay"
+                    onClick={(event) => {
+                        if (event.target === event.currentTarget) {
+                            setEditingProperty(null);
+                        }
+                    }}
+                >
                     <div className="edit-property-modal">
                         <h2>Rediģēt īpašumu</h2>
 

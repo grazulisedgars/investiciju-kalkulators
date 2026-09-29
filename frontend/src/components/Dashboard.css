@@ -290,7 +290,7 @@
     position: absolute;
     top: 42px;
     right: 0;
-    width: 180px;
+    width: 210px;
     padding: 0.45rem;
     border: 1px solid #dfe7e1;
     border-radius: 10px;
@@ -300,15 +300,36 @@
 }
 
 .property-card-dropdown button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+
     width: 100%;
-    padding: 0.7rem 0.8rem;
+    padding: 11px 12px;
+
     border: none;
-    border-radius: 7px;
+    border-radius: 6px;
     background: transparent;
-    color: #26352f;
-    font-size: 0.88rem;
+
+    color: #172b23;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
     text-align: left;
+
     cursor: pointer;
+}
+
+.property-card-dropdown button svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+}
+
+.property-card-dropdown button span {
+    white-space: nowrap;
 }
 
 .property-card-dropdown button:hover {
@@ -316,7 +337,18 @@
 }
 
 .property-card-dropdown .property-delete-button {
-    color: #b42318;
+    margin-top: 6px;
+    padding-top: 14px;
+
+    border: none;
+    border-top: 1px solid #e2e8e5;
+    border-radius: 0;
+
+    color: #c0392b;
+}
+
+.property-card-dropdown .property-delete-button:hover {
+    background: #fff1f0;
 }
 
 .property-card-content {
