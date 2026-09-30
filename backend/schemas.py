@@ -35,22 +35,36 @@ class UserLogin(BaseModel):
 
 class PropertyCreate(BaseModel):
     financing_type: str
-    purchase_price: float
-    area: float
-    renovation_cost_per_m2: float = 0
-    monthly_rent: float = 0
-    occupancy: float = 100
-    down_payment_percent: float | None = None
+    purchase_price: float = Field(gt=0)
+    area: float = Field(gt=0)
+    renovation_cost_per_m2: float = Field(default=0, ge=0)
+
+    monthly_rent: float | None = Field(default=None, ge=0)
+    occupancy: float | None = Field(default=None, ge=0, le=100)
+
+    down_payment_percent: float | None = Field(
+        default=None,
+        ge=0,
+        le=100
+    )
+
     image_url: str | None = None
 
 
 class PropertyUpdate(BaseModel):
     property_name: str
     address: str | None = None
-    purchase_price: float
-    market_value: float | None = None
-    area: float
-    renovation_cost_per_m2: float = 0
-    monthly_rent: float = 0
-    occupancy: float = 100
-    down_payment_percent: float | None = None
+
+    purchase_price: float = Field(gt=0)
+    market_value: float | None = Field(default=None, ge=0)
+    area: float = Field(gt=0)
+    renovation_cost_per_m2: float = Field(default=0, ge=0)
+
+    monthly_rent: float | None = Field(default=None, ge=0)
+    occupancy: float | None = Field(default=None, ge=0, le=100)
+
+    down_payment_percent: float | None = Field(
+        default=None,
+        ge=0,
+        le=100
+    )

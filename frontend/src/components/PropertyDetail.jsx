@@ -96,8 +96,17 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     renovation_cost_per_m2: Number(
                         updatedProperty.renovation_cost_per_m2
                     ),
-                    monthly_rent: Number(updatedProperty.monthly_rent),
-                    occupancy: Number(updatedProperty.occupancy),
+                    monthly_rent:
+                        updatedProperty.monthly_rent === "" ||
+                            updatedProperty.monthly_rent == null
+                            ? null
+                            : Number(updatedProperty.monthly_rent),
+
+                    occupancy:
+                        updatedProperty.occupancy === "" ||
+                            updatedProperty.occupancy == null
+                            ? null
+                            : Number(updatedProperty.occupancy),
                     down_payment_percent:
                         updatedProperty.financing_type === "mortgage"
                             ? Number(updatedProperty.down_payment_percent)
@@ -227,16 +236,30 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
     const renovationPerM2 = Number(property.renovation_cost_per_m2 || 0);
     const renovationTotal = area * renovationPerM2;
 
-    const monthlyRent = Number(property.monthly_rent || 0);
-    const occupancy = Number(property.occupancy ?? 100);
+    const hasRentalData =
+        property.monthly_rent !== null &&
+        property.monthly_rent !== undefined &&
+        property.occupancy !== null &&
+        property.occupancy !== undefined;
 
-    const annualRent = monthlyRent * 12 * (occupancy / 100);
+    const monthlyRent = hasRentalData
+        ? Number(property.monthly_rent)
+        : null;
+
+    const occupancy = hasRentalData
+        ? Number(property.occupancy)
+        : null;
+
+    const annualRent = hasRentalData
+        ? monthlyRent * 12 * (occupancy / 100)
+        : null;
+
     const totalInvestment = purchasePrice + renovationTotal;
 
     const grossYield =
-        totalInvestment > 0
+        hasRentalData && totalInvestment > 0
             ? (annualRent / totalInvestment) * 100
-            : 0;
+            : null;
 
     return (
         <div className="property-detail">
@@ -383,7 +406,11 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
 
                             <div>
                                 <span>Bruto ienesīgums</span>
-                                <strong>{grossYield.toFixed(2)}%</strong>
+                                <strong>
+                                    {grossYield === null
+                                        ? "—"
+                                        : `${grossYield.toFixed(2)}%`}
+                                </strong>
                             </div>
 
                         </div>

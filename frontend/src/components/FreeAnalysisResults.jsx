@@ -22,7 +22,9 @@ function FreeAnalysisResults({
                 <div className="result-item">
                     <span>Gada bruto īres ienākumi</span>
                     <strong>
-                        {Math.round(results.annual_gross_rent).toLocaleString("lv-LV")} €
+                        {results.annual_gross_rent == null
+                            ? "—"
+                            : `${Math.round(results.annual_gross_rent).toLocaleString("lv-LV")} €`}
                     </strong>
                 </div>
 
@@ -36,7 +38,9 @@ function FreeAnalysisResults({
                 <div className="result-item result-highlight">
                     <span>Bruto ienesīgums</span>
                     <strong>
-                        {results.gross_yield.toFixed(2)} %
+                        {results.gross_yield == null
+                            ? "—"
+                            : `${results.gross_yield.toFixed(2)} %`}
                     </strong>
                 </div>
 
@@ -48,7 +52,7 @@ function FreeAnalysisResults({
                         <h3>Vēlies detalizētāku analīzi?</h3>
 
                         <p>
-                            Izveido bezmaksas profilu un iegūsti neto ienesīgumu,
+                            Izveido bezmaksas profilu un iegūsti bruto ienesīgumu,
                             iegādes papildu izmaksas, izdevumu analīzi un iespēju
                             saglabāt īpašumus.
                         </p>

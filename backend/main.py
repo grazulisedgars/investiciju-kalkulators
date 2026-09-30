@@ -8,6 +8,7 @@ from fastapi import (
     Cookie,
     UploadFile,
     File,
+    Query,
 )
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -95,8 +96,8 @@ def calculate_costs(
 def free_analysis(
     purchase_price: float,
     renovation_costs: float = 0,
-    monthly_rent: float = 0,
-    occupancy: float = 100
+    monthly_rent: float | None = Query(default=None, ge=0),
+    occupancy: float | None = Query(default=None, ge=0, le=100)
 ):
     return calculate_free_analysis(
         purchase_price,

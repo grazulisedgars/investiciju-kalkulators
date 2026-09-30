@@ -42,14 +42,27 @@ def calculate_free_analysis(
     monthly_rent,
     occupancy
 ):
-    annual_gross_rent = monthly_rent * 12 * (occupancy / 100)
-
     total_investment = purchase_price + renovation_costs
 
-    if total_investment > 0:
-        gross_yield = (annual_gross_rent / total_investment) * 100
+    has_rental_data = (
+        monthly_rent is not None
+        and occupancy is not None
+    )
+
+    if has_rental_data:
+        annual_gross_rent = (
+            monthly_rent * 12 * (occupancy / 100)
+        )
+
+        if total_investment > 0:
+            gross_yield = (
+                annual_gross_rent / total_investment
+            ) * 100
+        else:
+            gross_yield = 0
     else:
-        gross_yield = 0
+        annual_gross_rent = None
+        gross_yield = None
 
     return {
         "annual_gross_rent": annual_gross_rent,

@@ -40,8 +40,6 @@ function EditPropertyModal({
             "purchase_price",
             "area",
             "renovation_cost_per_m2",
-            "monthly_rent",
-            "occupancy",
         ];
 
         if (
@@ -59,12 +57,34 @@ function EditPropertyModal({
         if (
             Number(editingProperty.purchase_price) <= 0 ||
             Number(editingProperty.area) <= 0 ||
-            Number(editingProperty.renovation_cost_per_m2) < 0 ||
-            Number(editingProperty.monthly_rent) < 0 ||
-            Number(editingProperty.occupancy) < 0 ||
-            Number(editingProperty.occupancy) > 100
+            Number(editingProperty.renovation_cost_per_m2) < 0
         ) {
-            setSaveError("Pārbaudi ievadītās summas, platību un aizpildījumu.");
+            setSaveError("Pārbaudi ievadītās summas un platību.");
+            return;
+        }
+
+        if (
+            editingProperty.monthly_rent !== "" &&
+            editingProperty.monthly_rent != null &&
+            (
+                !Number.isFinite(Number(editingProperty.monthly_rent)) ||
+                Number(editingProperty.monthly_rent) < 0
+            )
+        ) {
+            setSaveError("Pārbaudi mēneša īres maksu.");
+            return;
+        }
+
+        if (
+            editingProperty.occupancy !== "" &&
+            editingProperty.occupancy != null &&
+            (
+                !Number.isFinite(Number(editingProperty.occupancy)) ||
+                Number(editingProperty.occupancy) < 0 ||
+                Number(editingProperty.occupancy) > 100
+            )
+        ) {
+            setSaveError("Aizpildījumam jābūt robežās no 0 līdz 100%.");
             return;
         }
 

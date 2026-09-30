@@ -20,17 +20,30 @@ function FreeAnalysisOverview({ property }) {
 
     const renovationTotal = area * renovationPerM2;
 
-    const monthlyRent = Number(property.monthly_rent || 0);
-    const occupancy = Number(property.occupancy ?? 100);
+    const hasRentalData =
+        property.monthly_rent !== null &&
+        property.monthly_rent !== undefined &&
+        property.occupancy !== null &&
+        property.occupancy !== undefined;
 
-    const annualRent = monthlyRent * 12 * (occupancy / 100);
+    const monthlyRent = hasRentalData
+        ? Number(property.monthly_rent)
+        : null;
+
+    const occupancy = hasRentalData
+        ? Number(property.occupancy)
+        : null;
+
+    const annualRent = hasRentalData
+        ? monthlyRent * 12 * (occupancy / 100)
+        : null;
 
     const totalInvestment = purchasePrice + renovationTotal;
 
     const grossYield =
-        totalInvestment > 0
+        hasRentalData && totalInvestment > 0
             ? (annualRent / totalInvestment) * 100
-            : 0;
+            : null;
 
     const pricePerM2 =
         area > 0 ? purchasePrice / area : 0;
@@ -93,22 +106,38 @@ function FreeAnalysisOverview({ property }) {
 
                         <div className="free-overview-row">
                             <span>Plānotā īres maksa</span>
-                            <strong>{formatCurrency(monthlyRent)} /mēn.</strong>
+                            <strong>
+                                {monthlyRent === null
+                                    ? "—"
+                                    : `${formatCurrency(monthlyRent)} /mēn.`}
+                            </strong>
                         </div>
 
                         <div className="free-overview-row">
                             <span>Gada aizpildījums</span>
-                            <strong>{occupancy}%</strong>
+                            <strong>
+                                {occupancy === null
+                                    ? "—"
+                                    : `${occupancy}%`}
+                            </strong>
                         </div>
 
                         <div className="free-overview-row">
                             <span>Gada bruto īres ienākumi</span>
-                            <strong>{formatCurrency(annualRent)}</strong>
+                            <strong>
+                                {annualRent === null
+                                    ? "—"
+                                    : formatCurrency(annualRent)}
+                            </strong>
                         </div>
 
                         <div className="free-overview-row total">
                             <span>Bruto ienesīgums</span>
-                            <strong>{grossYield.toFixed(2)}%</strong>
+                            <strong>
+                                {grossYield === null
+                                    ? "—"
+                                    : `${grossYield.toFixed(2)}%`}
+                            </strong>
                         </div>
 
                     </div>

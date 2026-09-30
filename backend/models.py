@@ -93,14 +93,14 @@ class Property(Base):
         nullable=False
     )
 
-    monthly_rent: Mapped[float] = mapped_column(
-        default=0,
-        nullable=False
+    monthly_rent: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True
     )
 
-    occupancy: Mapped[float] = mapped_column(
-        default=100,
-        nullable=False
+    occupancy: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True
     )
 
     down_payment_percent: Mapped[float | None] = mapped_column(

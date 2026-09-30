@@ -172,8 +172,19 @@ function Dashboard({
                         renovation_cost_per_m2: Number(
                             editingProperty.renovation_cost_per_m2
                         ),
-                        monthly_rent: Number(editingProperty.monthly_rent),
-                        occupancy: Number(editingProperty.occupancy),
+                        monthly_rent:
+                            editingProperty.monthly_rent === "" ||
+                                editingProperty.monthly_rent === null ||
+                                editingProperty.monthly_rent === undefined
+                                ? null
+                                : Number(editingProperty.monthly_rent),
+
+                        occupancy:
+                            editingProperty.occupancy === "" ||
+                                editingProperty.occupancy === null ||
+                                editingProperty.occupancy === undefined
+                                ? null
+                                : Number(editingProperty.occupancy),
                         down_payment_percent:
                             editingProperty.down_payment_percent === "" ||
                                 editingProperty.down_payment_percent === null
@@ -281,24 +292,32 @@ function Dashboard({
         0
     );
 
-    const totalMonthlyRent = properties.reduce(
+    const propertiesWithRentalData = properties.filter(
+        (property) =>
+            property.monthly_rent !== null &&
+            property.monthly_rent !== undefined &&
+            property.occupancy !== null &&
+            property.occupancy !== undefined
+    );
+
+    const totalMonthlyRent = propertiesWithRentalData.reduce(
         (total, property) =>
-            total + Number(property.monthly_rent || 0),
+            total + Number(property.monthly_rent),
         0
     );
 
     const averageGrossYield =
-        properties.length > 0
-            ? properties.reduce((total, property) => {
+        propertiesWithRentalData.length > 0
+            ? propertiesWithRentalData.reduce((total, property) => {
                 const totalInvestment =
                     Number(property.purchase_price || 0) +
                     Number(property.area || 0) *
                     Number(property.renovation_cost_per_m2 || 0);
 
                 const annualGrossRent =
-                    Number(property.monthly_rent || 0) *
+                    Number(property.monthly_rent) *
                     12 *
-                    (Number(property.occupancy || 0) / 100);
+                    (Number(property.occupancy) / 100);
 
                 const grossYield =
                     totalInvestment > 0
@@ -306,8 +325,8 @@ function Dashboard({
                         : 0;
 
                 return total + grossYield;
-            }, 0) / properties.length
-            : 0;
+            }, 0) / propertiesWithRentalData.length
+            : null;
 
     const propertiesWithMarketValue = properties.filter(
         (property) =>
@@ -483,15 +502,22 @@ function Dashboard({
                                     Number(property.purchase_price || 0) +
                                     renovationCosts;
 
-                                const annualGrossRent =
-                                    Number(property.monthly_rent || 0) *
+                                const hasRentalData =
+                                    property.monthly_rent !== null &&
+                                    property.monthly_rent !== undefined &&
+                                    property.occupancy !== null &&
+                                    property.occupancy !== undefined;
+
+                                const annualGrossRent = hasRentalData
+                                    ? Number(property.monthly_rent) *
                                     12 *
-                                    (Number(property.occupancy || 0) / 100);
+                                    (Number(property.occupancy) / 100)
+                                    : null;
 
                                 const grossYield =
-                                    totalInvestment > 0
+                                    hasRentalData && totalInvestment > 0
                                         ? (annualGrossRent / totalInvestment) * 100
-                                        : 0;
+                                        : null;
 
                                 return (
                                     <article
@@ -635,7 +661,9 @@ function Dashboard({
                                                 <div>
                                                     <span>Bruto ienesīgums</span>
                                                     <strong>
-                                                        {grossYield.toFixed(1)}%
+                                                        {grossYield === null
+                                                            ? "—"
+                                                            : `${grossYield.toFixed(1)}%`}
                                                     </strong>
                                                 </div>
                                             </div>
@@ -749,16 +777,28 @@ function Dashboard({
 
                                 <div>
                                     <span>Kopējā mēneša īre</span>
+
                                     <strong>
-                                        €
-                                        {properties
-                                            .reduce(
-                                                (total, property) =>
-                                                    total + Number(property.monthly_rent || 0),
-                                                0
-                                            )
-                                            .toLocaleString("lv-LV")}
+                                        {propertiesWithRentalData.length > 0
+                                            ? `€${totalMonthlyRent.toLocaleString("lv-LV")}`
+                                            : "—"}
                                     </strong>
+
+                                    {propertiesWithRentalData.length > 0 &&
+                                        propertiesWithRentalData.length < properties.length && (
+                                            <small className="portfolio-summary-note">
+                                                Īres dati norādīti{" "}
+                                                {propertiesWithRentalData.length} no{" "}
+                                                {properties.length} īpašumiem
+                                            </small>
+                                        )}
+
+                                    {properties.length > 0 &&
+                                        propertiesWithRentalData.length === 0 && (
+                                            <small className="portfolio-summary-note">
+                                                Pievieno īres datus īpašuma datos
+                                            </small>
+                                        )}
                                 </div>
                             </div>
 
@@ -774,32 +814,26 @@ function Dashboard({
                                     <span>Vidējais bruto ienesīgums</span>
 
                                     <strong>
-                                        {properties.length > 0
-                                            ? (
-                                                properties.reduce((total, property) => {
-                                                    const totalInvestment =
-                                                        Number(property.purchase_price || 0) +
-                                                        Number(property.area || 0) *
-                                                        Number(
-                                                            property.renovation_cost_per_m2 || 0
-                                                        );
-
-                                                    const annualGrossRent =
-                                                        Number(property.monthly_rent || 0) *
-                                                        12 *
-                                                        (Number(property.occupancy || 0) / 100);
-
-                                                    const grossYield =
-                                                        totalInvestment > 0
-                                                            ? (annualGrossRent / totalInvestment) * 100
-                                                            : 0;
-
-                                                    return total + grossYield;
-                                                }, 0) / properties.length
-                                            ).toFixed(1)
-                                            : "0.0"}
-                                        %
+                                        {averageGrossYield === null
+                                            ? "—"
+                                            : `${averageGrossYield.toFixed(1)}%`}
                                     </strong>
+
+                                    {propertiesWithRentalData.length > 0 &&
+                                        propertiesWithRentalData.length < properties.length && (
+                                            <small className="portfolio-summary-note">
+                                                Aprēķināts no{" "}
+                                                {propertiesWithRentalData.length} no{" "}
+                                                {properties.length} īpašumiem
+                                            </small>
+                                        )}
+
+                                    {properties.length > 0 &&
+                                        propertiesWithRentalData.length === 0 && (
+                                            <small className="portfolio-summary-note">
+                                                Pievieno īres datus īpašuma datos
+                                            </small>
+                                        )}
                                 </div>
                             </div>
                         </div>
@@ -1223,7 +1257,7 @@ function Dashboard({
                             Īres maksa mēnesī
                             <input
                                 type="number"
-                                value={editingProperty.monthly_rent}
+                                value={editingProperty.monthly_rent ?? ""}
                                 onChange={(event) =>
                                     setEditingProperty({
                                         ...editingProperty,
@@ -1237,7 +1271,7 @@ function Dashboard({
                             Aizpildījums %
                             <input
                                 type="number"
-                                value={editingProperty.occupancy}
+                                value={editingProperty.occupancy ?? ""}
                                 onChange={(event) =>
                                     setEditingProperty({
                                         ...editingProperty,

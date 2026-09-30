@@ -35,20 +35,36 @@ function FreeAnalysisInputs({
             <div className="input-group">
                 <label>
                     Īres maksa mēnesī (€)
-                    <span className="required-mark"> *</span>
                 </label>
                 <input
                     type="number"
                     min="0"
                     value={monthlyRent}
-                    onChange={(event) => setMonthlyRent(event.target.value)}
+                    onKeyDown={(event) => {
+                        if (["-", "+", "e", "E"].includes(event.key)) {
+                            event.preventDefault();
+                        }
+                    }}
+                    onChange={(event) => {
+                        const value = event.target.value;
+
+                        if (value === "") {
+                            setMonthlyRent("");
+                            return;
+                        }
+
+                        const number = Number(value);
+
+                        if (number >= 0) {
+                            setMonthlyRent(value);
+                        }
+                    }}
                 />
             </div>
 
             <div className="input-group">
                 <label>
                     Plānotais aizpildījums (%)
-                    <span className="required-mark"> *</span>
                 </label>
                 <input
                     type="number"

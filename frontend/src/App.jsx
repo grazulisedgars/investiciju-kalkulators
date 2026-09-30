@@ -64,8 +64,21 @@ function App() {
     }
 
     async function fetchFreeAnalysis() {
+      const params = new URLSearchParams({
+        purchase_price: purchasePrice,
+        renovation_costs: totalRenovationCosts,
+      });
+
+      if (monthlyRent !== "") {
+        params.append("monthly_rent", monthlyRent);
+      }
+
+      if (occupancy !== "") {
+        params.append("occupancy", occupancy);
+      }
+
       const response = await fetch(
-        `http://127.0.0.1:8000/calculate/free-analysis?purchase_price=${purchasePrice}&renovation_costs=${totalRenovationCosts}&monthly_rent=${monthlyRent || 0}&occupancy=${occupancy || 100}`
+        `http://127.0.0.1:8000/calculate/free-analysis?${params.toString()}`
       );
 
       const data = await response.json();
@@ -131,8 +144,10 @@ function App() {
       purchase_price: Number(purchasePrice || 0),
       area: Number(area || 0),
       renovation_cost_per_m2: Number(renovationCostPerM2 || 0),
-      monthly_rent: Number(monthlyRent || 0),
-      occupancy: Number(occupancy || 0),
+      monthly_rent:
+        monthlyRent === "" ? null : Number(monthlyRent),
+      occupancy:
+        occupancy === "" ? null : Number(occupancy),
       down_payment_percent:
         financing === "mortgage"
           ? Number(downPaymentPercent || 0)
@@ -212,8 +227,10 @@ function App() {
           purchase_price: Number(purchasePrice),
           area: Number(area),
           renovation_cost_per_m2: Number(renovationCostPerM2 || 0),
-          monthly_rent: Number(monthlyRent),
-          occupancy: Number(occupancy),
+          monthly_rent:
+            monthlyRent === "" ? null : Number(monthlyRent),
+          occupancy:
+            occupancy === "" ? null : Number(occupancy),
           down_payment_percent:
             financing === "mortgage"
               ? Number(downPaymentPercent)
@@ -908,9 +925,7 @@ function App() {
                     onClick={saveDashboardProperty}
                     disabled={
                       !purchasePrice ||
-                      !area ||
-                      !monthlyRent ||
-                      !occupancy
+                      !area
                     }
                   >
                     Saglabāt īpašumu
@@ -957,9 +972,7 @@ function App() {
               canSave={
                 Boolean(
                   purchasePrice &&
-                  area &&
-                  monthlyRent &&
-                  occupancy
+                  area
                 )
               }
             />
@@ -1004,8 +1017,6 @@ function App() {
                     disabled={
                       !purchasePrice ||
                       !area ||
-                      !monthlyRent ||
-                      !occupancy ||
                       !downPaymentPercent
                     }
                   >
@@ -1068,8 +1079,6 @@ function App() {
                 Boolean(
                   purchasePrice &&
                   area &&
-                  monthlyRent &&
-                  occupancy &&
                   downPaymentPercent
                 )
               }
