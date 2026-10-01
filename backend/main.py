@@ -343,6 +343,7 @@ def create_property(
         property_name=f"Īpašums #{property_count + 1}",
         image_url=property_data.image_url,
         financing_type=property_data.financing_type,
+        status=property_data.status,
         purchase_price=property_data.purchase_price,
         area=property_data.area,
         renovation_cost_per_m2=property_data.renovation_cost_per_m2,
@@ -529,6 +530,7 @@ def update_property(
 
     property.property_name = property_data.property_name
     property.address = property_data.address
+    property.status = property_data.status
     property.purchase_price = property_data.purchase_price
     property.market_value = property_data.market_value
     property.area = property_data.area

@@ -525,6 +525,17 @@ function Dashboard({
                                         key={property.property_id}
                                     >
                                         <div className="property-card-image">
+                                            <span
+                                                className={`property-status-badge property-status-${property.status || "planned"}`}
+                                            >
+                                                {property.status === "renovating"
+                                                    ? "Renovācijā"
+                                                    : property.status === "ready_to_rent"
+                                                        ? "Gatavs izīrēšanai"
+                                                        : property.status === "rented"
+                                                            ? "Izīrēts"
+                                                            : "Plānots"}
+                                            </span>
                                             {property.image_url ? (
                                                 <img
                                                     src={`http://localhost:8000${property.image_url}`}

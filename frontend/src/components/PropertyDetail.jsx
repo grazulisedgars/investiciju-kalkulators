@@ -15,13 +15,22 @@ import {
     House,
     Landmark,
     Wallet,
+    ChevronDown,
+    Receipt,
+    HousePlug,
+    Hammer,
+    Banknote,
+    Images,
 } from "lucide-react";
 import EditPropertyModal from "./EditPropertyModal";
 
 function PropertyDetail({ property, onBack, onPropertyUpdated }) {
     const [activeTab, setActiveTab] = useState("analysis");
+    const [activeDiarySection, setActiveDiarySection] = useState("calendar");
+    const [showDiarySections, setShowDiarySections] = useState(false);
     const [editingProperty, setEditingProperty] = useState(null);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
+    const [showStatusMenu, setShowStatusMenu] = useState(false);
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -87,6 +96,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     property_name: updatedProperty.property_name.trim(),
                     address: updatedProperty.address?.trim() || null,
                     purchase_price: Number(updatedProperty.purchase_price),
+                    status: updatedProperty.status || "planned",
                     area: Number(updatedProperty.area),
                     market_value:
                         updatedProperty.market_value === "" ||
@@ -117,6 +127,53 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
 
         if (!response.ok) {
             throw new Error("Neizdevās saglabāt īpašuma izmaiņas.")
+        }
+
+        const savedProperty = await response.json();
+
+        onPropertyUpdated(savedProperty);
+    }
+
+    async function handleStatusChange(newStatus) {
+        const response = await fetch(
+            `http://localhost:8000/properties/${property.property_id}`,
+            {
+                method: "PATCH",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    property_name: property.property_name,
+                    address: property.address || null,
+                    status: newStatus,
+                    purchase_price: Number(property.purchase_price),
+                    market_value:
+                        property.market_value == null
+                            ? null
+                            : Number(property.market_value),
+                    area: Number(property.area),
+                    renovation_cost_per_m2: Number(
+                        property.renovation_cost_per_m2
+                    ),
+                    monthly_rent:
+                        property.monthly_rent == null
+                            ? null
+                            : Number(property.monthly_rent),
+                    occupancy:
+                        property.occupancy == null
+                            ? null
+                            : Number(property.occupancy),
+                    down_payment_percent:
+                        property.financing_type === "mortgage"
+                            ? Number(property.down_payment_percent)
+                            : null,
+                }),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Neizdev'as mainīt īpašuma statusu.");
         }
 
         const savedProperty = await response.json();
@@ -222,6 +279,16 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
     }
 
     if (!property) return null;
+
+    const handleDiarySectionChange = (section) => {
+        const currentScrollY = window.scrollY;
+
+        setActiveDiarySection(section);
+
+        requestAnimationFrame(() => {
+            window.scrollTo(0, currentScrollY);
+        })
+    };
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat("lv-LV", {
@@ -416,18 +483,92 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                         </div>
 
                     </div>
-                    <div className="property-detail-financing">
-                        {property.financing_type === "mortgage" ? (
-                            <>
-                                <Landmark size={17} strokeWidth={1.8} />
-                                <span>Ar hipotēku</span>
-                            </>
-                        ) : property.financing_type === "cash" ? (
-                            <>
-                                <Wallet size={17} strokeWidth={1.8} />
-                                <span>Par saviem līdzekļiem</span>
-                            </>
-                        ) : null}
+
+                    <div className="property-detail-badges">
+
+                        <div className="property-detail-status">
+                            <button
+                                type="button"
+                                className="property-detail-status-button"
+                                onClick={() => setShowStatusMenu((previous) => !previous)}
+                                aria-expanded={showStatusMenu}
+                            >
+                                <span>
+                                    {property.status === "renovating"
+                                        ? "Renovācijā"
+                                        : property.status === "ready_to_rent"
+                                            ? "Gatavs izīrēšanai"
+                                            : property.status === "rented"
+                                                ? "Izīrēts"
+                                                : "Plānots"}
+                                </span>
+
+                                <ChevronDown
+                                    className="property-detail-status-arrow"
+                                    size={17}
+                                    strokeWidth={2}
+                                    aria-hidden="true"
+                                />
+                            </button>
+
+                            {showStatusMenu && (
+                                <div className="property-detail-status-dropdown">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            handleStatusChange("planned");
+                                            setShowStatusMenu(false);
+                                        }}
+                                    >
+                                        Plānots
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            handleStatusChange("renovating");
+                                            setShowStatusMenu(false);
+                                        }}
+                                    >
+                                        Renovācijā
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            handleStatusChange("ready_to_rent");
+                                            setShowStatusMenu(false);
+                                        }}
+                                    >
+                                        Gatavs izīrēšanai
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            handleStatusChange("rented");
+                                            setShowStatusMenu(false);
+                                        }}
+                                    >
+                                        Izīrēts
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="property-detail-financing">
+                            {property.financing_type === "mortgage" ? (
+                                <>
+                                    <Landmark size={17} strokeWidth={1.8} />
+                                    <span>Ar hipotēku</span>
+                                </>
+                            ) : property.financing_type === "cash" ? (
+                                <>
+                                    <Wallet size={17} strokeWidth={1.8} />
+                                    <span>Par saviem līdzekļiem</span>
+                                </>
+                            ) : null}
+                        </div>
                     </div>
 
                 </div>
@@ -448,8 +589,30 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
 
                 <button
                     type="button"
-                    className={activeTab === "diary" ? "active" : ""}
-                    onClick={() => setActiveTab("diary")}
+                    className={
+                        activeTab === "diary" &&
+                            activeDiarySection === "calendar"
+                            ? "active"
+                            : ""}
+                    onClick={() => {
+                        const currentScrollY = window.scrollY;
+
+                        if (activeTab !== "diary") {
+                            setActiveTab("diary");
+                            setActiveDiarySection("calendar");
+                            setShowDiarySections(true);
+                        } else if (showDiarySections) {
+                            setActiveDiarySection("calendar");
+                            setShowDiarySections(false);
+                        } else {
+                            setActiveDiarySection("calendar");
+                            setShowDiarySections(true);
+                        }
+
+                        requestAnimationFrame(() => {
+                            window.scrollTo(0, currentScrollY);
+                        });
+                    }}
                 >
                     <CalendarDays size={17} strokeWidth={2} />
                     <span>Dienasgrāmata</span>
@@ -457,17 +620,78 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     <span className="pro-badge">PRO</span>
                 </button>
 
-                <button
-                    type="button"
-                    className={activeTab === "advanced" ? "active" : ""}
-                    onClick={() => setActiveTab("advanced")}
-                >
-                    <ChartNoAxesCombined size={17} strokeWidth={2} />
-                    <span>Padziļinātā analīze</span>
-                    <LockKeyhole size={14} className="property-tab-lock" />
-                    <span className="pro-badge">PRO</span>
-                </button>
+                {activeTab === "diary" && showDiarySections && (
+                    <>
+                        <button
+                            type="button"
+                            className={activeDiarySection === "expenses" ? "active" : ""}
+                            onClick={() => handleDiarySectionChange("expenses")}
+                        >
+                            <Receipt size={17} strokeWidth={2} />
+                            <span>Izmaksas</span>
+                        </button>
 
+                        {property.financing_type === "mortgage" && (
+                            <button
+                                type="button"
+                                className={activeDiarySection === "loan" ? "active" : ""}
+                                onClick={() => handleDiarySectionChange("loan")}
+                            >
+                                <Landmark size={17} strokeWidth={2} />
+                                <span>Kredīts</span>
+                            </button>
+                        )}
+
+                        <button
+                            type="button"
+                            className={activeDiarySection === "utilities" ? "active" : ""}
+                            onClick={() => handleDiarySectionChange("utilities")}
+                        >
+                            <HousePlug size={17} strokeWidth={2} />
+                            <span>Komunālie maksājumi</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className={activeDiarySection === "work" ? "active" : ""}
+                            onClick={() => handleDiarySectionChange("work")}
+                        >
+                            <Hammer size={17} strokeWidth={2} />
+                            <span>Darba dienas</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className={activeDiarySection === "rent" ? "active" : ""}
+                            onClick={() => handleDiarySectionChange("rent")}
+                        >
+                            <Banknote size={17} strokeWidth={2} />
+                            <span>Saņemtā īre</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className={activeDiarySection === "galery" ? "active" : ""}
+                            onClick={() => handleDiarySectionChange("gallery")}
+                        >
+                            <Images size={17} strokeWidth={2} />
+                            <span>Galerija</span>
+                        </button>
+                    </>
+                )}
+
+                {!(activeTab === "diary" && showDiarySections) && (
+                    <button
+                        type="button"
+                        className={activeTab === "advanced" ? "active" : ""}
+                        onClick={() => setActiveTab("advanced")}
+                    >
+                        <ChartNoAxesCombined size={17} strokeWidth={2} />
+                        <span>Padziļinātā analīze</span>
+                        <LockKeyhole size={14} className="property-tab-lock" />
+                        <span className="pro-badge">PRO</span>
+                    </button>
+                )}
             </div>
 
             {/*Sadaļu saturs */}
@@ -479,7 +703,11 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                 )}
 
                 {activeTab === "diary" && (
-                    <PropertyDiary property={property} />
+                    <PropertyDiary
+                        property={property}
+                        activeSection={activeDiarySection}
+                        setActiveSection={setActiveDiarySection}
+                    />
                 )}
 
                 {activeTab === "advanced" && (

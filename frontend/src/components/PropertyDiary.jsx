@@ -1,10 +1,12 @@
 import { useState } from "react";
 import "./PropertyDiary.css";
-import PropertyCalendar from "./DiaryCalendar";
 import DiaryCalendar from "./DiaryCalendar";
 
-function PropertyDiary({ property }) {
-    const [activeSection, setActiveSection] = useState("calendar");
+function PropertyDiary({
+    property,
+    activeSection,
+    setActiveSection,
+}) {
 
     const sections = [
         { id: "calendar", label: "Dienasgrāmata" },
@@ -16,7 +18,8 @@ function PropertyDiary({ property }) {
 
         { id: "utilities", label: "Komunālie maksājumi" },
         { id: "work", label: "Darba dienas" },
-        { id: "gallery", labe: "Galerija" },
+        { id: "rent", label: "Saņemtā īre" },
+        { id: "gallery", label: "Galerija" },
     ];
 
     const selectedSection = sections.find(
@@ -33,21 +36,6 @@ function PropertyDiary({ property }) {
                     Pārvaldi īpašuma izmaksas, paveiktos darbus
                     un renovācijas vēsturi.
                 </p>
-            </div>
-
-            <div className="property-diary-navigation">
-                {sections.map((section) => (
-                    <button
-                        key={section.id}
-                        type="button"
-                        className={
-                            activeSection === section.id ? "active" : ""
-                        }
-                        onClick={() => setActiveSection(section.id)}
-                    >
-                        {section.label}
-                    </button>
-                ))}
             </div>
 
             <div className="property-diary-body">

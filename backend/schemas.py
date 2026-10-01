@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
+from typing import Literal
 
 
 class UserRegister(BaseModel):
@@ -33,8 +34,17 @@ class UserLogin(BaseModel):
     )
 
 
+PropertyStatus = Literal[
+    "planned",
+    "renovating",
+    "ready_to_rent",
+    "rented"
+]
+
+
 class PropertyCreate(BaseModel):
     financing_type: str
+    status: PropertyStatus = "planned"
     purchase_price: float = Field(gt=0)
     area: float = Field(gt=0)
     renovation_cost_per_m2: float = Field(default=0, ge=0)
@@ -54,6 +64,7 @@ class PropertyCreate(BaseModel):
 class PropertyUpdate(BaseModel):
     property_name: str
     address: str | None = None
+    status: PropertyStatus = "planned"
 
     purchase_price: float = Field(gt=0)
     market_value: float | None = Field(default=None, ge=0)

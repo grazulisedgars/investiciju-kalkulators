@@ -100,6 +100,93 @@
     cursor: not-allowed;
 }
 
+.property-detail-status {
+    position: relative;
+}
+
+.property-detail-status-button {
+    min-width: 150px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    padding: 0 12px;
+
+    background: #ffffff;
+    border: 1px solid #d8e0dc;
+    border-radius: 8px;
+
+    color: #475569;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+.property-detail-status-button:hover {
+    background: #f7faf8;
+    border-color: #aebbb4;
+}
+
+.property-detail-status-arrow {
+    color: #64748b;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.property-detail-status-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 100;
+
+    width: 190px;
+    padding: 6px;
+
+    background: #ffffff;
+    border: 1px solid #e2e8e5;
+    border-radius: 10px;
+
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+}
+
+.property-detail-status-dropdown button {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    padding: 11px 12px;
+
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+
+    color: #172b23;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.property-detail-status-dropdown button:hover {
+    background: #f0f5f2;
+}
+
+.property-detail-badges {
+    display: flex;
+    align-items: center;
+    align-self: flex-end;
+    gap: 10px;
+    margin-left: auto;
+    margin-bottom: 10px;
+}
+
 /* Galvenais galvenes saturs */
 
 .property-detail-header-main {
@@ -110,10 +197,6 @@
 }
 
 .property-detail-financing {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-
     display: flex;
     align-items: center;
     gap: 8px;

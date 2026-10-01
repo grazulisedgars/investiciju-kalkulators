@@ -75,6 +75,12 @@ class Property(Base):
         nullable=False
     )
 
+    status: Mapped[str] = mapped_column(
+        String(30),
+        default="planned",
+        nullable=False
+    )
+
     purchase_price: Mapped[float] = mapped_column(
         nullable=False
     )
