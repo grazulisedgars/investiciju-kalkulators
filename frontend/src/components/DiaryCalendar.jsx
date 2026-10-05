@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     ChevronLeft,
     ChevronRight,
@@ -8,6 +8,10 @@ import {
     Hammer,
     Banknote,
     MoreVertical,
+    Plus,
+    Pencil,
+    Trash2,
+    CalendarDays,
 } from "lucide-react";
 import "./DiaryCalendar.css";
 
@@ -22,6 +26,8 @@ function DiaryCalendar({ property }) {
 
     const [currentDate, setCurrentDate] = useState(today);
     const [showEntryMenu, setShowEntryMenu] = useState(false);
+    const entryMenuRef = useRef(null);
+    const expenseDatePickerRef = useRef(null);
     const [showExpenseModal, setShowExpenseModal] = useState(false);
 
     const [expenseForm, setExpenseForm] = useState({
@@ -35,7 +41,14 @@ function DiaryCalendar({ property }) {
 
     const [isSavingExpense, setIsSavingExpense] = useState(false);
     const [expenseError, setExpenseError] = useState("");
+    const [openEntryMenuId, setOpenEntryMenuId] = useState(null);
+    const [entryToDelete, setEntryToDelete] = useState(null);
+    const [isDeletingEntry, setIsDeletingEntry] = useState(false);
 
+    const [showExpenseDatePicker, setShowExpenseDatePicker] = useState(false);
+    const [expenseCalendarDate, setExpenseCalendarDate] = useState(
+        new Date()
+    );
     const [diaryEntries, setDiaryEntries] = useState([]);
 
     const [selectedDate, setSelectedDate] = useState(() => {
@@ -108,6 +121,86 @@ function DiaryCalendar({ property }) {
             fetchDiaryEntries();
         }
     }, [property?.property_id]);
+
+    useEffect(() => {
+        if (!showEntryMenu) {
+            return;
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === "Escape") {
+                setShowEntryMenu(false);
+            }
+        }
+
+        function handleClickOutside(event) {
+            if (
+                entryMenuRef.current &&
+                !entryMenuRef.current.contains(event.target)
+            ) {
+                setShowEntryMenu(false);
+            }
+        }
+
+        document.addEventListener("keydown", handleKeyDown);
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showEntryMenu]);
+
+    useEffect(() => {
+        if (!showExpenseModal) {
+            return;
+        }
+
+        function handleExpenseModalKeyDown(event) {
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            if (showExpenseDatePicker) {
+                setShowExpenseDatePicker(false);
+                return;
+            }
+
+            setShowExpenseModal(false);
+        }
+
+        function handleExpenseDateClickOutside(event) {
+            if (
+                showExpenseDatePicker &&
+                expenseDatePickerRef.current &&
+                !expenseDatePickerRef.current.contains(event.target)
+            ) {
+                setShowExpenseDatePicker(false);
+            }
+        }
+
+        document.addEventListener(
+            "keydown",
+            handleExpenseModalKeyDown
+        );
+
+        document.addEventListener(
+            "mousedown",
+            handleExpenseDateClickOutside
+        );
+
+        return () => {
+            document.removeEventListener(
+                "keydown",
+                handleExpenseModalKeyDown
+            );
+
+            document.removeEventListener(
+                "mousedown",
+                handleExpenseDateClickOutside
+            );
+        };
+    }, [showExpenseModal, showExpenseDatePicker]);
 
     async function handleExpenseSave() {
         if (
@@ -224,6 +317,143 @@ function DiaryCalendar({ property }) {
     const selectedDateEntries = diaryEntries.filter(
         (entry) => entry.entry_date === selectedDate
     );
+
+    async function handleDeleteEntry(entryId) {
+        if (!entryToDelete) {
+            return;
+        }
+
+        try {
+            setIsDeletingEntry(true);
+
+            const response = await fetch(
+                `http://localhost:8000/properties/${property.property_id}/diary/${entryToDelete.id}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+
+                throw new Error(
+                    errorData.detail ||
+                    "Neizdevās izdzēst ierakstu."
+                );
+            }
+
+            setEntryToDelete(null);
+
+            await fetchDiaryEntries();
+
+        } catch (error) {
+            console.error("Diary DELETE error:", error);
+        } finally {
+            setIsDeletingEntry(false);
+        }
+    }
+
+    function changeExpenseCalendarMonth(direction) {
+        setExpenseCalendarDate((currentDate) => {
+            return new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() + direction,
+                1
+            );
+        });
+    }
+
+    function selectExpenseDate(day) {
+        const year = expenseCalendarDate.getFullYear();
+        const month = String(
+            expenseCalendarDate.getMonth() + 1
+        ).padStart(2, "0");
+
+        const formattedDay = String(day).padStart(2, "0");
+
+        const dateString = `${year}-${month}-${formattedDay}`;
+
+        setExpenseForm((prev) => ({
+            ...prev,
+            entry_date: dateString,
+        }));
+
+        setShowExpenseDatePicker(false);
+    }
+
+    const expenseCalendarYear =
+        expenseCalendarDate.getFullYear();
+
+    const expenseCalendarMonth =
+        expenseCalendarDate.getMonth();
+
+    const expenseCalendarMonthNames = [
+        "Janvāris",
+        "Februāris",
+        "Marts",
+        "Aprīlis",
+        "Maijs",
+        "Jūnijs",
+        "Jūlijs",
+        "Augusts",
+        "Septembris",
+        "Oktobris",
+        "Novembris",
+        "Decembris",
+    ];
+
+    const expenseCalendarDaysInMonth = new Date(
+        expenseCalendarYear,
+        expenseCalendarMonth + 1,
+        0
+    ).getDate();
+
+    const expenseCalendarFirstDay = new Date(
+        expenseCalendarYear,
+        expenseCalendarMonth,
+        1
+    ).getDay();
+
+    const expenseCalendarStartOffset =
+        expenseCalendarFirstDay === 0
+            ? 6
+            : expenseCalendarFirstDay - 1;
+
+    const expenseCalendarDays = [
+        ...Array(expenseCalendarStartOffset).fill(null),
+        ...Array.from(
+            { length: expenseCalendarDaysInMonth },
+            (_, index) => index + 1
+        ),
+    ];
+
+    function formatExpenseDate(dateString) {
+        if (!dateString) {
+            return "";
+        }
+
+        const [year, month, day] = dateString.split("-");
+
+        return `${day}.${month}.${year}`;
+    }
+
+    function toggleExpenseDatePicker() {
+        if (!showExpenseDatePicker && expenseForm.entry_date) {
+            const [year, month] =
+                expenseForm.entry_date.split("-");
+
+            setExpenseCalendarDate(
+                new Date(
+                    Number(year),
+                    Number(month) - 1,
+                    1
+                )
+            );
+        }
+
+        setShowExpenseDatePicker((prev) => !prev);
+    }
 
     return (
         <div className="diary-calendar-layout">
@@ -350,18 +580,24 @@ function DiaryCalendar({ property }) {
                                 {selectedDateLabel}
                             </h3>
 
-                            <div className="diary-add-entry">
+                            <div
+                                className="diary-add-entry"
+                                ref={entryMenuRef}
+                            >
                                 <button
                                     type="button"
                                     className="diary-add-entry-button"
                                     onClick={() => setShowEntryMenu((prev) => !prev)}
+                                    aria-expanded={showEntryMenu}
+                                    aria-haspopup="menu"
                                 >
-                                    <span className="diary-add-entry-plus">+</span>
+                                    <Plus size={17} />
                                     <span>Pievienot ierakstu</span>
                                 </button>
 
                                 {showEntryMenu && (
-                                    <div className="diary-entry-menu">
+                                    <div className="diary-entry-menu"
+                                        role="menu">
 
                                         <button
                                             type="button"
@@ -461,13 +697,49 @@ function DiaryCalendar({ property }) {
                                             )}
                                         </div>
 
-                                        <button
-                                            type="button"
-                                            className="diary-entry-more"
-                                            aria-label="Ieraksta darbības"
-                                        >
-                                            <MoreVertical size={18} />
-                                        </button>
+                                        <div className="diary-entry-actions">
+                                            <button
+                                                type="button"
+                                                className="diary-entry-more"
+                                                aria-label="Ieraksta darbības"
+                                                onClick={() =>
+                                                    setOpenEntryMenuId((currentId) =>
+                                                        currentId === entry.id
+                                                            ? null
+                                                            : entry.id
+                                                    )
+                                                }
+                                            >
+                                                <MoreVertical size={18} />
+                                            </button>
+                                            {openEntryMenuId === entry.id && (
+                                                <div className="diary-entry-actions-menu">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            console.log("Rediģēt:", entry);
+                                                            setOpenEntryMenuId(null);
+                                                        }}
+                                                    >
+                                                        <Pencil size={14} />
+                                                        <span>Rediģēt</span>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="delete"
+                                                        onClick={() => {
+                                                            setEntryToDelete(entry);
+                                                            setOpenEntryMenuId(null);
+                                                        }}
+                                                    >
+                                                        <Trash2 size={14} />
+                                                        <span>Dzēst</span>
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -484,6 +756,60 @@ function DiaryCalendar({ property }) {
                 )}
 
             </div>
+
+            {entryToDelete && (
+                <div
+                    className="diary-delete-overlay"
+                    onClick={(event) => {
+                        if (
+                            event.target === event.currentTarget &&
+                            !isDeletingEntry
+                        ) {
+                            setEntryToDelete(null);
+                        }
+                    }}
+                >
+                    <div className="diary-delete-modal">
+                        <div className="diary-delete-heading">
+                            <div className="diary-delete-icon">
+                                <Trash2 size={18} />
+                            </div>
+
+                            <h3>Dzēst ierakstu?</h3>
+                        </div>
+
+                        <p>
+                            Vai tiešām vēlies Dzēst {" "}
+                            <strong>{entryToDelete.title}</strong>?
+                            {" "}Šo darbību nevarēs atsaukt.
+                        </p>
+
+                        <div className="diary-delete-actions">
+                            <button
+                                type="button"
+                                className="diary-delete-cancel"
+                                onClick={() => setEntryToDelete(null)}
+                                disabled={isDeletingEntry}
+                            >
+                                Atcelt
+                            </button>
+
+                            <button
+                                type="button"
+                                className="diary-delete-confirm"
+                                onClick={handleDeleteEntry}
+                                disabled={isDeletingEntry}
+                            >
+                                <Trash2 size={15} />
+
+                                {isDeletingEntry
+                                    ? "Dzēš..."
+                                    : "Dzēst"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showExpenseModal && (
                 <div
@@ -507,7 +833,10 @@ function DiaryCalendar({ property }) {
                             <button
                                 type="button"
                                 className="diary-modal-close"
-                                onClick={() => setShowExpenseModal(false)}
+                                onClick={() => {
+                                    setShowExpenseDatePicker(false);
+                                    setShowExpenseModal(false);
+                                }}
                                 aria-label="Aizvērt"
                             >
                                 x
@@ -520,18 +849,131 @@ function DiaryCalendar({ property }) {
 
                         <div className="diary-expense-form">
 
-                            <div className="diary-form-group">
+                            <div
+                                className="diary-form-group diary-expense-date-group"
+                                ref={expenseDatePickerRef}
+                            >
                                 <label htmlFor="expense-date">
                                     Datums
                                 </label>
 
-                                <input
-                                    id="expense-date"
-                                    type="date"
-                                    name="entry_date"
-                                    value={expenseForm.entry_date}
-                                    onChange={handleExpenseChange}
-                                />
+                                <div className="diary-date-picker-field">
+                                    <input
+                                        id="expense-date"
+                                        type="text"
+                                        value={formatExpenseDate(expenseForm.entry_date)}
+                                        readOnly
+                                        onClick={toggleExpenseDatePicker}
+                                    />
+
+                                    <button
+                                        type="button"
+                                        className="diary-date-picker-button"
+                                        onClick={toggleExpenseDatePicker}
+                                        aria-label="Izvēlēties datumu"
+                                    >
+                                        <CalendarDays size={17} />
+                                    </button>
+                                </div>
+
+                                {showExpenseDatePicker && (
+                                    <div className="expense-date-calendar">
+
+                                        <div className="expense-date-calendar-header">
+                                            <strong>
+                                                {
+                                                    expenseCalendarMonthNames[
+                                                    expenseCalendarMonth
+                                                    ]
+                                                }{" "}
+                                                {expenseCalendarYear}
+                                            </strong>
+
+                                            <div className="expense-date-calendar-navigation">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        changeExpenseCalendarMonth(-1)
+                                                    }
+                                                    aria-label="Iepriekšējais mēnesis"
+                                                >
+                                                    <ChevronLeft size={17} />
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        changeExpenseCalendarMonth(1)
+                                                    }
+                                                    aria-label="Nākamais mēnesis"
+                                                >
+                                                    <ChevronRight size={17} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="expense-date-calendar-weekdays">
+                                            <span>P</span>
+                                            <span>O</span>
+                                            <span>T</span>
+                                            <span>C</span>
+                                            <span>P</span>
+                                            <span>S</span>
+                                            <span>Sv</span>
+                                        </div>
+
+                                        <div className="expense-date-calendar-grid">
+                                            {expenseCalendarDays.map((day, index) => {
+                                                if (!day) {
+                                                    return (
+                                                        <span
+                                                            key={`empty-${index}`}
+                                                            className="expense-date-calendar-empty"
+                                                        />
+                                                    );
+                                                }
+
+                                                const dateKey =
+                                                    `${expenseCalendarYear}-` +
+                                                    `${String(
+                                                        expenseCalendarMonth + 1
+                                                    ).padStart(2, "0")}-` +
+                                                    `${String(day).padStart(2, "0")}`;
+
+                                                const isSelected =
+                                                    expenseForm.entry_date === dateKey;
+
+                                                const today = new Date();
+
+                                                const todayKey =
+                                                    `${today.getFullYear()}-` +
+                                                    `${String(today.getMonth() + 1).padStart(2, "0")}-` +
+                                                    `${String(today.getDate()).padStart(2, "0")}`;
+
+                                                const isToday = dateKey === todayKey;
+
+                                                return (
+                                                    <button
+                                                        key={dateKey}
+                                                        type="button"
+                                                        className={[
+                                                            isToday ? "today" : "",
+                                                            isSelected ? "selected" : "",
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(" ")}
+                                                        onClick={() =>
+                                                            selectExpenseDate(day)
+                                                        }
+                                                    >
+                                                        {day}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+
+                                    </div>
+                                )}
                             </div>
 
                             <div className="diary-form-group">
@@ -629,7 +1071,10 @@ function DiaryCalendar({ property }) {
                             <button
                                 type="button"
                                 className="diary-modal-cancel"
-                                onClick={() => setShowExpenseModal(false)}
+                                onClick={() => {
+                                    setShowExpenseDatePicker(false);
+                                    setShowExpenseModal(false);
+                                }}
                             >
                                 Atcelt
                             </button>

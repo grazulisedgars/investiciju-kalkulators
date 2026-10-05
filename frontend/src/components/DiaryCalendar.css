@@ -264,25 +264,22 @@
     align-items: center;
     gap: 7px;
 
-    padding: 6px 13px;
+    padding: 10px 15px;
 
-    background: #145b42;
-    border: 1px solid #06664f;
-    border-radius: 7px;
+    background: #0f6b4d;
+    border: none;
+    border-radius: 8px;
 
     color: #ffffff;
     font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
+    font-size: 13px;
+    font-weight: 600;
 
     cursor: pointer;
 }
 
-.diary-add-entry-plus {
-    font-size: 21px;
-    font-weight: 400;
-    line-height: 1;
+.diary-add-entry-button:hover {
+    background: #0b5b40;
 }
 
 .diary-add-entry {
@@ -330,6 +327,63 @@
     background: #f4f8f6;
 }
 
+.diary-entry-actions {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.diary-entry-actions-menu {
+    position: absolute;
+    top: 38px;
+    right: 0;
+
+    z-index: 100;
+
+    min-width: 135px;
+    padding: 5px;
+
+    background: #ffffff;
+    border: 1px solid #dfe8e2;
+    border-radius: 8px;
+
+    box-shadow: 0 8px 24px rgba(20, 55, 42, 0.12);
+}
+
+.diary-entry-actions-menu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    width: 100%;
+    padding: 8px 9px;
+
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+
+    color: #40574c;
+    font-family: inherit;
+    font-size: 12px;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.diary-entry-actions-menu button:hover {
+    background: #f1f5f3;
+}
+
+.diary-entry-actions-menu button.delete {
+    color: #b42318;
+}
+
+.diary-entry-actions-menu button.delete:hover {
+    background: #fff2f0;
+}
+
 .diary-entry-menu-icon {
     width: 24px;
     height: 24px;
@@ -365,6 +419,129 @@
 .diary-entry-menu-icon.rent {
     color: #70ad3d;
     background: #eff7e8;
+}
+
+.diary-delete-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(18, 35, 28, 0.38);
+    backdrop-filter: blur(3px);
+}
+
+.diary-delete-modal {
+    width: min(100%, 420px);
+    padding: 22px 24px;
+
+    background: #ffffff;
+    border: 1px solid #dfe8e2;
+    border-radius: 14px;
+
+    box-shadow: 0 20px 50px rgba(18, 45, 35, 0.18);
+}
+
+.diary-delete-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 14px;
+}
+
+.diary-delete-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+
+    background: #fff0ee;
+    border-radius: 50%;
+
+    color: #c62b20;
+}
+
+.diary-delete-modal h3 {
+    margin: 0;
+
+    color: #173e30;
+    font-size: 18px;
+}
+
+.diary-delete-modal p {
+    margin: 0;
+
+    color: #65766d;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.diary-delete-modal p strong {
+    color: #34473e;
+    font-weight: 600;
+}
+
+.diary-delete-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 18px;
+}
+
+.diary-delete-cancel,
+.diary-delete-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    padding: 9px 14px;
+
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.diary-delete-cancel {
+    background: #ffffff;
+    border: 1px solid #d7e1db;
+
+    color: #40574c;
+}
+
+.diary-delete-confirm {
+    background: #b42318;
+    border: 1px solid #b42318;
+
+    color: #ffffff;
+}
+
+.diary-delete-confirm:hover {
+    background: #961c13;
+}
+
+.diary-delete-cancel:hover {
+    background: #f6f8f7;
+}
+
+.diary-delete-confirm:disabled,
+.diary-delete-cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Expense modal */
@@ -585,6 +762,157 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.diary-date-picker-field {
+    position: relative;
+}
+
+.diary-date-picker-field input {
+    width: 100%;
+    padding-right: 44px;
+    cursor: pointer;
+}
+
+.diary-date-picker-button {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+    padding: 0;
+
+    background: transparent;
+    border: none;
+
+    color: #53675d;
+
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.diary-date-picker-button:hover {
+    color: #0f6b4d;
+}
+
+.expense-date-calendar {
+    position: absolute;
+    z-index: 50;
+
+    width: 280px;
+    margin-top: 6px;
+    padding: 14px;
+
+    background: #ffffff;
+    border: 1px solid #dce6df;
+    border-radius: 10px;
+
+    box-shadow: 0 12px 30px rgba(20, 55, 42, 0.14);
+}
+
+.expense-date-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+}
+
+.expense-date-calendar-header strong {
+    color: #173e30;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.expense-date-calendar-navigation {
+    display: flex;
+    gap: 4px;
+}
+
+.expense-date-calendar-navigation button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+    padding: 0;
+
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+
+    color: #60746a;
+    cursor: pointer;
+}
+
+.expense-date-calendar-navigation button:hover {
+    background: #edf4f0;
+    color: #0f6b4d;
+}
+
+.expense-date-calendar-weekdays,
+.expense-date-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.expense-date-calendar-weekdays {
+    margin-bottom: 6px;
+}
+
+.expense-date-calendar-weekdays span {
+    color: #849188;
+    font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.expense-date-calendar-grid {
+    row-gap: 4px;
+}
+
+.expense-date-calendar-grid button,
+.expense-date-calendar-empty {
+    width: 30px;
+    height: 30px;
+    margin: auto;
+}
+
+.expense-date-calendar-grid button {
+    padding: 0;
+
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+
+    color: #34473e;
+    font-family: inherit;
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.expense-date-calendar-grid button:hover {
+    background: #e7f3ed;
+}
+
+.expense-date-calendar-grid button.today {
+    background: #e3f1ea;
+    color: #0f6b4d;
+    font-weight: 600;
+}
+
+.expense-date-calendar-grid button.selected {
+    background: #0f6b4d;
+    color: #ffffff;
+    font-weight: 600;
 }
 
 
