@@ -23,8 +23,15 @@ import models
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User, Property
-from schemas import UserRegister, UserLogin, PropertyCreate, PropertyUpdate
+from models import User, Property, DiaryEntry, ExpenseEntry
+from schemas import (
+    UserRegister,
+    UserLogin,
+    PropertyCreate,
+    PropertyUpdate,
+    ExpenseEntryCreate,
+    ExpenseEntryUpdate,
+)
 from security import (
     hash_password,
     verify_password,
@@ -44,8 +51,6 @@ app.mount(
 UPLOAD_DIR = "uploads/properties"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
@@ -656,3 +661,360 @@ def delete_property_image(
     db.refresh(property)
 
     return property
+# --------------------------------------------------------------------------
+
+
+@app.post("/properties/{property_id}/diary/expenses")
+def create_expense_entry(
+    property_id: int,
+    expense_data: ExpenseEntryCreate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = DiaryEntry(
+        property_id=property.property_id,
+        entry_type="expense",
+        entry_date=expense_data.entry_date,
+        title=expense_data.title,
+        notes=expense_data.notes,
+    )
+
+    db.add(diary_entry)
+    db.flush()
+
+    expense_entry = ExpenseEntry(
+        diary_entry_id=diary_entry.id,
+        amount=expense_data.amount,
+        supplier=expense_data.supplier,
+        room=expense_data.room,
+    )
+
+    db.add(expense_entry)
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(expense_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "amount": expense_entry.amount,
+        "supplier": expense_entry.supplier,
+        "room": expense_entry.room,
+    }
+# --------------------------------------------------------------------------
+
+
+@app.get("/properties/{property_id}/diary")
+def get_diary_entries(
+    property_id: int,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entries = (
+        db.query(DiaryEntry)
+        .filter(DiaryEntry.property_id == property_id)
+        .order_by(
+            DiaryEntry.entry_date.desc(),
+            DiaryEntry.created_at.desc(),
+        )
+        .all()
+    )
+
+    result = []
+
+    for entry in diary_entries:
+        entry_data = {
+            "id": entry.id,
+            "property_id": entry.property_id,
+            "entry_type": entry.entry_type,
+            "entry_date": entry.entry_date,
+            "title": entry.title,
+            "notes": entry.notes,
+            "created_at": entry.created_at,
+        }
+
+        if entry.entry_type == "expense":
+            expense = (
+                db.query(ExpenseEntry)
+                .filter(
+                    ExpenseEntry.diary_entry_id == entry.id
+                )
+                .first()
+            )
+
+            if expense:
+                entry_data["amount"] = expense.amount
+                entry_data["supplier"] = expense.supplier
+                entry_data["room"] = expense.room
+
+        result.append(entry_data)
+
+    return result
+# --------------------------------------------------------------------------
+
+
+@app.delete("/properties/{property_id}/diary/{entry_id}")
+def delete_diary_entry(
+    property_id: int,
+    entry_id: int,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = (
+        db.query(DiaryEntry)
+        .filter(
+            DiaryEntry.id == entry_id,
+            DiaryEntry.property_id == property_id,
+        )
+        .first()
+    )
+
+    if not diary_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Dienasgrāmatas ieraksts nav atrasts."
+        )
+
+    if diary_entry.entry_type == "expense":
+        expense_entry = (
+            db.query(ExpenseEntry)
+            .filter(
+                ExpenseEntry.diary_entry_id == diary_entry.id
+            )
+            .first()
+        )
+
+        if expense_entry:
+            db.delete(expense_entry)
+            db.flush()
+
+        db.delete(diary_entry)
+        db.commit()
+
+        return {
+            "message": "Dienasgrāmatas ieraksts veiksmīgi izdzēsts.",
+            "entry_id": entry_id,
+        }
+# --------------------------------------------------------------------------
+
+
+@app.patch("/properties/{property_id}/diary/expenses/{entry_id}")
+def update_expense_entry(
+    property_id: int,
+    entry_id: int,
+    expense_data: ExpenseEntryUpdate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = (
+        db.query(DiaryEntry)
+        .filter(
+            DiaryEntry.id == entry_id,
+            DiaryEntry.property_id == property_id,
+            DiaryEntry.entry_type == "expense",
+        )
+        .first()
+    )
+
+    if not diary_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Izdevumu ieraksts nav atrasts."
+        )
+
+    expense_entry = (
+        db.query(ExpenseEntry)
+        .filter(
+            ExpenseEntry.diary_entry_id == diary_entry.id
+        )
+        .first()
+    )
+
+    if not expense_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Izdevumu dati nav atrasti."
+        )
+
+    diary_entry.entry_date = expense_data.entry_date
+    diary_entry.title = expense_data.title
+    diary_entry.notes = expense_data.notes
+    diary_entry.updated_at = datetime.now(timezone.utc)
+
+    expense_entry.amount = expense_data.amount
+    expense_entry.supplier = expense_data.supplier
+    expense_entry.room = expense_data.room
+
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(expense_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "updated_at": diary_entry.updated_at,
+        "amount": expense_entry.amount,
+        "supplier": expense_entry.supplier,
+        "room": expense_entry.room,
+    }

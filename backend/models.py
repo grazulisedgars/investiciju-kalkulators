@@ -1,7 +1,8 @@
-from datetime import datetime, timezone
-from sqlalchemy import DateTime, String, ForeignKey, Float
+from datetime import date, datetime, timezone
+from sqlalchemy import DateTime, String, ForeignKey, Float, Date, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
+from decimal import Decimal
 
 
 class User(Base):
@@ -124,4 +125,79 @@ class Property(Base):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
+    )
+
+
+class DiaryEntry(Base):
+    __tablename__ = "diary_entries"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
+
+    property_id: Mapped[int] = mapped_column(
+        ForeignKey("properties.property_id"),
+        nullable=False
+    )
+
+    entry_type: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False
+    )
+
+    entry_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
+    )
+
+    notes: Mapped[str | None] = mapped_column(
+        String(1000),
+        nullable=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+
+
+class ExpenseEntry(Base):
+    __tablename__ = "expense_entries"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
+
+    diary_entry_id: Mapped[int] = mapped_column(
+        ForeignKey("diary_entries.id"),
+        unique=True,
+        nullable=False
+    )
+
+    amount: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2),
+        nullable=False
+    )
+
+    supplier: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True
+    )
+
+    room: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True
     )

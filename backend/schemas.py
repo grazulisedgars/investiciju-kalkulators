@@ -1,3 +1,6 @@
+from datetime import date
+from decimal import Decimal
+
 from pydantic import BaseModel, EmailStr, Field
 from typing import Literal
 
@@ -78,4 +81,62 @@ class PropertyUpdate(BaseModel):
         default=None,
         ge=0,
         le=100
+    )
+
+
+class ExpenseEntryCreate(BaseModel):
+    entry_date: date
+
+    title: str = Field(
+        min_length=1,
+        max_length=255
+    )
+
+    amount: Decimal = Field(
+        gt=0,
+        decimal_places=2
+    )
+
+    supplier: str | None = Field(
+        default=None,
+        max_length=255
+    )
+
+    room: str | None = Field(
+        default=None,
+        max_length=100
+    )
+
+    notes: str | None = Field(
+        default=None,
+        max_length=1000
+    )
+
+
+class ExpenseEntryUpdate(BaseModel):
+    entry_date: date
+
+    title: str = Field(
+        min_length=1,
+        max_length=255
+    )
+
+    amount: Decimal = Field(
+        gt=0,
+        decimal_places=2
+    )
+
+    supplier: str | None = Field(
+        default=None,
+        max_length=255
+    )
+
+    room: str | None = Field(
+        default=None,
+        max_length=100
+    )
+
+    notes: str | None = Field(
+        default=None,
+        max_length=1000
     )

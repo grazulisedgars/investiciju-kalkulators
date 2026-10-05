@@ -29,19 +29,10 @@ function PropertyDiary({
     return (
         <div className="property-diary">
 
-            <div className="property-diary-heading">
-                <h2>Īpašuma dienasgrāmata</h2>
-
-                <p>
-                    Pārvaldi īpašuma izmaksas, paveiktos darbus
-                    un renovācijas vēsturi.
-                </p>
-            </div>
-
             <div className="property-diary-body">
 
                 {activeSection === "calendar" ? (
-                    <DiaryCalendar />
+                    <DiaryCalendar property={property} />
                 ) : (
                     <>
                         <h3>{selectedSection?.label}</h3>
