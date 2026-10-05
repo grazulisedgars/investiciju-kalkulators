@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./PropertyDiary.css";
 import DiaryCalendar from "./DiaryCalendar";
+import PropertyExpenses from "./PropertyExpenses";
 
 function PropertyDiary({
     property,
@@ -31,17 +32,24 @@ function PropertyDiary({
 
             <div className="property-diary-body">
 
-                {activeSection === "calendar" ? (
+                {activeSection === "calendar" && (
                     <DiaryCalendar property={property} />
-                ) : (
-                    <>
-                        <h3>{selectedSection?.label}</h3>
-
-                        <p>
-                            Šeit izveidosim sadaļas funkcionalitāti.
-                        </p>
-                    </>
                 )}
+
+                {activeSection === "expenses" && (
+                    <PropertyExpenses property={property} />
+                )}
+
+                {activeSection !== "calendar" &&
+                    activeSection !== "expenses" && (
+                        <>
+                            <h3>{selectedSection?.label}</h3>
+
+                            <p>
+                                Šeit izveidosim sadaļas funkcionalitāti.
+                            </p>
+                        </>
+                    )}
 
             </div>
 

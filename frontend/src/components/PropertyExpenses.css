@@ -1,0 +1,192 @@
+.property-expenses {
+    width: 100%;
+}
+
+.property-expenses-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin-bottom: 22px;
+}
+
+.property-expenses-header h2 {
+    margin: 0 0 5px;
+
+    color: #173e30;
+    font-size: 22px;
+}
+
+.property-expenses-header p {
+    margin: 0;
+
+    color: #718078;
+    font-size: 13px;
+}
+
+.property-expenses-add {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 10px 15px;
+
+    background: #0f6b4d;
+    border: none;
+    border-radius: 8px;
+
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.property-expenses-add:hover {
+    background: #0b5b40;
+}
+
+
+/* Table */
+
+.property-expenses-table-wrapper {
+    overflow: hidden;
+
+    border: 1px solid #dfe8e2;
+    border-radius: 10px;
+}
+
+.property-expenses-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 13px;
+}
+
+.property-expenses-table th {
+    padding: 11px 14px;
+
+    background: #f4f7f5;
+    border-bottom: 1px solid #dfe8e2;
+
+    color: #53675d;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.property-expenses-table td {
+    padding: 11px 14px;
+
+    border-bottom: 1px solid #e7ede9;
+
+    color: #34473e;
+    vertical-align: middle;
+}
+
+.property-expenses-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.property-expenses-table tbody tr:hover {
+    background: #fafcfb;
+}
+
+.expense-description {
+    color: #1f2924 !important;
+    font-weight: 500;
+}
+
+.expense-amount {
+    color: #173e30 !important;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.expense-place {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.expense-place small {
+    color: #89978f;
+    font-size: 11px;
+}
+
+.expense-notes {
+    max-width: 280px;
+
+    overflow: hidden;
+
+    color: #64766d !important;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* Three dots */
+
+.property-expense-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+    padding: 0;
+
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+
+    color: #6f7f77;
+
+    cursor: pointer;
+}
+
+.property-expense-more:hover {
+    background: #edf3ef;
+    color: #145b42;
+}
+
+
+/* Total */
+
+.property-expenses-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 8px;
+    padding: 13px 16px;
+
+    background: #f0f5f2;
+    border-radius: 9px;
+
+    color: #173e30;
+}
+
+.property-expenses-total strong:first-child {
+    font-size: 13px;
+}
+
+.property-expenses-total strong:last-child {
+    color: #0f6b4d;
+    font-size: 20px;
+}
+
+.property-expenses-empty {
+    padding: 40px 20px;
+
+    border: 1px solid #e0e9e3;
+    border-radius: 10px;
+
+    color: #718078;
+    font-size: 13px;
+    text-align: center;
+}
