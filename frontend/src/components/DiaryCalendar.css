@@ -761,7 +761,27 @@
 .diary-day-entries {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    max-height: 410px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c9d7cf transparent;
+}
+
+.diary-day-entries::-webkit-scrollbar {
+    width: 6px;
+}
+
+.diary-day-entries::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.diary-day-entries::-webkit-scrollbar-thumb {
+    background: #c9d7cf;
+    border-radius: 10px;
+}
+
+.diary-day-entries::-webkit-scrollbar-thumb:hover {
+    background: #9fb5a9;
 }
 
 .diary-date-picker-field {
@@ -922,7 +942,9 @@
     align-items: center;
     gap: 14px;
 
-    min-height: 76px;
+    height: 82px;
+    box-sizing: border-box;
+    flex-shrink: 0;
     padding: 12px 14px;
 
     background: #ffffff;

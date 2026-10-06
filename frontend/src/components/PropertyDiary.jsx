@@ -37,7 +37,9 @@ function PropertyDiary({
                 )}
 
                 {activeSection === "expenses" && (
-                    <PropertyExpenses property={property} />
+                    <PropertyExpenses
+                        property={property}
+                    />
                 )}
 
                 {activeSection !== "calendar" &&
