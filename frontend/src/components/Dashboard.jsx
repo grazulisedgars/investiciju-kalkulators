@@ -833,7 +833,7 @@ function Dashboard({
                                     {propertiesWithRentalData.length > 0 &&
                                         propertiesWithRentalData.length < properties.length && (
                                             <small className="portfolio-summary-note">
-                                                Aprēķināts no{" "}
+                                                Aprēķināts {" "}
                                                 {propertiesWithRentalData.length} no{" "}
                                                 {properties.length} īpašumiem
                                             </small>

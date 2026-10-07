@@ -15,6 +15,11 @@
     padding: 24px;
 }
 
+.property-detail-header.property-detail-header-expenses {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
 .property-detail-header-top {
     display: flex;
     justify-content: space-between;
@@ -377,6 +382,10 @@
     border-radius: 0;
     padding: 0;
     min-height: 0;
+}
+
+.property-detail-content.property-detail-content-expenses {
+    margin-top: 0;
 }
 
 .property-detail-content h2 {

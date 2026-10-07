@@ -1,5 +1,14 @@
 .property-expenses {
     width: 100%;
+
+    padding: 28px 24px 24px;
+
+    background: #ffffff;
+
+    border-left: 1px solid #e0e9e3;
+    border-right: 1px solid #e0e9e3;
+
+    box-sizing: border-box;
 }
 
 .property-expenses-header {
@@ -243,6 +252,11 @@
 
     box-shadow:
         0 8px 24px rgba(23, 62, 48, 0.12);
+}
+
+.property-expense-actions-menu-portal {
+    position: fixed;
+    z-index: 1000;
 }
 
 .property-expense-actions-menu button {

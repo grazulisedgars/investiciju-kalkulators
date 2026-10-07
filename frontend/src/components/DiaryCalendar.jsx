@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
     ChevronLeft,
     ChevronRight,
@@ -30,7 +31,8 @@ function DiaryCalendar({ property }) {
     const [showExpenseModal, setShowExpenseModal] = useState(false);
     const [editingExpense, setEditingExpense] = useState(null);
 
-    const [openEntryMenuId, setOpenEntryMenuId] = useState(null);
+    const [entryMenu, setEntryMenu] =
+        useState(null);
     const [entryToDelete, setEntryToDelete] = useState(null);
     const [isDeletingEntry, setIsDeletingEntry] = useState(false);
 
@@ -43,6 +45,7 @@ function DiaryCalendar({ property }) {
 
         return `${year}-${month}-${day}`;
     });
+
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -91,6 +94,57 @@ function DiaryCalendar({ property }) {
             console.error("Diary GET error:", error);
         }
     }
+
+    useEffect(() => {
+        if (!entryMenu) {
+            return;
+        }
+
+        function handleEntryMenuClickOutside(event) {
+            const menu = document.querySelector(
+                ".diary-entry-actions-menu-portal"
+            );
+
+            const clickedMoreButton =
+                event.target.closest(".diary-entry-more");
+
+            if (
+                menu &&
+                !menu.contains(event.target) &&
+                !clickedMoreButton
+            ) {
+                setEntryMenu(null);
+            }
+        }
+
+        function handleEntryMenuKeyDown(event) {
+            if (event.key === "Escape") {
+                setEntryMenu(null);
+            }
+        }
+
+        document.addEventListener(
+            "mousedown",
+            handleEntryMenuClickOutside
+        );
+
+        document.addEventListener(
+            "keydown",
+            handleEntryMenuKeyDown
+        );
+
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleEntryMenuClickOutside
+            );
+
+            document.removeEventListener(
+                "keydown",
+                handleEntryMenuKeyDown
+            );
+        };
+    }, [entryMenu]);
 
     useEffect(() => {
         if (property?.property_id) {
@@ -446,43 +500,29 @@ function DiaryCalendar({ property }) {
                                                 type="button"
                                                 className="diary-entry-more"
                                                 aria-label="Ieraksta darbības"
-                                                onClick={() =>
-                                                    setOpenEntryMenuId((currentId) =>
-                                                        currentId === entry.id
-                                                            ? null
-                                                            : entry.id
-                                                    )
-                                                }
+                                                onClick={(event) => {
+                                                    const buttonRect =
+                                                        event.currentTarget.getBoundingClientRect();
+
+                                                    setEntryMenu((currentMenu) => {
+                                                        if (
+                                                            currentMenu?.entryId === entry.id
+                                                        ) {
+                                                            return null;
+                                                        }
+
+                                                        return {
+                                                            entryId: entry.id,
+                                                            top: buttonRect.bottom + 4,
+                                                            right:
+                                                                window.innerWidth -
+                                                                buttonRect.right,
+                                                        };
+                                                    });
+                                                }}
                                             >
                                                 <MoreVertical size={18} />
                                             </button>
-                                            {openEntryMenuId === entry.id && (
-                                                <div className="diary-entry-actions-menu">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setEditingExpense(entry);
-                                                            setOpenEntryMenuId(null);
-                                                            setShowExpenseModal(true);
-                                                        }}
-                                                    >
-                                                        <Pencil size={14} />
-                                                        <span>Rediģēt</span>
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        className="delete"
-                                                        onClick={() => {
-                                                            setEntryToDelete(entry);
-                                                            setOpenEntryMenuId(null);
-                                                        }}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                        <span>Dzēst</span>
-                                                    </button>
-                                                </div>
-                                            )}
 
                                         </div>
                                     </div>
@@ -501,6 +541,60 @@ function DiaryCalendar({ property }) {
                 )}
 
             </div>
+
+            {entryMenu &&
+                createPortal(
+                    <div
+                        className="diary-entry-actions-menu diary-entry-actions-menu-portal"
+                        style={{
+                            top: `${entryMenu.top}px`,
+                            right: `${entryMenu.right}px`,
+                        }}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const entry = diaryEntries.find(
+                                    (item) =>
+                                        item.id === entryMenu.entryId
+                                );
+
+                                if (!entry) {
+                                    return;
+                                }
+
+                                setEditingExpense(entry);
+                                setEntryMenu(null);
+                                setShowExpenseModal(true);
+                            }}
+                        >
+                            <Pencil size={14} />
+                            <span>Rediģēt</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className="delete"
+                            onClick={() => {
+                                const entry = diaryEntries.find(
+                                    (item) =>
+                                        item.id === entryMenu.entryId
+                                );
+
+                                if (!entry) {
+                                    return;
+                                }
+
+                                setEntryToDelete(entry);
+                                setEntryMenu(null);
+                            }}
+                        >
+                            <Trash2 size={14} />
+                            <span>Dzēst</span>
+                        </button>
+                    </div>,
+                    document.body
+                )}
 
             {entryToDelete && (
                 <div

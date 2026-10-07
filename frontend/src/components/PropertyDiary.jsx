@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./PropertyDiary.css";
 import DiaryCalendar from "./DiaryCalendar";
 import PropertyExpenses from "./PropertyExpenses";
+import PropertyLoan from "./PropertyLoan";
 
 function PropertyDiary({
     property,
@@ -42,8 +43,15 @@ function PropertyDiary({
                     />
                 )}
 
+                {activeSection === "loan" && (
+                    <PropertyLoan
+                        property={property}
+                    />
+                )}
+
                 {activeSection !== "calendar" &&
-                    activeSection !== "expenses" && (
+                    activeSection !== "expenses" &&
+                    activeSection !== "loan" && (
                         <>
                             <h3>{selectedSection?.label}</h3>
 

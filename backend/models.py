@@ -201,3 +201,25 @@ class ExpenseEntry(Base):
         String(100),
         nullable=True
     )
+
+
+class LoanEntry(Base):
+    __tablename__ = "loan_entries"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    diary_entry_id: Mapped[int] = mapped_column(
+        ForeignKey("diary_entries.id"),
+        unique=True,
+        nullable=False,
+    )
+
+    amount: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2),
+        nullable=False,
+    )
+
+    payment_type: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+    )

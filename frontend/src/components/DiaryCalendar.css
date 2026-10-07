@@ -352,6 +352,11 @@
     box-shadow: 0 8px 24px rgba(20, 55, 42, 0.12);
 }
 
+.diary-entry-actions-menu-portal {
+    position: fixed;
+    z-index: 1000;
+}
+
 .diary-entry-actions-menu button {
     display: flex;
     align-items: center;

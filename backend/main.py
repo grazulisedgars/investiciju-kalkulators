@@ -23,7 +23,7 @@ import models
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User, Property, DiaryEntry, ExpenseEntry
+from models import User, Property, DiaryEntry, ExpenseEntry, LoanEntry
 from schemas import (
     UserRegister,
     UserLogin,
@@ -31,6 +31,8 @@ from schemas import (
     PropertyUpdate,
     ExpenseEntryCreate,
     ExpenseEntryUpdate,
+    LoanEntryCreate,
+    LoanEntryUpdate,
 )
 from security import (
     hash_password,
@@ -827,6 +829,19 @@ def get_diary_entries(
                 entry_data["supplier"] = expense.supplier
                 entry_data["room"] = expense.room
 
+        elif entry.entry_type == "loan":
+            loan = (
+                db.query(LoanEntry)
+                .filter(
+                    LoanEntry.diary_entry_id == entry.id
+                )
+                .first()
+            )
+
+            if loan:
+                entry_data["amount"] = loan.amount
+                entry_data["payment_type"] = loan.payment_type
+
         result.append(entry_data)
 
     return result
@@ -905,13 +920,26 @@ def delete_diary_entry(
             db.delete(expense_entry)
             db.flush()
 
-        db.delete(diary_entry)
-        db.commit()
+    elif diary_entry.entry_type == "loan":
+        loan_entry = (
+            db.query(LoanEntry)
+            .filter(
+                LoanEntry.diary_entry_id == diary_entry.id
+            )
+            .first()
+        )
 
-        return {
-            "message": "Dienasgrāmatas ieraksts veiksmīgi izdzēsts.",
-            "entry_id": entry_id,
-        }
+        if loan_entry:
+            db.delete(loan_entry)
+            db.flush()
+
+    db.delete(diary_entry)
+    db.commit()
+
+    return {
+        "message": "Dienasgrāmatas ieraksts veiksmīgi izdzēsts.",
+        "entry_id": entry_id,
+    }
 # --------------------------------------------------------------------------
 
 
@@ -1017,4 +1045,197 @@ def update_expense_entry(
         "amount": expense_entry.amount,
         "supplier": expense_entry.supplier,
         "room": expense_entry.room,
+    }
+# --------------------------------------------------------------------------
+
+
+@app.post("/properties/{property_id}/diary/loans")
+def create_loan_entry(
+    property_id: int,
+    loan_data: LoanEntryCreate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = DiaryEntry(
+        property_id=property.property_id,
+        entry_type="loan",
+        entry_date=loan_data.entry_date,
+        title=loan_data.title,
+        notes=loan_data.notes,
+    )
+
+    db.add(diary_entry)
+    db.flush()
+
+    loan_entry = LoanEntry(
+        diary_entry_id=diary_entry.id,
+        amount=loan_data.amount,
+        payment_type=loan_data.payment_type,
+    )
+
+    db.add(loan_entry)
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(loan_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "amount": loan_entry.amount,
+        "payment_type": loan_entry.payment_type,
+    }
+# --------------------------------------------------------------------------
+
+
+@app.patch("/properties/{property_id}/diary/loans/{entry_id}")
+def update_loan_entry(
+    property_id: int,
+    entry_id: int,
+    loan_data: LoanEntryUpdate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = (
+        db.query(DiaryEntry)
+        .filter(
+            DiaryEntry.id == entry_id,
+            DiaryEntry.property_id == property_id,
+            DiaryEntry.entry_type == "loan",
+        )
+        .first()
+    )
+
+    if not diary_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Kredīta maksājuma ieraksts nav atrasts."
+        )
+
+    loan_entry = (
+        db.query(LoanEntry)
+        .filter(
+            LoanEntry.diary_entry_id == diary_entry.id
+        )
+        .first()
+    )
+
+    if not loan_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Kredīta maksājuma dati nav atrasti."
+        )
+
+    if loan_data.entry_date is not None:
+        diary_entry.entry_date = loan_data.entry_date
+
+    if loan_data.title is not None:
+        diary_entry.title = loan_data.title
+
+    if loan_data.notes is not None:
+        diary_entry.notes = loan_data.notes
+
+    if loan_data.amount is not None:
+        loan_entry.amount = loan_data.amount
+
+    if loan_data.payment_type is not None:
+        loan_entry.payment_type = loan_data.payment_type
+
+    diary_entry.updated_at = datetime.now(timezone.utc)
+
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(loan_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "updated_at": diary_entry.updated_at,
+        "amount": loan_entry.amount,
+        "payment_type": loan_entry.payment_type,
     }

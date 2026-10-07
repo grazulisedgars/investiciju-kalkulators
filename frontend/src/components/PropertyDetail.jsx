@@ -332,7 +332,13 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
         <div className="property-detail">
 
             {/* Īpašuma galvene */}
-            <div className="property-detail-header">
+            <div
+                className={`property-detail-header ${activeTab === "diary" &&
+                        activeDiarySection === "expenses"
+                        ? "property-detail-header-expenses"
+                        : ""
+                    }`}
+            >
 
                 <div className="property-detail-header-top">
 
@@ -576,14 +582,16 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                 {/* Galvenā navigācija */}
                 <div className="property-detail-tabs">
 
-                    <button
-                        type="button"
-                        className={activeTab === "analysis" ? "active" : ""}
-                        onClick={() => setActiveTab("analysis")}
-                    >
-                        <Calculator size={17} strokeWidth={2} />
-                        <span>Analīze</span>
-                    </button>
+                    {!(activeTab === "diary" && showDiarySections) && (
+                        <button
+                            type="button"
+                            className={activeTab === "analysis" ? "active" : ""}
+                            onClick={() => setActiveTab("analysis")}
+                        >
+                            <Calculator size={17} strokeWidth={2} />
+                            <span>Analīze</span>
+                        </button>
+                    )}
 
                     <button
                         type="button"
@@ -696,7 +704,13 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
             {/*Sadaļu saturs */}
 
             <div
-                className={`property-detail-content ${activeTab === "diary" ? "property-detail-content-diary" : ""
+                className={`property-detail-content ${activeTab === "diary"
+                    ? "property-detail-content-diary"
+                    : ""
+                    } ${activeTab === "diary" &&
+                        activeDiarySection === "expenses"
+                        ? "property-detail-content-expenses"
+                        : ""
                     }`}
             >
 
