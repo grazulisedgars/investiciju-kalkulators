@@ -23,7 +23,7 @@ import models
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User, Property, DiaryEntry, ExpenseEntry, LoanEntry
+from models import User, Property, DiaryEntry, ExpenseEntry, LoanEntry, UtilityEntry
 from schemas import (
     UserRegister,
     UserLogin,
@@ -33,6 +33,8 @@ from schemas import (
     ExpenseEntryUpdate,
     LoanEntryCreate,
     LoanEntryUpdate,
+    UtilityEntryCreate,
+    UtilityEntryUpdate,
 )
 from security import (
     hash_password,
@@ -842,6 +844,18 @@ def get_diary_entries(
                 entry_data["amount"] = loan.amount
                 entry_data["payment_type"] = loan.payment_type
 
+        elif entry.entry_type == "utility":
+            utility = (
+                db.query(UtilityEntry)
+                .filter(
+                    UtilityEntry.diary_entry_id == entry.id
+                )
+                .first()
+            )
+
+            if utility:
+                entry_data["amount"] = utility.amount
+
         result.append(entry_data)
 
     return result
@@ -931,6 +945,19 @@ def delete_diary_entry(
 
         if loan_entry:
             db.delete(loan_entry)
+            db.flush()
+
+    elif diary_entry.entry_type == "utility":
+        utility_entry = (
+            db.query(UtilityEntry)
+            .filter(
+                UtilityEntry.diary_entry_id == diary_entry.id
+            )
+            .first()
+        )
+
+        if utility_entry:
+            db.delete(utility_entry)
             db.flush()
 
     db.delete(diary_entry)
@@ -1238,4 +1265,192 @@ def update_loan_entry(
         "updated_at": diary_entry.updated_at,
         "amount": loan_entry.amount,
         "payment_type": loan_entry.payment_type,
+    }
+# --------------------------------------------------------------------------
+
+
+@app.post("/properties/{property_id}/diary/utilities")
+def create_utility_entry(
+    property_id: int,
+    utility_data: UtilityEntryCreate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = DiaryEntry(
+        property_id=property.property_id,
+        entry_type="utility",
+        entry_date=utility_data.entry_date,
+        title=utility_data.title,
+        notes=utility_data.notes,
+    )
+
+    db.add(diary_entry)
+    db.flush()
+
+    utility_entry = UtilityEntry(
+        diary_entry_id=diary_entry.id,
+        amount=utility_data.amount,
+    )
+
+    db.add(utility_entry)
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(utility_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "amount": utility_entry.amount,
+    }
+
+# --------------------------------------------------------------------------
+
+
+@app.patch("/properties/{property_id}/diary/utilities/{entry_id}")
+def update_utility_entry(
+    property_id: int,
+    entry_id: int,
+    utility_data: UtilityEntryUpdate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = (
+        db.query(DiaryEntry)
+        .filter(
+            DiaryEntry.id == entry_id,
+            DiaryEntry.property_id == property_id,
+            DiaryEntry.entry_type == "utility",
+        )
+        .first()
+    )
+
+    if not diary_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Komunālā maksājuma ieraksts nav atrasts."
+        )
+
+    utility_entry = (
+        db.query(UtilityEntry)
+        .filter(
+            UtilityEntry.diary_entry_id == diary_entry.id
+        )
+        .first()
+    )
+
+    if not utility_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Komunālā maksājuma dati nav atrasti."
+        )
+
+    if utility_data.entry_date is not None:
+        diary_entry.entry_date = utility_data.entry_date
+
+    if utility_data.title is not None:
+        diary_entry.title = utility_data.title
+
+    if "notes" in utility_data.model_fields_set:
+        diary_entry.notes = utility_data.notes
+
+    if utility_data.amount is not None:
+        utility_entry.amount = utility_data.amount
+
+    diary_entry.updated_at = datetime.now(timezone.utc)
+
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(utility_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "updated_at": diary_entry.updated_at,
+        "amount": utility_entry.amount,
     }

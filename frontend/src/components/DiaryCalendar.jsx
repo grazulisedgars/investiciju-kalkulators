@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import "./DiaryCalendar.css";
 import ExpenseModal from "./ExpenseModal";
+import LoanModal from "./LoanModal";
+import UtilityModal from "./UtilityModal";
 
 function DiaryCalendar({ property }) {
     const today = new Date();
@@ -30,6 +32,10 @@ function DiaryCalendar({ property }) {
     const entryMenuRef = useRef(null);
     const [showExpenseModal, setShowExpenseModal] = useState(false);
     const [editingExpense, setEditingExpense] = useState(null);
+    const [showLoanModal, setShowLoanModal] = useState(false);
+    const [editingLoan, setEditingLoan] = useState(null);
+    const [showUtilityModal, setShowUtilityModal] = useState(false);
+    const [editingUtility, setEditingUtility] = useState(null);
 
     const [entryMenu, setEntryMenu] =
         useState(null);
@@ -310,7 +316,7 @@ function DiaryCalendar({ property }) {
                                         .filter((entry) => entry.entry_date === dateKey)
                                         .map((entry) => entry.entry_type)
                                 ),
-                            ]
+                            ].slice(0, 3)
                             : [];
 
                         return day ? (
@@ -360,7 +366,7 @@ function DiaryCalendar({ property }) {
 
 
                     <div className="diary-calendar-legend-item">
-                        <span className="diary-legend-dot utilities"></span>
+                        <span className="diary-legend-dot utility"></span>
                         <span>Komunālie maksājumi</span>
                     </div>
 
@@ -420,15 +426,30 @@ function DiaryCalendar({ property }) {
                                         </button>
 
                                         {property?.financing_type === "mortgage" && (
-                                            <button type="button">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowEntryMenu(false);
+                                                    setEditingLoan(null);
+                                                    setShowLoanModal(true);
+                                                }}
+                                            >
                                                 <span className="diary-entry-menu-icon loan">
                                                     <Landmark size={14} />
                                                 </span>
+
                                                 <span>Kredīta maksājums</span>
                                             </button>
                                         )}
 
-                                        <button type="button">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowEntryMenu(false);
+                                                setEditingUtility(null);
+                                                setShowUtilityModal(true);
+                                            }}
+                                        >
                                             <span className="diary-entry-menu-icon utilities">
                                                 <HousePlug size={14} />
                                             </span>
@@ -461,30 +482,52 @@ function DiaryCalendar({ property }) {
                                         key={entry.id}
                                         className={`diary-entry-card ${entry.entry_type}`}
                                     >
-                                        <div className="diary-entry-icon expense">
-                                            <Receipt size={17} strokeWidth={2} />
+                                        <div
+                                            className={`diary-entry-icon ${entry.entry_type}`}
+                                        >
+                                            {entry.entry_type === "loan" ? (
+                                                <Landmark size={17} strokeWidth={2} />
+                                            ) : entry.entry_type === "utility" ? (
+                                                <HousePlug size={17} strokeWidth={2} />
+                                            ) : (
+                                                <Receipt size={17} strokeWidth={2} />
+                                            )}
                                         </div>
 
                                         <div className="diary-entry-description">
-                                            <span className="diary-entry-type">
-                                                Izmaksas
+                                            <span
+                                                className={`diary-entry-type ${entry.entry_type}`}
+                                            >
+                                                {entry.entry_type === "loan"
+                                                    ? "Kredīts"
+                                                    : entry.entry_type === "utility"
+                                                        ? "Komunālie maksājumi"
+                                                        : "Izmaksas"}
                                             </span>
 
                                             <span className="diary-entry-title">
                                                 {entry.title}
                                             </span>
                                         </div>
-
                                         <div className="diary-entry-value">
                                             <strong>
                                                 €{Number(entry.amount).toFixed(2)}
                                             </strong>
 
                                             <span>
-                                                {entry.supplier || "—"}
+                                                {entry.entry_type === "loan"
+                                                    ? entry.payment_type === "principal"
+                                                        ? "Pamatsumma"
+                                                        : entry.payment_type === "interest"
+                                                            ? "Procenti"
+                                                            : entry.payment_type === "insurance"
+                                                                ? "Apdrošināšana"
+                                                                : "Cits"
+                                                    : entry.entry_type === "utility"
+                                                        ? null
+                                                        : entry.supplier || "—"}
                                             </span>
                                         </div>
-
                                         <div className="diary-entry-time">
                                             {new Date(entry.created_at).toLocaleTimeString(
                                                 "lv-LV",
@@ -563,9 +606,18 @@ function DiaryCalendar({ property }) {
                                     return;
                                 }
 
-                                setEditingExpense(entry);
                                 setEntryMenu(null);
-                                setShowExpenseModal(true);
+
+                                if (entry.entry_type === "loan") {
+                                    setEditingLoan(entry);
+                                    setShowLoanModal(true);
+                                } else if (entry.entry_type === "utility") {
+                                    setEditingUtility(entry);
+                                    setShowUtilityModal(true);
+                                } else {
+                                    setEditingExpense(entry);
+                                    setShowExpenseModal(true);
+                                }
                             }}
                         >
                             <Pencil size={14} />
@@ -658,6 +710,36 @@ function DiaryCalendar({ property }) {
                     onClose={() => {
                         setEditingExpense(null);
                         setShowExpenseModal(false);
+                    }}
+                    onSaved={async () => {
+                        await fetchDiaryEntries();
+                    }}
+                />
+            )}
+
+            {showLoanModal && (
+                <LoanModal
+                    property={property}
+                    loan={editingLoan}
+                    initialDate={selectedDate}
+                    onClose={() => {
+                        setEditingLoan(null);
+                        setShowLoanModal(false);
+                    }}
+                    onSaved={async () => {
+                        await fetchDiaryEntries();
+                    }}
+                />
+            )}
+
+            {showUtilityModal && (
+                <UtilityModal
+                    property={property}
+                    utility={editingUtility}
+                    initialDate={selectedDate}
+                    onClose={() => {
+                        setEditingUtility(null);
+                        setShowUtilityModal(false);
                     }}
                     onSaved={async () => {
                         await fetchDiaryEntries();

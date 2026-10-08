@@ -334,9 +334,9 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
             {/* Īpašuma galvene */}
             <div
                 className={`property-detail-header ${activeTab === "diary" &&
-                        activeDiarySection === "expenses"
-                        ? "property-detail-header-expenses"
-                        : ""
+                    ["expenses", "loan", "utilities"].includes(activeDiarySection)
+                    ? "property-detail-header-expenses"
+                    : ""
                     }`}
             >
 
@@ -708,7 +708,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     ? "property-detail-content-diary"
                     : ""
                     } ${activeTab === "diary" &&
-                        activeDiarySection === "expenses"
+                        ["expenses", "loan", "utilities"].includes(activeDiarySection)
                         ? "property-detail-content-expenses"
                         : ""
                     }`}

@@ -3,6 +3,7 @@ import "./PropertyDiary.css";
 import DiaryCalendar from "./DiaryCalendar";
 import PropertyExpenses from "./PropertyExpenses";
 import PropertyLoan from "./PropertyLoan";
+import PropertyUtilities from "./PropertyUtilities";
 
 function PropertyDiary({
     property,
@@ -49,9 +50,16 @@ function PropertyDiary({
                     />
                 )}
 
+                {activeSection === "utilities" && (
+                    <PropertyUtilities
+                        property={property}
+                    />
+                )}
+
                 {activeSection !== "calendar" &&
                     activeSection !== "expenses" &&
-                    activeSection !== "loan" && (
+                    activeSection !== "loan" &&
+                    activeSection !== "utilities" && (
                         <>
                             <h3>{selectedSection?.label}</h3>
 

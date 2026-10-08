@@ -3,6 +3,8 @@ import {
     CalendarDays,
     ChevronLeft,
     ChevronRight,
+    ChevronDown,
+    Check,
 } from "lucide-react";
 
 function LoanModal({
@@ -13,6 +15,10 @@ function LoanModal({
     onSaved,
 }) {
     const loanDatePickerRef = useRef(null);
+    const loanPaymentTypeRef = useRef(null);
+
+    const [showPaymentTypeMenu, setShowPaymentTypeMenu] =
+        useState(false);
 
     const [loanForm, setLoanForm] = useState({
         entry_date: initialDate || "",
@@ -101,6 +107,34 @@ function LoanModal({
             );
         };
     }, [showLoanDatePicker, onClose]);
+
+    useEffect(() => {
+        if (!showPaymentTypeMenu) return;
+
+        function handleClickOutside(event) {
+            if (
+                loanPaymentTypeRef.current &&
+                !loanPaymentTypeRef.current.contains(event.target)
+            ) {
+                setShowPaymentTypeMenu(false);
+            }
+        }
+
+        function handleEscape(event) {
+            if (event.key === "Escape") {
+                event.stopImmediatePropagation();
+                setShowPaymentTypeMenu(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape, true);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEscape, true);
+        };
+    }, [showPaymentTypeMenu]);
 
     async function handleLoanSave() {
         if (
@@ -306,6 +340,17 @@ function LoanModal({
             `${loanCalendarMonthNames[Number(month) - 1]}, ` +
             `${year}`;
     }
+
+    const paymentTypeOptions = [
+        { value: "principal", label: "Pamatsumma" },
+        { value: "interest", label: "Procenti" },
+        { value: "insurance", label: "Apdrošināšana" },
+        { value: "other", label: "Cits" },
+    ];
+
+    const selectedPaymentType = paymentTypeOptions.find(
+        (option) => option.value === loanForm.payment_type
+    );
 
     return (
         <div
@@ -522,33 +567,73 @@ function LoanModal({
                             />
                         </div>
 
-                        <div className="diary-form-group">
-                            <label htmlFor="loan-payment-type">
+                        <div
+                            className="diary-form-group"
+                            ref={loanPaymentTypeRef}
+                        >
+                            <label id="loan-payment-type-label">
                                 Maksājuma tips
                             </label>
 
-                            <select
-                                id="loan-payment-type"
-                                name="payment_type"
-                                value={loanForm.payment_type}
-                                onChange={handleLoanChange}
-                            >
-                                <option value="principal">
-                                    Pamatsumma
-                                </option>
+                            <div className="loan-payment-select">
+                                <button
+                                    type="button"
+                                    className="loan-payment-select-trigger"
+                                    aria-labelledby="loan-payment-type-label"
+                                    aria-haspopup="listbox"
+                                    aria-expanded={showPaymentTypeMenu}
+                                    onClick={() =>
+                                        setShowPaymentTypeMenu((prev) => !prev)
+                                    }
+                                >
+                                    <span>{selectedPaymentType?.label}</span>
 
-                                <option value="interest">
-                                    Procenti
-                                </option>
+                                    <ChevronDown
+                                        size={17}
+                                        className={
+                                            showPaymentTypeMenu ? "rotated" : ""
+                                        }
+                                    />
+                                </button>
 
-                                <option value="insurance">
-                                    Apdrošināšana
-                                </option>
+                                {showPaymentTypeMenu && (
+                                    <div
+                                        className="loan-payment-select-menu"
+                                        role="listbox"
+                                        aria-labelledby="loan-payment-type-label"
+                                    >
+                                        {paymentTypeOptions.map((option) => (
+                                            <button
+                                                key={option.value}
+                                                type="button"
+                                                role="option"
+                                                aria-selected={
+                                                    loanForm.payment_type === option.value
+                                                }
+                                                className={
+                                                    loanForm.payment_type === option.value
+                                                        ? "selected"
+                                                        : ""
+                                                }
+                                                onClick={() => {
+                                                    setLoanForm((prev) => ({
+                                                        ...prev,
+                                                        payment_type: option.value,
+                                                    }));
 
-                                <option value="other">
-                                    Cits
-                                </option>
-                            </select>
+                                                    setShowPaymentTypeMenu(false);
+                                                }}
+                                            >
+                                                <span>{option.label}</span>
+
+                                                {loanForm.payment_type === option.value && (
+                                                    <Check size={15} />
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 

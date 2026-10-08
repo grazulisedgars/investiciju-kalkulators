@@ -161,6 +161,20 @@
     background: #7cb342;
 }
 
+.diary-calendar-entry-dot.utility,
+.diary-legend-dot.utility {
+    background-color: #00a86b;
+}
+
+.diary-entry-icon.utility {
+    background-color: #e6f7ef;
+    color: #00a86b;
+}
+
+.diary-entry-type.utility {
+    color: #008b59;
+}
+
 .diary-calendar-legend {
     display: flex;
     flex-direction: column;
@@ -988,6 +1002,11 @@
     color: #f0785a;
 }
 
+.diary-entry-icon.loan {
+    background: #f8eaf0;
+    color: #9b3f62;
+}
+
 
 .diary-entry-title {
     overflow: hidden;
@@ -1012,11 +1031,18 @@
 }
 
 .diary-entry-type {
-    color: #f0785a;
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+
+.diary-entry-type.expense {
+    color: #f0785a;
+}
+
+.diary-entry-type.loan {
+    color: #9b3f62;
 }
 
 
@@ -1074,6 +1100,106 @@
 .diary-entry-more:hover {
     background: #f0f5f2;
     color: #145b42;
+}
+
+/* LOAN PAYMENT TYPE DROPDOWN */
+
+.loan-payment-select {
+    position: relative;
+    width: 100%;
+}
+
+.loan-payment-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+
+    background: #ffffff;
+    border: 1px solid #dce6df;
+    border-radius: 8px;
+
+    color: #173e30;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.loan-payment-select-trigger:hover {
+    border-color: #a8c4b3;
+}
+
+.loan-payment-select-trigger:focus-visible {
+    outline: none;
+    border-color: #77a58e;
+    box-shadow: 0 0 0 3px rgba(20, 91, 66, 0.08);
+}
+
+.loan-payment-select-trigger svg {
+    flex-shrink: 0;
+    color: #64756c;
+    transition: transform 0.2s ease;
+}
+
+.loan-payment-select-trigger svg.rotated {
+    transform: rotate(180deg);
+}
+
+.loan-payment-select-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 100;
+
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px;
+
+    background: #ffffff;
+    border: 1px solid #dce6df;
+    border-radius: 9px;
+
+    box-shadow: 0 10px 28px rgba(20, 55, 42, 0.14);
+}
+
+.loan-payment-select-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    padding: 10px 12px;
+
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+
+    color: #34473e;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.loan-payment-select-menu button:hover {
+    background: #f1f7f3;
+}
+
+.loan-payment-select-menu button.selected {
+    background: #e6f7ef;
+    color: #34473e;
+    font-weight: 400;
+}
+
+.loan-payment-select-menu button.selected svg {
+    color: #00a86b;
 }
 
 @media (max-width: 600px) {

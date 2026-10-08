@@ -156,3 +156,28 @@ class LoanEntryUpdate(BaseModel):
     amount: Decimal | None = Field(default=None, gt=0, decimal_places=2)
     payment_type: str | None = Field(default=None, min_length=1, max_length=30)
     notes: str | None = Field(default=None, max_length=1000)
+
+
+class UtilityEntryCreate(BaseModel):
+    entry_date: date
+    title: str = Field(min_length=1, max_length=255)
+    amount: Decimal = Field(gt=0, decimal_places=2)
+    notes: str | None = Field(default=None, max_length=1000)
+
+
+class UtilityEntryUpdate(BaseModel):
+    entry_date: date | None = None
+    title: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255
+    )
+    amount: Decimal | None = Field(
+        default=None,
+        gt=0,
+        decimal_places=2
+    )
+    notes: str | None = Field(
+        default=None,
+        max_length=1000
+    )

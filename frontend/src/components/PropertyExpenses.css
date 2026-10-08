@@ -289,3 +289,71 @@
 .property-expense-actions-menu button.delete:hover {
     background: #fff1f1;
 }
+
+/* Loan summary */
+
+.property-loan-summary {
+    margin-top: 10px;
+
+    background: #ffffff;
+    border: 1px solid #e1eae4;
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+.property-loan-summary-breakdown {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    background: #ffffff;
+}
+
+.property-loan-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    padding: 12px 20px;
+
+    border-right: 1px solid #e1eae4;
+}
+
+.property-loan-summary-item:last-child {
+    border-right: none;
+}
+
+.property-loan-summary-item span {
+    color: #65766d;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.property-loan-summary-item strong {
+    color: #173e30;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.property-loan-summary-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 20px;
+
+    background: #f1f6f3;
+    border-top: 1px solid #e1eae4;
+}
+
+.property-loan-summary-total span {
+    color: #173e30;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.property-loan-summary-total strong {
+    color: #0f6b4d;
+    font-size: 18px;
+    font-weight: 700;
+}

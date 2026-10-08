@@ -223,3 +223,22 @@ class LoanEntry(Base):
         String(30),
         nullable=False,
     )
+
+
+class UtilityEntry(Base):
+    __tablename__ = "utility_entries"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
+
+    diary_entry_id: Mapped[int] = mapped_column(
+        ForeignKey("diary_entries.id"),
+        unique=True,
+        nullable=False
+    )
+
+    amount: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2),
+        nullable=False
+    )

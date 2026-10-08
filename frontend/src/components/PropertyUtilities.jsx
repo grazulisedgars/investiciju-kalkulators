@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -6,34 +7,35 @@ import {
     Pencil,
     Trash2,
 } from "lucide-react";
-import LoanModal from "./LoanModal";
+
+import UtilityModal from "./UtilityModal";
 import "./PropertyExpenses.css";
 
-function PropertyLoan({ property }) {
-    const [loans, setLoans] = useState([]);
+function PropertyUtilities({ property }) {
+    const [utilities, setUtilities] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const [showLoanModal, setShowLoanModal] =
+    const [showUtilityModal, setShowUtilityModal] =
         useState(false);
 
-    const [editingLoan, setEditingLoan] =
+    const [editingUtility, setEditingUtility] =
         useState(null);
 
-    const [loanMenu, setLoanMenu] =
+    const [utilityMenu, setUtilityMenu] =
         useState(null);
 
-    const [loanToDelete, setLoanToDelete] =
+    const [utilityToDelete, setUtilityToDelete] =
         useState(null);
 
-    const [isDeletingLoan, setIsDeletingLoan] =
+    const [isDeletingUtility, setIsDeletingUtility] =
         useState(false);
 
     useEffect(() => {
-        if (!loanMenu) {
+        if (!utilityMenu) {
             return;
         }
 
-        function handleLoanMenuClickOutside(event) {
+        function handleUtilityMenuClickOutside(event) {
             const menu = document.querySelector(
                 ".property-expense-actions-menu-portal"
             );
@@ -46,40 +48,40 @@ function PropertyLoan({ property }) {
                 !menu.contains(event.target) &&
                 !clickedMoreButton
             ) {
-                setLoanMenu(null);
+                setUtilityMenu(null);
             }
         }
 
-        function handleLoanMenuKeyDown(event) {
+        function handleUtilityMenuKeyDown(event) {
             if (event.key === "Escape") {
-                setLoanMenu(null);
+                setUtilityMenu(null);
             }
         }
 
         document.addEventListener(
             "mousedown",
-            handleLoanMenuClickOutside
+            handleUtilityMenuClickOutside
         );
 
         document.addEventListener(
             "keydown",
-            handleLoanMenuKeyDown
+            handleUtilityMenuKeyDown
         );
 
         return () => {
             document.removeEventListener(
                 "mousedown",
-                handleLoanMenuClickOutside
+                handleUtilityMenuClickOutside
             );
 
             document.removeEventListener(
                 "keydown",
-                handleLoanMenuKeyDown
+                handleUtilityMenuKeyDown
             );
         };
-    }, [loanMenu]);
+    }, [utilityMenu]);
 
-    async function fetchLoans() {
+    async function fetchUtilities() {
         try {
             setIsLoading(true);
 
@@ -92,24 +94,19 @@ function PropertyLoan({ property }) {
 
             if (!response.ok) {
                 throw new Error(
-                    "Neizdevās ielādēt kredīta maksājumus."
+                    "Neizdevās ielādēt komunālos maksājumus."
                 );
             }
 
             const data = await response.json();
 
-            const loanEntries = data.filter(
-                (entry) => entry.entry_type === "loan"
+            const utilityEntries = data.filter(
+                (entry) => entry.entry_type === "utility"
             );
 
-            setLoans(loanEntries);
-
+            setUtilities(utilityEntries);
         } catch (error) {
-            console.error(
-                "Loan GET error:",
-                error
-            );
-
+            console.error("Utility GET error:", error);
         } finally {
             setIsLoading(false);
         }
@@ -117,20 +114,20 @@ function PropertyLoan({ property }) {
 
     useEffect(() => {
         if (property?.property_id) {
-            fetchLoans();
+            fetchUtilities();
         }
     }, [property?.property_id]);
 
-    async function handleDeleteLoan() {
-        if (!loanToDelete) {
+    async function handleDeleteUtility() {
+        if (!utilityToDelete) {
             return;
         }
 
         try {
-            setIsDeletingLoan(true);
+            setIsDeletingUtility(true);
 
             const response = await fetch(
-                `http://localhost:8000/properties/${property.property_id}/diary/${loanToDelete.id}`,
+                `http://localhost:8000/properties/${property.property_id}/diary/${utilityToDelete.id}`,
                 {
                     method: "DELETE",
                     credentials: "include",
@@ -142,74 +139,24 @@ function PropertyLoan({ property }) {
 
                 throw new Error(
                     errorData.detail ||
-                    "Neizdevās izdzēst kredīta maksājumu."
+                    "Neizdevās izdzēst komunālo maksājumu."
                 );
             }
 
-            setLoanToDelete(null);
-
-            await fetchLoans();
-
+            setUtilityToDelete(null);
+            await fetchUtilities();
         } catch (error) {
-            console.error(
-                "Loan DELETE error:",
-                error
-            );
-
+            console.error("Utility DELETE error:", error);
         } finally {
-            setIsDeletingLoan(false);
+            setIsDeletingUtility(false);
         }
     }
 
-    const totalPaid = loans.reduce(
-        (total, loan) =>
-            total + Number(loan.amount || 0),
+    const totalUtilities = utilities.reduce(
+        (total, utility) =>
+            total + Number(utility.amount || 0),
         0
     );
-
-    const totalPrincipal = loans
-        .filter(
-            (loan) =>
-                loan.payment_type === "principal"
-        )
-        .reduce(
-            (total, loan) =>
-                total + Number(loan.amount || 0),
-            0
-        );
-
-    const totalInterest = loans
-        .filter(
-            (loan) =>
-                loan.payment_type === "interest"
-        )
-        .reduce(
-            (total, loan) =>
-                total + Number(loan.amount || 0),
-            0
-        );
-
-    const totalInsurance = loans
-        .filter(
-            (loan) =>
-                loan.payment_type === "insurance"
-        )
-        .reduce(
-            (total, loan) =>
-                total + Number(loan.amount || 0),
-            0
-        );
-
-    const totalOther = loans
-        .filter(
-            (loan) =>
-                loan.payment_type === "other"
-        )
-        .reduce(
-            (total, loan) =>
-                total + Number(loan.amount || 0),
-            0
-        );
 
     function formatDate(dateString) {
         if (!dateString) {
@@ -223,14 +170,13 @@ function PropertyLoan({ property }) {
 
     return (
         <div className="property-expenses">
-
             <div className="property-expenses-header">
                 <div>
-                    <h2>Kredīta maksājumi</h2>
+                    <h2>Komunālie maksājumi</h2>
 
                     <p>
-                        Visi ar hipotēku saistītie maksājumi –
-                        pamatsumma, procenti un citi.
+                        Visi ar īpašumu saistītie komunālie
+                        pakalpojumi un rēķini.
                     </p>
                 </div>
 
@@ -238,8 +184,8 @@ function PropertyLoan({ property }) {
                     type="button"
                     className="property-expenses-add"
                     onClick={() => {
-                        setEditingLoan(null);
-                        setShowLoanModal(true);
+                        setEditingUtility(null);
+                        setShowUtilityModal(true);
                     }}
                 >
                     <Plus size={17} />
@@ -249,54 +195,43 @@ function PropertyLoan({ property }) {
 
             {isLoading ? (
                 <div className="property-expenses-empty">
-                    Ielādē kredīta maksājumus...
+                    Ielādē komunālos maksājumus...
                 </div>
-            ) : loans.length > 0 ? (
+            ) : utilities.length > 0 ? (
                 <>
                     <div className="property-expenses-table-wrapper">
                         <table className="property-expenses-table">
                             <thead>
                                 <tr>
                                     <th>Datums</th>
-                                    <th>Apraksts</th>
+                                    <th>Maksājums</th>
                                     <th>Summa (€)</th>
-                                    <th>Tips</th>
                                     <th>Piezīmes</th>
                                     <th aria-label="Darbības" />
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {loans.map((loan) => (
-                                    <tr key={loan.id}>
+                                {utilities.map((utility) => (
+                                    <tr key={utility.id}>
                                         <td>
                                             {formatDate(
-                                                loan.entry_date
+                                                utility.entry_date
                                             )}
                                         </td>
 
                                         <td className="expense-description">
-                                            {loan.title}
+                                            {utility.title}
                                         </td>
 
                                         <td className="expense-amount">
                                             €{Number(
-                                                loan.amount
+                                                utility.amount
                                             ).toFixed(2)}
                                         </td>
 
-                                        <td>
-                                            {loan.payment_type === "principal"
-                                                ? "Pamatsumma"
-                                                : loan.payment_type === "interest"
-                                                    ? "Procenti"
-                                                    : loan.payment_type === "insurance"
-                                                        ? "Apdrošināšana"
-                                                        : "Cits"}
-                                        </td>
-
                                         <td className="expense-notes">
-                                            {loan.notes || "—"}
+                                            {utility.notes || "—"}
                                         </td>
 
                                         <td className="property-expense-actions-cell">
@@ -304,29 +239,32 @@ function PropertyLoan({ property }) {
                                                 <button
                                                     type="button"
                                                     className="property-expense-more"
-                                                    aria-label="Kredīta maksājuma darbības"
+                                                    aria-label="Maksājuma darbības"
                                                     onClick={(event) => {
                                                         const buttonRect =
                                                             event.currentTarget.getBoundingClientRect();
 
-                                                        setLoanMenu((currentMenu) => {
-                                                            if (
-                                                                currentMenu?.loanId ===
-                                                                loan.id
-                                                            ) {
-                                                                return null;
-                                                            }
+                                                        setUtilityMenu(
+                                                            (currentMenu) => {
+                                                                if (
+                                                                    currentMenu?.utilityId ===
+                                                                    utility.id
+                                                                ) {
+                                                                    return null;
+                                                                }
 
-                                                            return {
-                                                                loanId: loan.id,
-                                                                top:
-                                                                    buttonRect.bottom +
-                                                                    4,
-                                                                right:
-                                                                    window.innerWidth -
-                                                                    buttonRect.right,
-                                                            };
-                                                        });
+                                                                return {
+                                                                    utilityId:
+                                                                        utility.id,
+                                                                    top:
+                                                                        buttonRect.bottom +
+                                                                        4,
+                                                                    right:
+                                                                        window.innerWidth -
+                                                                        buttonRect.right,
+                                                                };
+                                                            }
+                                                        );
                                                     }}
                                                 >
                                                     <MoreVertical size={17} />
@@ -339,76 +277,48 @@ function PropertyLoan({ property }) {
                         </table>
                     </div>
 
-                    <div className="property-loan-summary">
-                        <div className="property-loan-summary-breakdown">
-                            <div className="property-loan-summary-item">
-                                <span>Pamatsummas atmaksa</span>
-                                <strong>
-                                    €{totalPrincipal.toFixed(2)}
-                                </strong>
-                            </div>
+                    <div className="property-expenses-total">
+                        <strong>
+                            Kopā samaksāts (komunālie)
+                        </strong>
 
-                            <div className="property-loan-summary-item">
-                                <span>Samaksātie procenti</span>
-                                <strong>
-                                    €{totalInterest.toFixed(2)}
-                                </strong>
-                            </div>
-
-                            <div className="property-loan-summary-item">
-                                <span>Apdrošināšana</span>
-                                <strong>
-                                    €{totalInsurance.toFixed(2)}
-                                </strong>
-                            </div>
-                            <div className="property-loan-summary-item">
-                                <span>Citi maksājumi</span>
-                                <strong>
-                                    €{totalOther.toFixed(2)}
-                                </strong>
-                            </div>
-                        </div>
-
-                        <div className="property-loan-summary-total">
-                            <span>Kopējās izmaksas</span>
-
-                            <strong>
-                                €{totalPaid.toFixed(2)}
-                            </strong>
-                        </div>
+                        <strong>
+                            €{totalUtilities.toFixed(2)}
+                        </strong>
                     </div>
                 </>
             ) : (
                 <div className="property-expenses-empty">
-                    Šim īpašumam vēl nav pievienotu kredīta maksājumu.
+                    Šim īpašumam vēl nav pievienotu
+                    komunālo maksājumu.
                 </div>
             )}
 
-            {loanMenu &&
+            {utilityMenu &&
                 createPortal(
                     <div
                         className="property-expense-actions-menu property-expense-actions-menu-portal"
                         style={{
-                            top: `${loanMenu.top}px`,
-                            right: `${loanMenu.right}px`,
+                            top: `${utilityMenu.top}px`,
+                            right: `${utilityMenu.right}px`,
                         }}
                     >
                         <button
                             type="button"
                             onClick={() => {
-                                const loan = loans.find(
+                                const utility = utilities.find(
                                     (item) =>
                                         item.id ===
-                                        loanMenu.loanId
+                                        utilityMenu.utilityId
                                 );
 
-                                if (!loan) {
+                                if (!utility) {
                                     return;
                                 }
 
-                                setEditingLoan(loan);
-                                setLoanMenu(null);
-                                setShowLoanModal(true);
+                                setEditingUtility(utility);
+                                setUtilityMenu(null);
+                                setShowUtilityModal(true);
                             }}
                         >
                             <Pencil size={14} />
@@ -419,18 +329,18 @@ function PropertyLoan({ property }) {
                             type="button"
                             className="delete"
                             onClick={() => {
-                                const loan = loans.find(
+                                const utility = utilities.find(
                                     (item) =>
                                         item.id ===
-                                        loanMenu.loanId
+                                        utilityMenu.utilityId
                                 );
 
-                                if (!loan) {
+                                if (!utility) {
                                     return;
                                 }
 
-                                setLoanToDelete(loan);
-                                setLoanMenu(null);
+                                setUtilityToDelete(utility);
+                                setUtilityMenu(null);
                             }}
                         >
                             <Trash2 size={14} />
@@ -440,15 +350,15 @@ function PropertyLoan({ property }) {
                     document.body
                 )}
 
-            {loanToDelete && (
+            {utilityToDelete && (
                 <div
                     className="diary-delete-overlay"
                     onClick={(event) => {
                         if (
                             event.target === event.currentTarget &&
-                            !isDeletingLoan
+                            !isDeletingUtility
                         ) {
-                            setLoanToDelete(null);
+                            setUtilityToDelete(null);
                         }
                     }}
                 >
@@ -459,14 +369,14 @@ function PropertyLoan({ property }) {
                             </div>
 
                             <h3>
-                                Dzēst kredīta maksājumu?
+                                Dzēst komunālo maksājumu?
                             </h3>
                         </div>
 
                         <p>
                             Vai tiešām vēlies dzēst{" "}
                             <strong>
-                                {loanToDelete.title}
+                                {utilityToDelete.title}
                             </strong>
                             ? Šo darbību nevarēs atsaukt.
                         </p>
@@ -476,9 +386,9 @@ function PropertyLoan({ property }) {
                                 type="button"
                                 className="diary-delete-cancel"
                                 onClick={() =>
-                                    setLoanToDelete(null)
+                                    setUtilityToDelete(null)
                                 }
-                                disabled={isDeletingLoan}
+                                disabled={isDeletingUtility}
                             >
                                 Atcelt
                             </button>
@@ -486,12 +396,12 @@ function PropertyLoan({ property }) {
                             <button
                                 type="button"
                                 className="diary-delete-confirm"
-                                onClick={handleDeleteLoan}
-                                disabled={isDeletingLoan}
+                                onClick={handleDeleteUtility}
+                                disabled={isDeletingUtility}
                             >
                                 <Trash2 size={15} />
 
-                                {isDeletingLoan
+                                {isDeletingUtility
                                     ? "Dzēš..."
                                     : "Dzēst"}
                             </button>
@@ -500,19 +410,18 @@ function PropertyLoan({ property }) {
                 </div>
             )}
 
-            {showLoanModal && (
-                <LoanModal
+            {showUtilityModal && (
+                <UtilityModal
                     property={property}
-                    loan={editingLoan}
+                    utility={editingUtility}
                     initialDate={
                         new Date().toLocaleDateString("en-CA")
                     }
-                    onClose={() => {
-                        setShowLoanModal(false);
-                        setEditingLoan(null);
-                    }}
+                    onClose={() =>
+                        setShowUtilityModal(false)
+                    }
                     onSaved={async () => {
-                        await fetchLoans();
+                        await fetchUtilities();
                     }}
                 />
             )}
@@ -520,4 +429,4 @@ function PropertyLoan({ property }) {
     );
 }
 
-export default PropertyLoan;
+export default PropertyUtilities;
