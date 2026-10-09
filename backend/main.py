@@ -23,7 +23,7 @@ import models
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User, Property, DiaryEntry, ExpenseEntry, LoanEntry, UtilityEntry
+from models import User, Property, DiaryEntry, ExpenseEntry, LoanEntry, UtilityEntry, WorkEntry, RentEntry
 from schemas import (
     UserRegister,
     UserLogin,
@@ -35,6 +35,10 @@ from schemas import (
     LoanEntryUpdate,
     UtilityEntryCreate,
     UtilityEntryUpdate,
+    WorkEntryCreate,
+    WorkEntryUpdate,
+    RentEntryCreate,
+    RentEntryUpdate,
 )
 from security import (
     hash_password,
@@ -42,9 +46,13 @@ from security import (
     create_access_token,
     decode_access_token,
 )
+from gallery import router as gallery_router, photo_path
+from models import GalleryPhoto
 from datetime import datetime, timezone
 
 app = FastAPI()
+# Galerijas endpointi atrodas atsevišķā modulī.
+app.include_router(gallery_router)
 
 app.mount(
     "/uploads",
@@ -606,8 +614,13 @@ def delete_property(
         if os.path.exists(image_path):
             os.remove(image_path)
 
+    # Īpašuma dzēšanas gadījumā savācam arī tā galerijas failus.
+    gallery_files = [photo_path(photo.storage_name) for photo in
+                     db.query(GalleryPhoto).filter(GalleryPhoto.property_id == property_id).all()]
     db.delete(property)
     db.commit()
+    for path in gallery_files:
+        path.unlink(missing_ok=True)
 
     return {
         "message": "Īpašums veiksmīgi izdzēsts.",
@@ -856,6 +869,25 @@ def get_diary_entries(
             if utility:
                 entry_data["amount"] = utility.amount
 
+        # Darba ieraksta atbildei pievienojam nostrādātās stundas.
+        elif entry.entry_type == "work":
+            work = (
+                db.query(WorkEntry)
+                .filter(
+                    WorkEntry.diary_entry_id == entry.id
+                )
+                .first()
+            )
+
+            if work:
+                entry_data["hours"] = work.hours
+
+        # Īres ierakstam pievienojam saņemto summu.
+        elif entry.entry_type == "rent":
+            rent = db.query(RentEntry).filter(RentEntry.diary_entry_id == entry.id).first()
+            if rent:
+                entry_data["amount"] = rent.amount
+
         result.append(entry_data)
 
     return result
@@ -958,6 +990,27 @@ def delete_diary_entry(
 
         if utility_entry:
             db.delete(utility_entry)
+            db.flush()
+
+    # Vispirms dzēšam stundu datus, pēc tam dienasgrāmatas ierakstu.
+    elif diary_entry.entry_type == "work":
+        work_entry = (
+            db.query(WorkEntry)
+            .filter(
+                WorkEntry.diary_entry_id == diary_entry.id
+            )
+            .first()
+        )
+
+        if work_entry:
+            db.delete(work_entry)
+            db.flush()
+
+    # Dzēšam saistīto īres summu pirms dienasgrāmatas ieraksta.
+    elif diary_entry.entry_type == "rent":
+        rent_entry = db.query(RentEntry).filter(RentEntry.diary_entry_id == diary_entry.id).first()
+        if rent_entry:
+            db.delete(rent_entry)
             db.flush()
 
     db.delete(diary_entry)
@@ -1269,6 +1322,87 @@ def update_loan_entry(
 # --------------------------------------------------------------------------
 
 
+# Izveidojam saistītu dienasgrāmatas ierakstu un darba stundu ierakstu.
+@app.post("/properties/{property_id}/diary/work")
+def create_work_entry(
+    property_id: int,
+    work_data: WorkEntryCreate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = DiaryEntry(
+        property_id=property.property_id,
+        entry_type="work",
+        entry_date=work_data.entry_date,
+        title=work_data.title,
+        notes=work_data.notes,
+    )
+
+    db.add(diary_entry)
+    db.flush()
+
+    work_entry = WorkEntry(
+        diary_entry_id=diary_entry.id,
+        hours=work_data.hours,
+    )
+
+    db.add(work_entry)
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(work_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "hours": work_entry.hours,
+    }
+
+# --------------------------------------------------------------------------
+
+
 @app.post("/properties/{property_id}/diary/utilities")
 def create_utility_entry(
     property_id: int,
@@ -1454,3 +1588,301 @@ def update_utility_entry(
         "updated_at": diary_entry.updated_at,
         "amount": utility_entry.amount,
     }
+
+# --------------------------------------------------------------------------
+
+
+# Atjauninām tikai norādītos darba ieraksta laukus.
+@app.patch("/properties/{property_id}/diary/work/{entry_id}")
+def update_work_entry(
+    property_id: int,
+    entry_id: int,
+    work_data: WorkEntryUpdate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = (
+        db.query(DiaryEntry)
+        .filter(
+            DiaryEntry.id == entry_id,
+            DiaryEntry.property_id == property_id,
+            DiaryEntry.entry_type == "work",
+        )
+        .first()
+    )
+
+    if not diary_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Komunālā maksājuma ieraksts nav atrasts."
+        )
+
+    work_entry = (
+        db.query(WorkEntry)
+        .filter(
+            WorkEntry.diary_entry_id == diary_entry.id
+        )
+        .first()
+    )
+
+    if not work_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Komunālā maksājuma dati nav atrasti."
+        )
+
+    if work_data.entry_date is not None:
+        diary_entry.entry_date = work_data.entry_date
+
+    if work_data.title is not None:
+        diary_entry.title = work_data.title
+
+    if "notes" in work_data.model_fields_set:
+        diary_entry.notes = work_data.notes
+
+    if work_data.hours is not None:
+        work_entry.hours = work_data.hours
+
+    diary_entry.updated_at = datetime.now(timezone.utc)
+
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(work_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "updated_at": diary_entry.updated_at,
+        "hours": work_entry.hours,
+    }
+
+
+# Izveidojam saņemtās īres ierakstu un saistītos summas datus.
+@app.post("/properties/{property_id}/diary/rent")
+def create_rent_entry(
+    property_id: int,
+    rent_data: RentEntryCreate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = DiaryEntry(
+        property_id=property.property_id,
+        entry_type="rent",
+        entry_date=rent_data.entry_date,
+        title=rent_data.title,
+        notes=rent_data.notes,
+    )
+
+    db.add(diary_entry)
+    db.flush()
+
+    rent_entry = RentEntry(
+        diary_entry_id=diary_entry.id,
+        amount=rent_data.amount,
+    )
+
+    db.add(rent_entry)
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(rent_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "amount": rent_entry.amount,
+    }
+
+
+# Atjauninām norādītos saņemtās īres laukus.
+@app.patch("/properties/{property_id}/diary/rent/{entry_id}")
+def update_rent_entry(
+    property_id: int,
+    entry_id: int,
+    rent_data: RentEntryUpdate,
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Nav autentifikācijas tokena."
+        )
+
+    payload = decode_access_token(access_token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokens nav derīgs vai ir beidzies."
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Tokenā nav lietotāja ID."
+        )
+
+    property = (
+        db.query(Property)
+        .filter(
+            Property.property_id == property_id,
+            Property.user_id == int(user_id),
+        )
+        .first()
+    )
+
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail="Īpašums nav atrasts."
+        )
+
+    diary_entry = (
+        db.query(DiaryEntry)
+        .filter(
+            DiaryEntry.id == entry_id,
+            DiaryEntry.property_id == property_id,
+            DiaryEntry.entry_type == "rent",
+        )
+        .first()
+    )
+
+    if not diary_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Saņemtās īres ieraksts nav atrasts."
+        )
+
+    rent_entry = (
+        db.query(RentEntry)
+        .filter(
+            RentEntry.diary_entry_id == diary_entry.id
+        )
+        .first()
+    )
+
+    if not rent_entry:
+        raise HTTPException(
+            status_code=404,
+            detail="Saņemtās īres dati nav atrasti."
+        )
+
+    if rent_data.entry_date is not None:
+        diary_entry.entry_date = rent_data.entry_date
+
+    if rent_data.title is not None:
+        diary_entry.title = rent_data.title
+
+    if "notes" in rent_data.model_fields_set:
+        diary_entry.notes = rent_data.notes
+
+    if rent_data.amount is not None:
+        rent_entry.amount = rent_data.amount
+
+    diary_entry.updated_at = datetime.now(timezone.utc)
+
+    db.commit()
+
+    db.refresh(diary_entry)
+    db.refresh(rent_entry)
+
+    return {
+        "id": diary_entry.id,
+        "property_id": diary_entry.property_id,
+        "entry_type": diary_entry.entry_type,
+        "entry_date": diary_entry.entry_date,
+        "title": diary_entry.title,
+        "notes": diary_entry.notes,
+        "created_at": diary_entry.created_at,
+        "updated_at": diary_entry.updated_at,
+        "amount": rent_entry.amount,
+    }
+

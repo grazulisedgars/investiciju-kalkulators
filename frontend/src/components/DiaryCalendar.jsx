@@ -17,6 +17,8 @@ import "./DiaryCalendar.css";
 import ExpenseModal from "./ExpenseModal";
 import LoanModal from "./LoanModal";
 import UtilityModal from "./UtilityModal";
+import WorkModal from "./WorkModal";
+import RentModal from "./RentModal";
 
 function DiaryCalendar({ property }) {
     const today = new Date();
@@ -36,6 +38,12 @@ function DiaryCalendar({ property }) {
     const [editingLoan, setEditingLoan] = useState(null);
     const [showUtilityModal, setShowUtilityModal] = useState(false);
     const [editingUtility, setEditingUtility] = useState(null);
+    // Darba ieraksta formas stāvoklis izveidei un rediģēšanai.
+    const [showWorkModal, setShowWorkModal] = useState(false);
+    const [editingWork, setEditingWork] = useState(null);
+    // Īres formas stāvoklis izveidei un rediģēšanai.
+    const [showRentModal, setShowRentModal] = useState(false);
+    const [editingRent, setEditingRent] = useState(null);
 
     const [entryMenu, setEntryMenu] =
         useState(null);
@@ -456,14 +464,25 @@ function DiaryCalendar({ property }) {
                                             <span>Komunālie maksājumi</span>
                                         </button>
 
-                                        <button type="button">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowEntryMenu(false);
+                                                setEditingWork(null);
+                                                setShowWorkModal(true);
+                                            }}
+                                        >
                                             <span className="diary-entry-menu-icon work">
                                                 <Hammer size={14} />
                                             </span>
                                             <span>Darba diena</span>
                                         </button>
 
-                                        <button type="button">
+                                        <button type="button" onClick={() => {
+                                            setShowEntryMenu(false);
+                                            setEditingRent(null);
+                                            setShowRentModal(true);
+                                        }}>
                                             <span className="diary-entry-menu-icon rent">
                                                 <Banknote size={14} />
                                             </span>
@@ -489,6 +508,10 @@ function DiaryCalendar({ property }) {
                                                 <Landmark size={17} strokeWidth={2} />
                                             ) : entry.entry_type === "utility" ? (
                                                 <HousePlug size={17} strokeWidth={2} />
+                                            ) : entry.entry_type === "work" ? (
+                                                <Hammer size={17} strokeWidth={2} />
+                                            ) : entry.entry_type === "rent" ? (
+                                                <Banknote size={17} strokeWidth={2} />
                                             ) : (
                                                 <Receipt size={17} strokeWidth={2} />
                                             )}
@@ -502,7 +525,11 @@ function DiaryCalendar({ property }) {
                                                     ? "Kredīts"
                                                     : entry.entry_type === "utility"
                                                         ? "Komunālie maksājumi"
-                                                        : "Izmaksas"}
+                                                        : entry.entry_type === "work"
+                                                            ? "Darba diena"
+                                                            : entry.entry_type === "rent"
+                                                                ? "Saņemtā īre"
+                                                                : "Izmaksas"}
                                             </span>
 
                                             <span className="diary-entry-title">
@@ -511,7 +538,13 @@ function DiaryCalendar({ property }) {
                                         </div>
                                         <div className="diary-entry-value">
                                             <strong>
-                                                €{Number(entry.amount).toFixed(2)}
+                                                {/* Darba ierakstiem attēlojam stundas. */}
+                                                {entry.entry_type === "work"
+                                                    ? `${Number(entry.hours).toLocaleString("lv-LV", {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })} h`
+                                                    : `€${Number(entry.amount).toFixed(2)}`}
                                             </strong>
 
                                             <span>
@@ -523,7 +556,7 @@ function DiaryCalendar({ property }) {
                                                             : entry.payment_type === "insurance"
                                                                 ? "Apdrošināšana"
                                                                 : "Cits"
-                                                    : entry.entry_type === "utility"
+                                                    : ["utility", "work", "rent"].includes(entry.entry_type)
                                                         ? null
                                                         : entry.supplier || "—"}
                                             </span>
@@ -614,6 +647,12 @@ function DiaryCalendar({ property }) {
                                 } else if (entry.entry_type === "utility") {
                                     setEditingUtility(entry);
                                     setShowUtilityModal(true);
+                                } else if (entry.entry_type === "work") {
+                                    setEditingWork(entry);
+                                    setShowWorkModal(true);
+                                } else if (entry.entry_type === "rent") {
+                                    setEditingRent(entry);
+                                    setShowRentModal(true);
                                 } else {
                                     setEditingExpense(entry);
                                     setShowExpenseModal(true);
@@ -725,6 +764,29 @@ function DiaryCalendar({ property }) {
                     onClose={() => {
                         setEditingLoan(null);
                         setShowLoanModal(false);
+                    }}
+                    onSaved={async () => {
+                        await fetchDiaryEntries();
+                    }}
+                />
+            )}
+
+            {/* Pēc saglabāšanas pārlādējam kalendāra ierakstus no GET endpointa. */}
+            {/* Īres saglabāšana pārlādē dienasgrāmatas sarakstu. */}
+            {showRentModal && (
+                <RentModal property={property} rent={editingRent} initialDate={selectedDate}
+                    onClose={() => { setEditingRent(null); setShowRentModal(false); }}
+                    onSaved={async () => { await fetchDiaryEntries(); }} />
+            )}
+
+            {showWorkModal && (
+                <WorkModal
+                    property={property}
+                    work={editingWork}
+                    initialDate={selectedDate}
+                    onClose={() => {
+                        setEditingWork(null);
+                        setShowWorkModal(false);
                     }}
                     onSaved={async () => {
                         await fetchDiaryEntries();

@@ -1007,6 +1007,16 @@
     color: #9b3f62;
 }
 
+/* Darba ieraksta ikona un tipa eti?ete izmanto kalend?ra zilo kr?su. */
+.diary-entry-icon.work {
+    background: #e7f3fb;
+    color: #168bd2;
+}
+
+.diary-entry-type.work {
+    color: #168bd2;
+}
+
 
 .diary-entry-title {
     overflow: hidden;
@@ -1210,4 +1220,12 @@
     .diary-modal {
         padding: 22px 18px;
     }
+}
+/* Saņemtās īres kartītes krāsa atbilst kalendāra leģendai. */
+.diary-entry-icon.rent {
+    background: #eff7e8;
+    color: #70ad3d;
+}
+.diary-entry-type.rent {
+    color: #70ad3d;
 }

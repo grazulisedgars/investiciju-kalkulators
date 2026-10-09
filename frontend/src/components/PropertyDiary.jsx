@@ -1,14 +1,16 @@
-import { useState } from "react";
 import "./PropertyDiary.css";
 import DiaryCalendar from "./DiaryCalendar";
 import PropertyExpenses from "./PropertyExpenses";
 import PropertyLoan from "./PropertyLoan";
 import PropertyUtilities from "./PropertyUtilities";
+import PropertyWork from "./PropertyWork";
+import PropertyRent from "./PropertyRent";
+import PropertyGallery from "./PropertyGallery";
+import PropertyTotals from "./PropertyTotals";
 
 function PropertyDiary({
     property,
     activeSection,
-    setActiveSection,
 }) {
 
     const sections = [
@@ -23,6 +25,7 @@ function PropertyDiary({
         { id: "work", label: "Darba dienas" },
         { id: "rent", label: "Saņemtā īre" },
         { id: "gallery", label: "Galerija" },
+        { id: "totals", label: "Kopā" },
     ];
 
     const selectedSection = sections.find(
@@ -56,10 +59,34 @@ function PropertyDiary({
                     />
                 )}
 
+                {/* Atsevišķā darba dienu sadaļa ar stundu uzskaiti. */}
+                {activeSection === "work" && (
+                    <PropertyWork key={property.property_id} property={property} />
+                )}
+
+                {/* Saņemtās īres sadaļa ar maksājumu sarakstu un kopsummu. */}
+                {activeSection === "rent" && (
+                    <PropertyRent key={property.property_id} property={property} />
+                )}
+
+                {/* Galerija ar kategorijām, foto augšupielādi un priekšskatījumu. */}
+                {activeSection === "gallery" && (
+                    <PropertyGallery key={property.property_id} property={property} />
+                )}
+
+                {/* Kopsavilkums izmanto tikai dienasgrāmatas datus. */}
+                {activeSection === "totals" && (
+                    <PropertyTotals key={property.property_id} property={property} />
+                )}
+
                 {activeSection !== "calendar" &&
                     activeSection !== "expenses" &&
                     activeSection !== "loan" &&
-                    activeSection !== "utilities" && (
+                    activeSection !== "utilities" &&
+                    activeSection !== "work" &&
+                    activeSection !== "rent" &&
+                    activeSection !== "gallery" &&
+                    activeSection !== "totals" && (
                         <>
                             <h3>{selectedSection?.label}</h3>
 

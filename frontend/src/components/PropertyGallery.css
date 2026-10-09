@@ -1,0 +1,188 @@
+/* Galerijas režģis un filtri izmanto esošās lapas zaļo dizainu. */
+.property-gallery { background: #fff; padding: 28px 24px 24px; width: 100%; box-sizing: border-box; border-inline: 1px solid #e0e9e3; }
+.gallery-filters { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 18px; }
+.gallery-filters button { border: 0; border-radius: 6px; padding: 8px 13px; background: #f0f5f2; color: #53675d; font: inherit; font-size: 13px; cursor: pointer; }
+.gallery-filters button.active { background: #0f6b4d; color: white; }
+.gallery-filters button:hover:not(.active) { background: #e3eee7; }
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 16px; align-items: start; }
+.gallery-card { margin: 0; min-width: 0; }
+.gallery-photo-button { display: block; padding: 0; width: 100%; height: 160px; border: 1px solid #e0e9e3; border-radius: 9px; overflow: hidden; background: #f4f7f5; cursor: pointer; }
+.gallery-photo-button img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+.gallery-photo-button:hover img { transform: scale(1.03); }
+.gallery-card figcaption { color: #718078; font-size: 12px; padding: 7px 4px 0; }
+.gallery-add-tile { height: 160px; border: 2px dashed #dfe8e2; border-radius: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #fafcfb; color: #60796c; font: inherit; font-size: 13px; cursor: pointer; }
+.gallery-add-tile:hover { border-color: #0f6b4d; color: #0f6b4d; background: #f0f5f2; }
+.gallery-empty { color: #718078; font-size: 13px; margin: 0 0 18px; }
+.gallery-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(10, 30, 22, .64); display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+.gallery-form-dialog, .gallery-preview-dialog { background: #fff; border-radius: 14px; box-shadow: 0 20px 70px rgba(0,0,0,.2); width: 100%; max-height: 92dvh; overflow: auto; outline: none; }
+.gallery-form-dialog { max-width: 560px; padding: 24px; box-sizing: border-box; }
+.gallery-preview-dialog { max-width: 980px; }
+.gallery-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; }
+.gallery-form-dialog .gallery-dialog-header { padding: 0 0 20px; }
+.gallery-dialog-header h3 { color: #173e30; margin: 0; font-size: 18px; }
+.gallery-dialog-header > button { border: none; background: transparent; color: #60796c; cursor: pointer; padding: 5px; display: flex; }
+.gallery-form-dialog fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.gallery-form-dialog input, .gallery-form-dialog select, .gallery-form-dialog textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; background: #fff; border: 1px solid #dfe8e2; border-radius: 7px; padding: 10px 12px; color: #34473e; }
+.gallery-form-dialog select { margin-top: 5px; }
+.gallery-form-dialog small, .gallery-form-hint { color: #718078; font-size: 12px; line-height: 1.5; }
+.gallery-upload-previews { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.gallery-upload-previews img { width: 100%; height: 80px; object-fit: cover; border-radius: 6px; }
+.gallery-edit-preview { max-height: 180px; object-fit: contain; width: 100%; border-radius: 8px; background: #f4f7f5; }
+.gallery-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.gallery-dialog-actions button { display: inline-flex; align-items: center; gap: 7px; }
+.gallery-delete { color: #b63838; border: 1px solid #efd3d3; background: #fff7f7; border-radius: 7px; padding: 10px 14px; cursor: pointer; font: inherit; font-size: 13px; }
+.gallery-preview-image { background: #f7f9f8; position: relative; display: flex; justify-content: center; align-items: center; }
+.gallery-preview-image > img { display: block; width: 100%; height: min(60dvh, 620px); object-fit: contain; }
+.gallery-previous, .gallery-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.9); color: #173e30; border: 0; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.gallery-previous { left: 12px; }.gallery-next { right: 12px; }
+.gallery-preview-details { padding: 18px 22px 22px; color: #34473e; font-size: 14px; }
+.gallery-preview-details > span { color: #718078; font-size: 12px; }
+.gallery-preview-details p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.gallery-retry { display: block; margin: 12px auto 0; background: #0f6b4d; color: white; border: 0; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+.property-gallery button:focus-visible, .gallery-overlay button:focus-visible { outline: 3px solid #83bfa2; outline-offset: 3px; }
+.gallery-overlay button:disabled { opacity: .6; cursor: default; }
+@media (max-width: 640px) {
+    .property-gallery { padding: 20px 14px; }
+    .property-gallery .property-expenses-header { align-items: flex-start; flex-direction: column; gap: 14px; }
+    .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .gallery-photo-button, .gallery-add-tile { height: 140px; }
+    .gallery-overlay { padding: 10px; }
+    .gallery-form-dialog { padding: 18px; }
+    .gallery-dialog-header h3 { font-size: 16px; }
+    .gallery-filters button { padding: 8px 10px; font-size: 12px; }
+}
+
+/* Galerijas modāļa pogām ir tādi paši izmēri un krāsas kā pārējām formām. */
+.gallery-action-button {
+    padding: 10px 17px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.gallery-action-cancel { font-weight: 400; background: #fff; border: 1px solid #dce6df; color: #475e53; }
+.gallery-action-cancel:hover { background: #f6f9f7; }
+.gallery-action-save { background: #145b42; border: 1px solid #145b42; color: #fff; }
+.gallery-action-save:hover { background: #104a36; }
+.gallery-hidden-file-input { display: none; }
+.gallery-file-picker { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 10px 12px; border: 1px solid #dfe8e2; border-radius: 7px; }
+.gallery-file-picker > span { color: #718078; font-size: 13px; }
+.gallery-file-select { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; background: #f0f5f2; border: 1px solid #dce6df; border-radius: 7px; color: #145b42; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.gallery-file-select:hover { background: #e3eee7; }
+.gallery-upload-preview { position: relative; }
+.gallery-upload-preview img { display: block; }
+/* Maza, apala poga foto iznemsanai no izveles. */
+.gallery-preview-remove { position: absolute; right: 5px; top: 5px; width: 22px; height: 22px; padding: 0; display: flex; align-items: center; justify-content: center; border: 1px solid #dce6df; border-radius: 50%; background: rgba(255,255,255,.95); color: #475e53; cursor: pointer; }
+.gallery-preview-remove:hover { background: #f0f5f2; color: #173e30; }
+.gallery-date-field { position: relative; }
+.gallery-date-field #gallery-date-display { padding-right: 45px; cursor: pointer; }
+.gallery-form-dialog .gallery-native-date { position: absolute; width: 1px; height: 1px; bottom: 0; left: 0; padding: 0; opacity: 0; pointer-events: none; }
+.gallery-calendar-button { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; color: #53675d; cursor: pointer; }
+.gallery-calendar-button:hover { color: #0f6b4d; }
+
+/* Galerijas kategorijas izvēlnes stils. */
+.gallery-category-select {
+    position: relative;
+    width: 100%;
+}
+
+.gallery-category-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+
+    background: #ffffff;
+    border: 1px solid #dce6df;
+    border-radius: 8px;
+
+    color: #173e30;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.gallery-category-trigger:hover {
+    border-color: #a8c4b3;
+}
+
+.gallery-category-trigger:focus-visible {
+    outline: none;
+    border-color: #77a58e;
+    box-shadow: 0 0 0 3px rgba(20, 91, 66, 0.08);
+}
+
+.gallery-category-trigger svg {
+    flex-shrink: 0;
+    color: #64756c;
+    transition: transform 0.2s ease;
+}
+
+.gallery-category-trigger svg.is-open {
+    transform: rotate(180deg);
+}
+
+.gallery-category-options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 100;
+
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px;
+
+    background: #ffffff;
+    border: 1px solid #dce6df;
+    border-radius: 9px;
+
+    box-shadow: 0 10px 28px rgba(20, 55, 42, 0.14);
+}
+
+.gallery-category-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    padding: 10px 12px;
+
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+
+    color: #34473e;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.gallery-category-option:hover {
+    background: #f1f7f3;
+}
+
+.gallery-category-option.selected {
+    background: #e6f7ef;
+    color: #34473e;
+    font-weight: 400;
+}
+
+.gallery-category-option.selected svg {
+    color: #00a86b;
+}
+
+.gallery-category-option.active { background: #f1f7f3; }
+.gallery-category-option.selected.active { background: #e6f7ef; }
+
+/* Foto dzēšanas dialogs izmanto kopīgo dzēšanas modāļa izkārtojumu. */
+.gallery-delete-overlay { background: rgba(18, 35, 28, .38); backdrop-filter: blur(3px); }
+.gallery-delete-dialog { box-sizing: border-box; outline: none; }

@@ -1,0 +1,16 @@
+/* Īres summas un kopsumma izmanto kop?go za?o stilu t?pat k? p?r?j?s tabulas. */
+.property-rent .property-expenses-table-wrapper {
+    overflow-x: auto;
+}
+
+.property-rent-retry {
+    display: block;
+    margin: 12px auto 0;
+    padding: 8px 12px;
+    border: 1px solid #dfe8e2;
+    border-radius: 7px;
+    background: #fff;
+    color: #0f6b4d;
+    font: inherit;
+    cursor: pointer;
+}

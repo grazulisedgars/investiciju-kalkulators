@@ -181,3 +181,61 @@ class UtilityEntryUpdate(BaseModel):
         default=None,
         max_length=1000
     )
+
+
+class WorkEntryCreate(BaseModel):
+    entry_date: date
+    title: str = Field(min_length=1, max_length=255)
+    hours: Decimal = Field(gt=0, decimal_places=2)
+    notes: str | None = Field(default=None, max_length=1000)
+
+
+class WorkEntryUpdate(BaseModel):
+    entry_date: date | None = None
+    title: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255
+    )
+    hours: Decimal | None = Field(
+        default=None,
+        gt=0,
+        decimal_places=2
+    )
+    notes: str | None = Field(
+        default=None,
+        max_length=1000
+    )
+
+
+# Saņemtās īres datu validācija izveidei un daļējai atjaunināšanai.
+class RentEntryCreate(BaseModel):
+    entry_date: date
+    title: str = Field(min_length=1, max_length=255)
+    amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
+    notes: str | None = Field(default=None, max_length=1000)
+
+
+class RentEntryUpdate(BaseModel):
+    entry_date: date | None = None
+    title: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255
+    )
+    amount: Decimal | None = Field(
+        default=None,
+        gt=0,
+        max_digits=12, decimal_places=2
+    )
+    notes: str | None = Field(
+        default=None,
+        max_length=1000
+    )
+
+
+# Foto datus var labot neatkarīgi no paša attēla faila.
+class GalleryPhotoUpdate(BaseModel):
+    photo_date: date | None = None
+    category: Literal["initial", "renovation", "finished"] | None = None
+    description: str | None = Field(default=None, max_length=1000)

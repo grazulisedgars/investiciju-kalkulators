@@ -242,3 +242,55 @@ class UtilityEntry(Base):
         Numeric(12, 2),
         nullable=False
     )
+
+
+class WorkEntry(Base):
+    __tablename__ = "work_entries"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
+
+    diary_entry_id: Mapped[int] = mapped_column(
+        ForeignKey("diary_entries.id"),
+        unique=True,
+        nullable=False
+    )
+
+    hours: Mapped[Decimal] = mapped_column(
+        Numeric(8, 2),
+        nullable=False
+    )
+
+
+# Saņemtās īres summa ir saistīta ar vienu dienasgrāmatas ierakstu.
+class RentEntry(Base):
+    __tablename__ = "rent_entries"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
+
+    diary_entry_id: Mapped[int] = mapped_column(
+        ForeignKey("diary_entries.id"),
+        unique=True,
+        nullable=False
+    )
+
+    amount: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2),
+        nullable=False
+    )
+
+# Galerijas foto dati; failus glabājam atsevišķi uploads/gallery mapē.
+class GalleryPhoto(Base):
+    __tablename__ = "gallery_photos"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    property_id: Mapped[int] = mapped_column(ForeignKey("properties.property_id", ondelete="CASCADE"), nullable=False, index=True)
+    storage_name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    photo_date: Mapped[date] = mapped_column(Date, nullable=False)
+    category: Mapped[str] = mapped_column(String(30), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)

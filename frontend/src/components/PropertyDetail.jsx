@@ -334,7 +334,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
             {/* Īpašuma galvene */}
             <div
                 className={`property-detail-header ${activeTab === "diary" &&
-                    ["expenses", "loan", "utilities"].includes(activeDiarySection)
+                    ["expenses", "loan", "utilities", "work", "rent", "gallery", "totals"].includes(activeDiarySection)
                     ? "property-detail-header-expenses"
                     : ""
                     }`}
@@ -677,11 +677,18 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
 
                             <button
                                 type="button"
-                                className={activeDiarySection === "galery" ? "active" : ""}
+                                className={activeDiarySection === "gallery" ? "active" : ""}
                                 onClick={() => handleDiarySectionChange("gallery")}
                             >
                                 <Images size={17} strokeWidth={2} />
                                 <span>Galerija</span>
+                            </button>
+
+                            {/* Noslēdzošais dienasgrāmatas kopsavilkums. */}
+                            <button type="button" className={activeDiarySection === "totals" ? "active" : ""}
+                                onClick={() => handleDiarySectionChange("totals")}>
+                                <ChartNoAxesCombined size={17} strokeWidth={2} />
+                                <span>Kopā</span>
                             </button>
                         </>
                     )}
@@ -708,7 +715,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     ? "property-detail-content-diary"
                     : ""
                     } ${activeTab === "diary" &&
-                        ["expenses", "loan", "utilities"].includes(activeDiarySection)
+                        ["expenses", "loan", "utilities", "work", "rent", "gallery", "totals"].includes(activeDiarySection)
                         ? "property-detail-content-expenses"
                         : ""
                     }`}
