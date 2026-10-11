@@ -1,0 +1,41 @@
+
+.account-footer { width: 100%; margin-top: 32px; background: #103e32; color: #e4efea; font-family: inherit; }
+.account-footer-inner { max-width: 1320px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: 32px 32px 22px; display: grid; grid-template-columns: 1.6fr .9fr .8fr 1.1fr 1.2fr; column-gap: 32px; row-gap: 28px; }
+.account-footer-brand img { width: 190px; max-width: 100%; height: auto; display: block; }
+.account-footer-brand p { margin: 7px 0 0; font-size: 12px; color: #c2d7ce; }
+.account-footer h3 { color: #eef6f2; margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+.account-footer nav { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
+.account-footer nav h3 { margin-bottom: 3px; }
+.account-footer a, .account-footer button { font: inherit; font-size: 12px; color: #d1e2da; text-decoration: none; line-height: 1.5; }
+.account-footer button { background: transparent; border: 0; padding: 0; cursor: pointer; }
+.account-footer a:hover, .account-footer button:hover { color: white; text-decoration: underline; }
+.account-footer a:focus-visible, .account-footer button:focus-visible { outline: 2px solid #b8dfcf; outline-offset: 4px; border-radius: 2px; }
+.account-footer-contact a { display: flex; align-items: center; gap: 8px; }
+.account-footer-contact .account-footer-linkedin { display: inline-flex; margin-top: 14px; }
+.account-footer-copyright { grid-column: 1 / -1; font-size: 11px; color: #b7d0c4; }
+@media(max-width:1000px) { .account-footer-inner { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 26px; } .account-footer-brand { grid-column: 1 / -1; } }
+@media(max-width:600px) { .account-footer-inner { padding: 28px 16px 20px; grid-template-columns: 1fr 1fr; gap: 24px; } .account-footer-contact { grid-column: 1 / -1; } }
+
+/* Kompakts footer un baltais zīmola SVG no esošā vektora. */
+.account-footer-inner { padding-top: 22px; padding-bottom: 16px; row-gap: 18px; }
+.account-footer-brand img { width: 205px; }
+.account-footer-brand p { margin-top: 5px; font-size: 11px; }
+.account-footer nav { gap: 5px; }
+.account-footer h3 { font-size: 12px; }
+.account-footer a, .account-footer button { font-size: 11px; }
+.account-footer-contact .account-footer-linkedin { margin-top: 10px; }
+
+/* Mājas simbols pa kreisi; sauklis līdzināts zem uzraksta, kā maketā. */
+.account-footer-brand { position: relative; }
+.account-footer-brand img { width: 240px; height: 38px; }
+.account-footer-brand p { margin: -3px 0 0 43px; font-size: 11px; line-height: 1.4; white-space: nowrap; }
+.account-footer-copyright { font-size: 10px; }
+
+/* Maketa saišu ritms un vienots teksta izmērs visās kolonnās. */
+.account-footer h3 { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.account-footer nav { gap: 5px; }
+.account-footer nav h3 { margin-bottom: 3px; }
+.account-footer a, .account-footer button { font-size: 12px; line-height: 1.5; font-weight: 400; }
+.account-footer nav[aria-label="Juridiskā informācija"] a { text-decoration: underline; text-underline-offset: 2px; }
+.account-footer button:disabled { color: #d1e2da; opacity: 1; cursor: default; }
+.account-footer button:disabled:hover { text-decoration: none; }

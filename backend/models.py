@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
-from sqlalchemy import DateTime, String, ForeignKey, Float, Date, Numeric
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, String, ForeignKey, Float, Date, Numeric, JSON, event, update
+from sqlalchemy.orm import Mapped, mapped_column, Session
 from database import Base
 from decimal import Decimal
 
@@ -283,6 +283,14 @@ class RentEntry(Base):
     )
 
 # Galerijas foto dati; failus glabājam atsevišķi uploads/gallery mapē.
+class AdvancedAnalysis(Base):
+    # Pieņēmumi ir neatkarīgi no pamata analīzes un dienasgrāmatas.
+    __tablename__ = "advanced_analyses"
+    property_id: Mapped[int] = mapped_column(ForeignKey("properties.property_id", ondelete="CASCADE"), primary_key=True)
+    inputs: Mapped[dict] = mapped_column(JSON, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
 class GalleryPhoto(Base):
     __tablename__ = "gallery_photos"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -294,3 +302,24 @@ class GalleryPhoto(Base):
     description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+# Visu īpašuma sadaļu izmaiņas atjauno dashboard aktivitātes laiku tajā pašā transakcijā.
+@event.listens_for(Session, "before_flush")
+def update_property_activity(session, flush_context, instances):
+    property_ids = set()
+    deleted_properties = {row.property_id for row in session.deleted if isinstance(row, Property)}
+    children = (ExpenseEntry, LoanEntry, UtilityEntry, WorkEntry, RentEntry)
+    for row in list(session.new) + list(session.dirty) + list(session.deleted):
+        if row in session.dirty and not session.is_modified(row, include_collections=False):
+            continue
+        if isinstance(row, (DiaryEntry, AdvancedAnalysis, GalleryPhoto)):
+            property_ids.add(row.property_id)
+        elif isinstance(row, children):
+            diary = session.get(DiaryEntry, row.diary_entry_id)
+            if diary is not None:
+                property_ids.add(diary.property_id)
+    property_ids -= deleted_properties
+    property_ids.discard(None)
+    if property_ids:
+        session.execute(update(Property).where(Property.property_id.in_(property_ids)).values(updated_at=datetime.now(timezone.utc)))

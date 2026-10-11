@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import "./PropertyDetail.css";
 import FreeAnalysisOverview from "./FreeAnalysisOverview";
 import PropertyDiary from "./PropertyDiary";
+import AdvancedAnalysis from "./AdvancedAnalysis";
 import {
     Calculator,
     CalendarDays,
@@ -684,12 +685,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                                 <span>Galerija</span>
                             </button>
 
-                            {/* Noslēdzošais dienasgrāmatas kopsavilkums. */}
-                            <button type="button" className={activeDiarySection === "totals" ? "active" : ""}
-                                onClick={() => handleDiarySectionChange("totals")}>
-                                <ChartNoAxesCombined size={17} strokeWidth={2} />
-                                <span>Kopā</span>
-                            </button>
+                            {/* Kopā sadaļa paslēpta; saglabāta PropertyTotals komponentē. */}
                         </>
                     )}
 
@@ -734,12 +730,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                 )}
 
                 {activeTab === "advanced" && (
-                    <div>
-                        <h2>Padziļinātā analīze</h2>
-                        <p>
-                            Šeit vēlāk pievienosim PRO investīciju analīzi.
-                        </p>
-                    </div>
+                    <AdvancedAnalysis key={property.property_id} property={property} />
                 )}
 
             </div>

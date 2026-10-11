@@ -8,6 +8,9 @@ import PropertyRent from "./PropertyRent";
 import PropertyGallery from "./PropertyGallery";
 import PropertyTotals from "./PropertyTotals";
 
+// Ieslēgt, ja vēlāk nepieciešams atjaunot kopsavilkuma skatu.
+const showDiaryTotals = false;
+
 function PropertyDiary({
     property,
     activeSection,
@@ -25,7 +28,7 @@ function PropertyDiary({
         { id: "work", label: "Darba dienas" },
         { id: "rent", label: "Saņemtā īre" },
         { id: "gallery", label: "Galerija" },
-        { id: "totals", label: "Kopā" },
+        // Kopā sadaļa pagaidām paslēpta; komponentes kods saglabāts.
     ];
 
     const selectedSection = sections.find(
@@ -75,7 +78,7 @@ function PropertyDiary({
                 )}
 
                 {/* Kopsavilkums izmanto tikai dienasgrāmatas datus. */}
-                {activeSection === "totals" && (
+                {showDiaryTotals && activeSection === "totals" && (
                     <PropertyTotals key={property.property_id} property={property} />
                 )}
 

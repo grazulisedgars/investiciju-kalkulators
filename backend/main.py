@@ -21,6 +21,8 @@ from database import Base, engine
 import models
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+from sqlalchemy.orm.attributes import set_committed_value
 
 from database import get_db
 from models import User, Property, DiaryEntry, ExpenseEntry, LoanEntry, UtilityEntry, WorkEntry, RentEntry
@@ -47,12 +49,14 @@ from security import (
     decode_access_token,
 )
 from gallery import router as gallery_router, photo_path
-from models import GalleryPhoto
+from advanced_analysis import router as analysis_router
+from models import GalleryPhoto, AdvancedAnalysis
 from datetime import datetime, timezone
 
 app = FastAPI()
 # Galerijas endpointi atrodas atsevišķā modulī.
 app.include_router(gallery_router)
+app.include_router(analysis_router)
 
 app.mount(
     "/uploads",
@@ -424,6 +428,22 @@ def get_properties(
         .all()
     )
 
+    # Iekļauj arī agrāk saglabāto sadaļu aktivitāti, ne tikai īpašuma labojumus.
+    property_ids = [item.property_id for item in properties]
+    latest = {}
+    def utc(value):
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value.astimezone(timezone.utc)
+    if property_ids:
+        for model in (DiaryEntry, GalleryPhoto, AdvancedAnalysis):
+            timestamps = db.query(model.property_id, func.max(model.updated_at)).filter(model.property_id.in_(property_ids)).group_by(model.property_id).all()
+            for property_id, timestamp in timestamps:
+                if timestamp is not None and (property_id not in latest or utc(timestamp) > utc(latest[property_id])):
+                    latest[property_id] = timestamp
+        for item in properties:
+            timestamp = latest.get(item.property_id)
+            if timestamp is not None and (item.updated_at is None or utc(timestamp) > utc(item.updated_at)):
+                # Atbildes attēlojums; GET neveic rakstīšanu datubāzē.
+                set_committed_value(item, "updated_at", timestamp)
     return properties
 # --------------------------------------------------------------------------
 

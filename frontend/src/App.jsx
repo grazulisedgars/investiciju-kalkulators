@@ -9,6 +9,7 @@ import MortgageInputs from "./components/MortgageInputs";
 import MortgageSummary from "./components/MortgageSummary";
 import Registration from "./components/Registration";
 import Dashboard from "./components/Dashboard";
+import AccountFooter from "./components/AccountFooter";
 import Login from "./components/Login";
 import propfolioBackground from "./assets/propfolio-background11.png";
 import propfolioFooterLogo from "./assets/propfolio-footer-logo-traced.svg";
@@ -1085,6 +1086,10 @@ function App() {
             />
           </section>
         )}
+      {currentUser && (showDashboard || selectedProperty) && <AccountFooter onDashboard={() => { setSelectedProperty(null); setShowDashboard(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} onLogout={async () => {
+        const response = await fetch("http://localhost:8000/logout", { method: "POST", credentials: "include" });
+        if (response.ok) { setCurrentUser(null); setSelectedProperty(null); setShowDashboard(false); }
+      }} />}
     </main>
   );
 }
