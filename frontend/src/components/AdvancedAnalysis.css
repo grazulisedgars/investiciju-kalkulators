@@ -227,3 +227,59 @@
 .analysis-rent-hit:focus-visible { outline: 2px solid #d18a18; outline-offset: 2px; }
 .analysis-rent-bubble { fill: #fff5df; stroke: #efd9a6; }
 @media(prefers-reduced-motion:reduce) { .analysis-rent-tooltip { transition: none; } }
+
+.mortgage-steps { grid-template-columns: repeat(5, minmax(0,1fr)); }
+@media(max-width:900px) { .mortgage-steps { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media(max-width:600px) { .mortgage-steps { grid-template-columns: 1fr 1fr; } }
+
+.mortgage-actual-progress { margin-top: 24px; }
+.mortgage-actual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.mortgage-actual-grid .advanced-recovery-heading { margin-bottom: 12px; }
+.mortgage-actual-grid .advanced-recovery-heading strong { margin-left: 0; }
+@media(max-width:800px) { .mortgage-actual-grid { grid-template-columns: 1fr; } }
+
+/* Leģendā stabiņus apzīmē kvadrāti, līkni — līnija. */
+.analysis-chart-legend .legend-net, .analysis-chart-legend .legend-gross { width: 10px; height: 10px; border-radius: 1px; }
+.analysis-chart-legend .legend-net { background: #4b9b7e; }
+.analysis-chart-legend { font-size: 11px; }
+.analysis-payback-tooltip { opacity: 0; transition: opacity .15s; }
+.analysis-payback-marker:hover .analysis-payback-tooltip, .analysis-payback-marker:focus-within .analysis-payback-tooltip, .analysis-payback-marker.is-pinned .analysis-payback-tooltip { opacity: 1; }
+.analysis-payback-bubble { fill: #f0f7f3; stroke: #c9ddd0; }
+.analysis-payback-marker { cursor: pointer; }
+.advanced-analysis { scroll-margin-top: 24px; }
+.advanced-calculation-guide { margin-bottom: 20px; padding: 12px 16px; border: 1px solid #d9e6de; border-radius: 9px; background: #f8fbf9; }
+.advanced-calculation-guide summary { margin-top: 0; font-size: 14px; }
+.advanced-guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; margin-top: 18px; }
+.advanced-guide-grid h4, .mortgage-future-input h4 { margin: 0 0 8px; font-size: 14px; color: #173e30; }
+.advanced-guide-grid p { font-size: 13px; line-height: 1.6; margin: 6px 0; color: #526b60; }
+.mortgage-step-intro { margin-bottom: 18px !important; }
+.mortgage-future-input { border-left: 1px solid #d9e6de; padding-left: 20px; }
+.mortgage-future-input .advanced-note { margin: 0 0 12px; }
+@media(max-width:700px) { .advanced-guide-grid { grid-template-columns: 1fr; } .mortgage-future-input { border-left: 0; border-top: 1px solid #d9e6de; padding: 18px 0 0; } }
+@media(prefers-reduced-motion:reduce) { .analysis-payback-tooltip { transition: none; } }
+
+.analysis-payback-box { box-sizing: border-box; padding: 9px 10px; background: #f0f7f3; border: 1px solid #c9ddd0; border-radius: 7px; color: #173e30; font-size: 11px; line-height: 1.4; }
+.analysis-payback-box strong, .analysis-payback-box span, .analysis-payback-box small { display: block; }
+.analysis-payback-box small { margin-top: 3px; font-size: 10px; }
+
+.analysis-chart-explanation { margin: 18px 0 0; padding-left: 20px; color: #526b60; font-size: 13px; line-height: 1.6; }
+.analysis-chart-explanation li { padding-left: 3px; margin-bottom: 8px; }
+.analysis-chart-explanation li:last-child { margin-bottom: 0; }
+.analysis-chart-explanation strong { color: #173e30; font-weight: 600; }
+
+.analysis-bar-investment { fill: #cc746b; }
+.analysis-chart-legend .legend-investment { width: 10px; height: 10px; border-radius: 1px; background: #cc746b; }
+.analysis-chart-help { margin-top: 18px; padding: 10px 12px; border: 1px solid #d9e6de; border-radius: 8px; background: #ffffff; }
+.analysis-chart-help summary { margin-top: 0; font-size: 13px; }
+.analysis-chart-help .analysis-chart-explanation { margin-top: 14px; }
+
+.advanced-scenario-note { margin: 14px 0; padding: 12px 14px; background: #fff8e9; border-radius: 8px; color: #6d572b; font-size: 13px; line-height: 1.6; }
+
+.renovation-period { margin: 0 0 22px; padding: 16px; border: 1px solid #d9e6de; border-radius: 9px; min-width: 0; }
+.renovation-period legend { padding: 0 8px; color: #173e30; font-weight: 600; font-size: 14px; }
+.renovation-summary { margin-bottom: 18px; padding: 16px; border: 1px solid #d9e6de; border-radius: 9px; background: #fff; }
+.renovation-summary-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
+.renovation-summary-grid span { display: block; color: #667b6e; font-size: 12px; }
+.renovation-summary-grid strong { display: block; margin-top: 6px; font-size: 16px; font-variant-numeric: tabular-nums; }
+@media(max-width:800px) { .renovation-summary-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:450px) { .renovation-summary-grid { grid-template-columns: 1fr; } }
