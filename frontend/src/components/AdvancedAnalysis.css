@@ -214,3 +214,16 @@
 /* Papildu scenārija mala sakrīt ar pirmo divu pārskata kartīšu malu. */
 .advanced-future-details > section { max-width: none; width: 100%; box-sizing: border-box; }
 @media(min-width:1101px) { .advanced-future-details > section { width: calc((100% - 36px) * 2.6 / 4.6 + 12px); } }
+
+.advanced-recovery { margin-top: 22px; }
+.advanced-recovery-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.advanced-recovery-heading strong { font-size: 20px; margin-left: 8px; font-variant-numeric: tabular-nums; }
+.analysis-rent-bubble { fill: #e7f5ed; stroke: #c5dfd0; }
+.advanced-chart-container .analysis-rent-marker text { fill: #174e3d; font-size: 11px; }
+
+.analysis-rent-tooltip { opacity: 0; transition: opacity .15s; }
+.analysis-rent-marker:hover .analysis-rent-tooltip, .analysis-rent-marker:focus-within .analysis-rent-tooltip, .analysis-rent-marker.is-pinned .analysis-rent-tooltip { opacity: 1; }
+.analysis-rent-hit { cursor: pointer; }
+.analysis-rent-hit:focus-visible { outline: 2px solid #d18a18; outline-offset: 2px; }
+.analysis-rent-bubble { fill: #fff5df; stroke: #efd9a6; }
+@media(prefers-reduced-motion:reduce) { .analysis-rent-tooltip { transition: none; } }
