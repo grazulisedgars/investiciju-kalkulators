@@ -1,11 +1,12 @@
 """Apstiprinātie padziļinātās analīzes modeļi ar un bez hipotēkas."""
 from decimal import Decimal, localcontext
-from datetime import datetime, timezone
+from typing import Literal
+from datetime import date, datetime, timezone
 from fastapi import APIRouter, Cookie, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy.orm import Session
 from database import get_db
-from models import AdvancedAnalysis, Property
+from models import AdvancedAnalysis, Property, DiaryEntry, ExpenseEntry, UtilityEntry
 from security import decode_access_token
 
 router = APIRouter(prefix="/properties/{property_id}/advanced-analysis", tags=["Padziļinātā analīze"])
@@ -24,11 +25,45 @@ class AnalysisInputs(BaseModel):
     winter_cost: float = Field(ge=0, le=1e10)
     insurance: float = Field(ge=0, le=1e10)
     cadastral_value: float = Field(ge=0, le=1e10)
+    renovation_required: bool = True
+    utilities_start_date: date | None = None
+    utilities_end_date: date | None = None
+    repair_source: Literal["manual", "diary"] = "manual"
+    utilities_source: Literal["manual", "diary"] = "manual"
+    renovation_start_date: date | None = None
+    renovation_end_date: date | None = None
+    repair_entry_ids: list[int] | None = Field(default=None, max_length=10000)
+    utility_entry_ids: list[int] | None = Field(default=None, max_length=10000)
     renovation_years: int = Field(default=0, ge=0, le=50)
     renovation_months: int = Field(default=0, ge=0, le=12)
 
     @model_validator(mode="after")
     def normalize_renovation(self):
+        if not self.renovation_required:
+            self.renovation_start_date = self.renovation_end_date = None
+            self.renovation_years = self.renovation_months = 0
+            self.renovation_cost_per_m2 = 0
+            self.repair_source = "manual"
+            self.repair_entry_ids = []
+        if bool(self.renovation_start_date) != bool(self.renovation_end_date):
+            raise ValueError("Norādi abus renovācijas datumus.")
+        if self.renovation_start_date:
+            if self.renovation_end_date < self.renovation_start_date:
+                raise ValueError("Renovācijas beigas nevar būt pirms sākuma.")
+            total = (self.renovation_end_date.year-self.renovation_start_date.year)*12 + self.renovation_end_date.month-self.renovation_start_date.month+1
+            if total > 611:
+                raise ValueError("Renovācijas periods pārāk garš.")
+            self.renovation_years, self.renovation_months = divmod(total,12)
+        if self.repair_source == "diary" and not self.renovation_start_date:
+            raise ValueError("Remonta dienasgrāmatas izmaksām norādi renovācijas datumus.")
+        if self.utilities_start_date is None and self.utilities_end_date is None and self.utilities_source == "diary":
+            self.utilities_start_date, self.utilities_end_date = self.renovation_start_date, self.renovation_end_date
+        if bool(self.utilities_start_date) != bool(self.utilities_end_date):
+            raise ValueError("Norādi abus komunālo maksājumu atlases datumus.")
+        if self.utilities_start_date and self.utilities_end_date < self.utilities_start_date:
+            raise ValueError("Komunālo maksājumu perioda beigas nevar būt pirms sākuma.")
+        if self.utilities_source == "diary" and not self.utilities_start_date:
+            raise ValueError("Norādi komunālo maksājumu atlases periodu.")
         if self.renovation_months == 12:
             if self.renovation_years >= 50:
                 raise ValueError("Renovācijas periods nevar pārsniegt 50 gadus un 11 mēnešus.")
@@ -47,13 +82,17 @@ class MortgageInputs(AnalysisInputs):
     loan_insurance_monthly: float = Field(default=0, ge=0, le=1e10)
 
 
-def apply_monthly_forecast(inputs, result, mortgage=False):
+def apply_monthly_forecast(inputs, result, mortgage=False, sources=None):
     # Izīrētie mēneši ir vidējais gada aizpildījums PĒC renovācijas.
     # Mēnešiem piemēro vienādu aizpildījuma daļu, jo precīzs īres kalendārs nav ievadīts.
     with localcontext() as context:
         context.prec = 100
         d = lambda value: Decimal(str(value))
         renovation = inputs.renovation_years * 12 + inputs.renovation_months
+        starts = [value for value in (inputs.renovation_start_date,inputs.utilities_start_date if inputs.utilities_source == "diary" else None) if value]
+        if inputs.renovation_end_date and starts:
+            anchor = min(starts)
+            renovation = (inputs.renovation_end_date.year-anchor.year)*12 + inputs.renovation_end_date.month-anchor.month+1
         loan_months = inputs.loan_years * 12 if mortgage else 0
         loan = d(result["loan_amount"]) if mortgage else Decimal(0)
         payment = d(result["loan_payment"]) if mortgage else Decimal(0)
@@ -63,16 +102,38 @@ def apply_monthly_forecast(inputs, result, mortgage=False):
             payment = loan / loan_months if rate == 0 else loan * rate / (1 - (1 + rate) ** (-loan_months))
         horizon = max(120, loan_months, ((renovation // 12) + 1) * 12)
         initial = d(result.get("own_capital", result["investment"]))
+        total_capital = initial
+        diary_repair = inputs.repair_source == "diary" and sources is not None
+        staged_repair = diary_repair or (inputs.repair_source == "manual" and renovation > 0)
+        if staged_repair:
+            initial -= d(result["renovation"])
+        result["chart_initial"] = float(initial)
+        last_bill = max(sources["utilities_by_month"], default=0) if sources and inputs.utilities_source == "diary" else 0
+        last_repair = max(sources["repair_by_month"], default=0) if diary_repair else 0
+        horizon = max(horizon, ((max(last_bill,last_repair) + 11) // 12) * 12)
         cumulative, balance = -initial, loan
         timeline = [{"year": 0, "cash": float(-initial), "gross": 0.0, "tax": 0.0, "expenses": 0.0, "debt": 0.0, "cumulative": float(-initial), "loan_balance": float(loan), "principal": 0.0, "interest": 0.0}]
         monthly = [{"month": 0, "year": 0.0, "cumulative": float(-initial)}]
         sums = {key: Decimal(0) for key in ("cash", "gross", "tax", "expenses", "debt", "principal", "interest")}
         payback = None
+        # Total funding needed for the full renovation, excluding purchase/acquisition.
+        renovation_start_month = 1
+        if inputs.renovation_start_date and starts:
+            anchor = min(starts)
+            renovation_start_month = (inputs.renovation_start_date.year-anchor.year)*12 + inputs.renovation_start_date.month-anchor.month+1
+        repair_month_count = max(1,renovation-renovation_start_month+1)
+        manual_repair_monthly = d(result["renovation"])/repair_month_count if staged_repair and not diary_repair else Decimal(0)
+        renovation_costs = {key:Decimal(0) for key in ("repair","utilities","other","debt","principal")}
+        if renovation > 0 and not staged_repair:
+            renovation_costs["repair"] = d(result["renovation"])
         for month in range(1, horizon + 1):
             occupancy = Decimal(0) if month <= renovation else d(inputs.rented_months) / 12
             gross = d(inputs.monthly_rent) * occupancy
             tax = gross * d(inputs.tax_rate) / 100
-            expenses = (d(inputs.insurance) + d(result["nin"])) / 12 + d(result["average_cost"]) * (1 - occupancy)
+            utilities = d(result["average_cost"]) * (1 - occupancy)
+            if inputs.utilities_source == "diary" and sources is not None and (month <= renovation or month in sources["utilities_by_month"]):
+                utilities = sources["utilities_by_month"].get(month, Decimal(0))
+            expenses = (d(inputs.insurance) + d(result["nin"])) / 12 + utilities
             debt = principal = interest = Decimal(0)
             if mortgage and month <= loan_months:
                 remaining = loan_months - month
@@ -81,7 +142,17 @@ def apply_monthly_forecast(inputs, result, mortgage=False):
                 interest = debt - principal
                 balance = next_balance
                 expenses += d(inputs.loan_insurance_monthly)
-            cash = gross - tax - expenses - debt
+            # Repair is capital expenditure, separate from recurring owner expenses.
+            repair = sources["repair_by_month"].get(month, Decimal(0)) if diary_repair else Decimal(0)
+            if staged_repair and not diary_repair and renovation_start_month <= month <= renovation:
+                repair = d(result["renovation"])-manual_repair_monthly*(repair_month_count-1) if month == renovation else manual_repair_monthly
+            if renovation_start_month <= month <= renovation:
+                renovation_costs["repair"] += repair
+                renovation_costs["utilities"] += utilities
+                renovation_costs["other"] += expenses-utilities
+                renovation_costs["debt"] += debt
+                renovation_costs["principal"] += principal
+            cash = gross - tax - expenses - debt - repair
             if payback is None and cumulative < 0 and cumulative + cash >= 0 and cash > 0:
                 payback = float((d(month - 1) - cumulative / cash) / 12)
             cumulative += cash
@@ -107,23 +178,31 @@ def apply_monthly_forecast(inputs, result, mortgage=False):
                           loan_insurance_annual=float(loan_insurance), expenses=float(annual_expenses),
                           operating_annual=float(operating), net_annual=float(annual_cash), net_monthly=float(annual_cash / 12),
                           net_yield=float(operating / d(result["investment"]) * 100),
-                          cash_on_cash=float(annual_cash / initial * 100) if initial > 0 else None)
+                          cash_on_cash=float(annual_cash / total_capital * 100) if total_capital > 0 else None)
+        result.update(renovation_owner_costs=float(sum(renovation_costs[key] for key in ("repair","utilities","other","debt"))),
+                      renovation_repair_costs=float(renovation_costs["repair"]), renovation_utilities_costs=float(renovation_costs["utilities"]),
+                      renovation_other_costs=float(renovation_costs["other"]), renovation_debt_costs=float(renovation_costs["debt"]),
+                      renovation_principal_costs=float(renovation_costs["principal"]))
         result.update(renovation_total_months=renovation, rent_start_month=renovation + 1,
                       first_year_gross=timeline[1]["gross"], first_year_cash=timeline[1]["cash"],
                       first_year_expenses=timeline[1]["expenses"], payback=payback,
                       timeline=timeline, monthly_timeline=monthly,
                       cash_ten_years=sum(item["cash"] for item in timeline[1:11]))
+        if sources is not None:
+            result.update(diary_repair_total=float(sources["repair_total"]), diary_repair_count=sources["repair_count"],
+                          diary_utilities_total=float(sources["utilities_total"]), diary_utilities_count=sources["utilities_count"],
+                          effective_repair_per_m2=float(d(result["renovation"]) / d(inputs.area)))
         return result
 
 
-def calculate(inputs: AnalysisInputs):
+def calculate(inputs: AnalysisInputs, sources=None):
     # NĪN bāze ir kadastrālā vērtība; likmes ir apstiprinātā modeļa pieņēmumi.
-    v = {k: Decimal(str(value)) if value is not None else None for k, value in inputs.model_dump().items()}
+    v = {k: Decimal(str(value)) if value is not None else None for k, value in inputs.model_dump().items() if value is None or (isinstance(value, (int, float)) and not isinstance(value,bool))}
     price, area, cadastral = v["purchase_price"], v["area"], v["cadastral_value"]
     notary = max(price * Decimal("0.004"), Decimal(140))
     vat, state_fee = notary * Decimal("0.21"), price * Decimal("0.015")
     acquisition = notary + vat + state_fee + v["office_fee"] + v["valuation"]
-    renovation = area * v["renovation_cost_per_m2"]
+    renovation = sources["repair_total"] if inputs.repair_source == "diary" and sources is not None else area * v["renovation_cost_per_m2"]
     investment = price + acquisition + renovation
     nin = max(Decimal(7), min(cadastral, Decimal(56915)) * Decimal("0.002")
               + max(Decimal(0), min(cadastral, Decimal(106715)) - Decimal(56915)) * Decimal("0.004")
@@ -146,13 +225,13 @@ def calculate(inputs: AnalysisInputs):
                   net_yield=net / investment * 100, market_value=market, capital_gain=market-investment if market is not None else None,
                   payback=investment / net if net > 0 else None)
     output = {k: float(value) if value is not None else None for k, value in result.items()}
-    return apply_monthly_forecast(inputs, output)
+    return apply_monthly_forecast(inputs, output, sources=sources)
 
-def calculate_mortgage(inputs: MortgageInputs):
+def calculate_mortgage(inputs: MortgageInputs, sources=None):
     with localcontext() as context:
         context.prec = 100
         # Annuitātes maksājums, nemainīga bankas un Euribor likme visā prognozē.
-        base = calculate(inputs)
+        base = calculate(inputs, sources=sources)
         price = Decimal(str(inputs.purchase_price))
         down = price * Decimal(str(inputs.down_payment_percent)) / 100
         loan = price - down
@@ -178,7 +257,7 @@ def calculate_mortgage(inputs: MortgageInputs):
                     net_yield=float(operating / investment * 100), cash_on_cash=float(cash / capital * 100) if capital > 0 else None,
                     capital_gain=market - float(investment) if market is not None else None,
                     chart_initial=float(capital))
-        return apply_monthly_forecast(inputs, base, mortgage=True)
+        return apply_monthly_forecast(inputs, base, mortgage=True, sources=sources)
 
 def owned_property(property_id, token, db):
     payload = decode_access_token(token) if token else None
@@ -195,32 +274,71 @@ def owned_property(property_id, token, db):
         raise HTTPException(400, "Neatbalstīts finansējuma veids.")
     return prop
 
-def serialize(row):
+def resolve_diary_sources(inputs, property_id, db):
+    if inputs.repair_source != "diary" and inputs.utilities_source != "diary":
+        return None
+    repair_total = utilities_total = Decimal(0)
+    repair_count = utilities_count = 0
+    repair_monthly, utility_monthly = {}, {}
+    # Explicit utility selection can include later payments for renovation bills.
+    starts = [value for value in (inputs.renovation_start_date,inputs.utilities_start_date if inputs.utilities_source == "diary" else None) if value]
+    anchor = min(starts)
+    entries = db.query(DiaryEntry).filter(DiaryEntry.property_id == property_id,
+        DiaryEntry.entry_date >= anchor).all()
+    chosen = None if inputs.repair_entry_ids is None else set(inputs.repair_entry_ids)
+    utility_start = inputs.utilities_start_date or inputs.renovation_start_date
+    utility_end = inputs.utilities_end_date or inputs.renovation_end_date
+    chosen_utilities = None if inputs.utility_entry_ids is None else set(inputs.utility_entry_ids)
+    ids = [entry.id for entry in entries]
+    expenses = {row.diary_entry_id: row.amount for row in db.query(ExpenseEntry).filter(ExpenseEntry.diary_entry_id.in_(ids)).all()} if ids else {}
+    utilities = {row.diary_entry_id: row.amount for row in db.query(UtilityEntry).filter(UtilityEntry.diary_entry_id.in_(ids)).all()} if ids else {}
+    for entry in entries:
+        in_period = bool(inputs.renovation_start_date and inputs.renovation_start_date <= entry.entry_date <= inputs.renovation_end_date)
+        utility_period = bool(utility_start and utility_start <= entry.entry_date <= utility_end)
+        index = (entry.entry_date.year-anchor.year)*12 + entry.entry_date.month-anchor.month+1
+        if entry.entry_type == "expense" and inputs.renovation_start_date is not None and entry.entry_date >= inputs.renovation_start_date and (in_period if chosen is None else entry.id in chosen) and entry.id in expenses:
+            amount = expenses[entry.id]
+            repair_total += amount
+            repair_count += 1
+            repair_monthly[index] = repair_monthly.get(index, Decimal(0)) + amount
+        elif entry.entry_type == "utility" and entry.id in utilities and utility_start is not None and entry.entry_date >= utility_start and (utility_period if chosen_utilities is None else entry.id in chosen_utilities):
+            amount = utilities[entry.id]
+            utilities_total += amount
+            utilities_count += 1
+            utility_monthly[index] = utility_monthly.get(index, Decimal(0)) + amount
+    return {"repair_total": repair_total, "repair_count": repair_count, "utilities_total": utilities_total,
+            "utilities_count": utilities_count, "utilities_by_month": utility_monthly, "repair_by_month": repair_monthly}
+
+
+
+def serialize(row, db):
     inputs = (MortgageInputs if "down_payment_percent" in row.inputs else AnalysisInputs).model_validate(row.inputs)
-    results = calculate_mortgage(inputs) if isinstance(inputs, MortgageInputs) else calculate(inputs)
-    return {"inputs": inputs.model_dump(), "results": results, "updated_at": row.updated_at}
+    sources = resolve_diary_sources(inputs, row.property_id, db)
+    results = calculate_mortgage(inputs, sources=sources) if isinstance(inputs, MortgageInputs) else calculate(inputs, sources=sources)
+    return {"inputs": inputs.model_dump(mode="json"), "results": results, "updated_at": row.updated_at}
 
 @router.get("")
 def get_analysis(property_id: int, access_token: str | None = Cookie(default=None), db: Session = Depends(get_db)):
     owned_property(property_id, access_token, db)
     row = db.query(AdvancedAnalysis).filter(AdvancedAnalysis.property_id == property_id).first()
-    return serialize(row) if row else None
+    return serialize(row, db) if row else None
 
 @router.put("")
 def save_analysis(property_id: int, inputs: MortgageInputs | AnalysisInputs, access_token: str | None = Cookie(default=None), db: Session = Depends(get_db)):
     prop = owned_property(property_id, access_token, db)
     if (prop.financing_type == "mortgage") != isinstance(inputs, MortgageInputs):
         raise HTTPException(422, "Analīzes ievade neatbilst īpašuma finansējuma veidam.")
+    resolve_diary_sources(inputs, property_id, db)
     # 0 mēneši atļauti neizīrētam īpašumam vai renovācijas scenārijam.
     row = db.query(AdvancedAnalysis).filter(AdvancedAnalysis.property_id == property_id).first()
     if row is None:
         row = AdvancedAnalysis(property_id=property_id)
         db.add(row)
-    row.inputs = inputs.model_dump()
+    row.inputs = inputs.model_dump(mode="json")
     row.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(row)
-    return serialize(row)
+    return serialize(row, db)
 
 @router.delete("", status_code=204)
 def delete_analysis(property_id: int, access_token: str | None = Cookie(default=None), db: Session = Depends(get_db)):

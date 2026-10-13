@@ -1,3 +1,4 @@
+import CalendarMonthPicker from "./CalendarMonthPicker";
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import "./DiaryCalendar.css";
@@ -6,7 +7,7 @@ const months = ["Janvāris", "Februāris", "Marts", "Aprīlis", "Maijs", "Jūnij
 function dateKey(year, month, day) { return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`; }
 
 // Izmantojam tās pašas kalendāra CSS klases kā pārējo sadaļu formās.
-export default function FormDatePicker({ id, value, onChange, disabled = false }) {
+export default function FormDatePicker({ id, value, onChange, disabled = false, label = "Datums" }) {
     const rootRef = useRef(null);
     const triggerRef = useRef(null);
     const [open, setOpen] = useState(false);
@@ -30,13 +31,13 @@ export default function FormDatePicker({ id, value, onChange, disabled = false }
     return <div ref={rootRef} className="diary-form-group diary-expense-date-group" onKeyDown={(event) => {
         if (event.key === "Escape" && open) { event.stopPropagation(); setOpen(false); triggerRef.current?.focus(); }
     }}>
-        <label htmlFor={id}>Datums</label>
+        <label htmlFor={id}>{label}</label>
         <div className="diary-date-picker-field">
             <input id={id} type="text" value={value ? value.split("-").reverse().join(".") : ""} readOnly disabled={disabled} onClick={toggle} />
             <button ref={triggerRef} type="button" className="diary-date-picker-button" disabled={disabled} aria-label="Izvēlēties datumu" aria-expanded={open} aria-controls={`${id}-calendar`} onClick={toggle}><CalendarDays size={17} /></button>
         </div>
         {open && <div id={`${id}-calendar`} className="expense-date-calendar">
-            <div className="expense-date-calendar-header"><strong>{months[month]} {year}</strong>
+            <div className="expense-date-calendar-header"><CalendarMonthPicker year={year} month={month} onChange={setView} />
                 <div className="expense-date-calendar-navigation">
                     <button type="button" aria-label="Iepriekšējais mēnesis" onClick={() => setView(new Date(year, month - 1, 1))}><ChevronLeft size={17} /></button>
                     <button type="button" aria-label="Nākamais mēnesis" onClick={() => setView(new Date(year, month + 1, 1))}><ChevronRight size={17} /></button>

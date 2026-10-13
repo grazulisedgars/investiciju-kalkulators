@@ -1,3 +1,4 @@
+import CalendarMonthPicker from "./CalendarMonthPicker";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -381,14 +382,7 @@ function RentModal({
                         {showRentDatePicker && (
                             <div className="expense-date-calendar">
                                 <div className="expense-date-calendar-header">
-                                    <strong>
-                                        {
-                                            rentCalendarMonthNames[
-                                            rentCalendarMonth
-                                            ]
-                                        }{" "}
-                                        {rentCalendarYear}
-                                    </strong>
+                                    <CalendarMonthPicker year={rentCalendarYear} month={rentCalendarMonth} onChange={setRentCalendarDate} />
 
                                     <div className="expense-date-calendar-navigation">
                                         <button

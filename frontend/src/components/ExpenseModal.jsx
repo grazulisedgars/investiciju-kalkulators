@@ -1,3 +1,4 @@
+import CalendarMonthPicker from "./CalendarMonthPicker";
 import { useEffect, useRef, useState } from "react";
 import {
     CalendarDays,
@@ -382,14 +383,7 @@ function ExpenseModal({
                         {showExpenseDatePicker && (
                             <div className="expense-date-calendar">
                                 <div className="expense-date-calendar-header">
-                                    <strong>
-                                        {
-                                            expenseCalendarMonthNames[
-                                            expenseCalendarMonth
-                                            ]
-                                        }{" "}
-                                        {expenseCalendarYear}
-                                    </strong>
+                                    <CalendarMonthPicker year={expenseCalendarYear} month={expenseCalendarMonth} onChange={setExpenseCalendarDate} />
 
                                     <div className="expense-date-calendar-navigation">
                                         <button

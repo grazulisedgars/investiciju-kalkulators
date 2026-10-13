@@ -15,7 +15,15 @@ export function CashFlowChart({ results, annualBars = false, receivedRent = null
     const height = 265, left = 60, right = 32, top = 20, bottom = 35;
     const years = 10;
     const points = results.timeline ? results.timeline.filter(item => item.year <= 10).map(item => ({ year: item.year, value: item.cumulative, cash: item.cash, gross: item.gross })) : Array.from({ length: 11 }, (_, year) => ({ year, value: -results.investment + results.net_annual * year }));
-    const curvePoints = results.monthly_timeline ? results.monthly_timeline.filter(item => item.year <= 10).map(item => ({ year: item.year, value: item.cumulative })) : points;
+    const monthlyPoints = results.monthly_timeline ? results.monthly_timeline.filter(item => item.year <= 10).map(item => ({ year: item.year, value: item.cumulative })) : points;
+    // Attēlojumu vienkāršo līdz taisniem nogriežņiem; mēneša aprēķini paliek precīzi.
+    // Saglabā zemāko atlikumu un precīzo atgūšanas brīdi kā līnijas atskaites punktus.
+    const lowest = monthlyPoints.reduce((lowest,point)=>point.value < lowest.value ? point : lowest,monthlyPoints[0]);
+    const curvePoints = [monthlyPoints[0], ...(lowest.year>0 ? [lowest] : []), ...points.filter(point=>point.year>lowest.year)];
+    if (results.payback !== null && results.payback<=years && results.payback>lowest.year && !curvePoints.some(point=>point.year===results.payback)) {
+        curvePoints.push({year:results.payback,value:0});
+        curvePoints.sort((a,b)=>a.year-b.year);
+    }
     const values = [...curvePoints.map(p => p.value), ...points.map(p => p.cash ?? 0), 0, ...(annualBars ? [results.net_annual, results.gross_annual] : [])];
     // Vienmērīgas ass iedaļas un precīza nulles līnija.
     const range = Math.max(...values) - Math.min(...values);
@@ -29,13 +37,13 @@ export function CashFlowChart({ results, annualBars = false, receivedRent = null
     const tickYears = width < 350 ? [0, 5, 10] : [0, 2, 4, 6, 8, 10];
     const line = curvePoints.map((p, i) => `${i ? "L" : "M"}${x(p.year)},${y(p.value)}`).join(" ");
     let progressYear = receivedRent !== null && results.net_annual > 0 ? receivedRent / results.net_annual : null;
-    const initial = results.chart_initial ?? results.investment;
+    const initial = results.own_capital ?? results.investment;
     const progressValue = receivedRent === null ? null : -initial + receivedRent;
     if (results.timeline && receivedRent !== null) {
-        progressYear = receivedRent === 0 ? 0 : null;
+        progressYear = receivedRent === 0 && curvePoints[0].value === progressValue ? 0 : null;
         for (let i = 1; i < curvePoints.length && progressYear === null; i++) {
             const previous = curvePoints[i-1], next = curvePoints[i];
-            if (next.value !== previous.value && progressValue >= Math.min(previous.value,next.value) && progressValue <= Math.max(previous.value,next.value)) progressYear = previous.year + (progressValue-previous.value)/(next.value-previous.value);
+            if (next.value > previous.value && progressValue >= Math.min(previous.value,next.value) && progressValue <= Math.max(previous.value,next.value)) progressYear = previous.year + (next.year-previous.year)*(progressValue-previous.value)/(next.value-previous.value);
         }
     }
     const showProgress = progressYear !== null && progressYear >= 0 && progressYear <= years;
@@ -57,7 +65,7 @@ export function CashFlowChart({ results, annualBars = false, receivedRent = null
                 return <g key={p.year}><rect className="analysis-bar-gross" x={x(p.year)} y={Math.min(y(0),y(gross))} width={barWidth} height={Math.abs(y(0)-y(gross))}><title>{p.year === 0 ? "Sākums: ieguldītā summa" : `${p.year}. gads: īre pirms izdevumiem`}: {money(gross)}</title></rect><rect className="analysis-bar" x={x(p.year)-barWidth} y={Math.min(y(0),y(net))} width={barWidth} height={Math.abs(y(0)-y(net))}><title>{p.year === 0 ? "Sākums: ieguldītā summa" : `${p.year}. gads: atlikums pēc maksājumiem`}: {money(net)}</title></rect></g>;
             })}
             <path className="analysis-line" d={line} />
-            {points.map(p => <circle key={p.year} className="analysis-dot" cx={x(p.year)} cy={y(p.value)} r="3"><title>{p.year}. gads: atlikums {money(p.value)}</title></circle>)}
+            {curvePoints.filter(p=>Number.isInteger(p.year)).map(p => <circle key={p.year} className="analysis-dot" cx={x(p.year)} cy={y(p.value)} r="3"><title>{p.year}. gads: atlikums {money(p.value)}</title></circle>)}
             {results.payback !== null && results.payback <= 10 && <g className={`analysis-payback-marker ${paybackPinned ? "is-pinned" : ""}`}>
                 <circle className="analysis-dot" cx={x(results.payback)} cy={y(0)} r="5" />
                 <text className="analysis-label" x={x(results.payback)} y={y(0)-14} textAnchor="middle">{results.payback.toLocaleString("lv-LV", { maximumFractionDigits: 1 })} gadi</text>
@@ -77,10 +85,10 @@ export function CashFlowChart({ results, annualBars = false, receivedRent = null
         </svg>
         {Number(rentedMonths) === 0 && rentedMonths !== null && <p className="advanced-scenario-note">Izīrēti 0 mēneši nozīmē, ka īres nav arī pēc renovācijas. Negatīvie stabiņi rāda maksājumus, kurus sedz tu. Lai pēc renovācijas sāktos ienākumi, norādi izīrētos mēnešus pēc renovācijas.</p>}
         <details className="analysis-chart-help"><summary>Kā lasīt šo grafiku?</summary><ol className="analysis-chart-explanation">
-            <li><strong>Ieguldītā nauda.</strong> Summa, ko esi ieguldījis un vēl neesi atguvis. Tāpēc grafiks sākas mīnusā.</li>
+            <li><strong>Ieguldītā nauda.</strong> {results.chart_initial < (results.own_capital ?? results.investment) ? "Sākuma stabiņš rāda pirkumam ieguldīto naudu un iegādes papildu izdevumus. Remontu pievieno pakāpeniski renovācijas laikā: pēc dienasgrāmatas ierakstu datumiem vai, manuālajā variantā, vienmērīgi pa mēnešiem. Tāpēc līkne renovācijas laikā iet zemāk." : "Summa, ko esi ieguldījis un vēl neesi atguvis. Tāpēc grafiks sākas mīnusā."}</li>
             {annualBars && <li><strong>Īre pirms izdevumiem</strong> — gada īres ienākumi, pirms tiek atskaitīts nodoklis un izdevumi. Grafikā tie ir gaiši zaļie stabiņi.</li>}
-            {annualBars && <li><strong>Atlikums pēc maksājumiem</strong> — īres ienākumi mīnus nodoklis{results.loan_amount !== undefined ? ", īpašnieka izdevumi un kredītmaksājumi" : " un īpašnieka izdevumi"}. Ja stabiņš ir zem 0 €, šī summa jāsedz tev. Grafikā tie ir zaļie stabiņi.</li>}
-            <li><strong>Līnija</strong> — prognoze, kā pamazām atgūsti ieguldīto naudu. Kad tā sasniedz 0 €, sākotnējais ieguldījums ir atgūts.</li>
+            {annualBars && <li><strong>Atlikums pēc maksājumiem</strong> — īres ienākumi mīnus nodoklis{results.loan_amount !== undefined ? ", īpašnieka izdevumi un kredītmaksājumi" : " un īpašnieka izdevumi"}. {results.chart_initial < (results.own_capital ?? results.investment) && " Renovācijas gados atņem arī šajā gadā reģistrēto remontu."} Ja stabiņš ir zem 0 €, šī summa jāsedz tev. Grafikā tie ir zaļie stabiņi.</li>}
+            <li><strong>Līnija</strong> — prognoze, kā pamazām atgūsti ieguldīto naudu. Renovācijas posms attēlots kā taisns nogrieznis līdz zemākajam atlikumam; aprēķinā izmaksas joprojām ieskaita pa maksājumu mēnešiem. Kad līnija sasniedz 0 €, ieguldījums ir atgūts.</li>
             <li><strong>Lielais zaļais punkts</strong> — prognozētais ieguldījuma atgūšanas brīdis.{results.loan_amount !== undefined && " Tas nenozīmē, ka kredīts ir pilnībā atmaksāts."}{results.payback === null ? " Pie šiem pieņēmumiem ieguldījums neatmaksājas, tāpēc punkta nav." : results.payback > 10 ? " Šajā scenārijā tas ir pēc vairāk nekā 10 gadiem, tāpēc punkts ir ārpus grafika." : ""}</li>
             <li><strong>Dzeltenais punkts</strong> — progress pēc dienasgrāmatā ievadītās saņemtās īres{results.loan_amount !== undefined ? " un kredītmaksājumiem. No saņemtās īres atņem visus reģistrētos kredītmaksājumus." : "."} Nodoklis un pārējie īpašnieka izdevumi vēl nav atskaitīti. Punkta vieta rāda sasniegto summu, nevis pagājušo laiku.{receivedRent !== null && !showProgress && " Pašreizējā summa ir ārpus attēlotās līknes, tāpēc punkts grafikā nav redzams."}</li>
         </ol></details>

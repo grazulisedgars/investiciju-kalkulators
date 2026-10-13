@@ -283,3 +283,118 @@
 .renovation-summary-grid strong { display: block; margin-top: 6px; font-size: 16px; font-variant-numeric: tabular-nums; }
 @media(max-width:800px) { .renovation-summary-grid { grid-template-columns: 1fr 1fr; } }
 @media(max-width:450px) { .renovation-summary-grid { grid-template-columns: 1fr; } }
+
+.diary-cost-choice { margin: 0 0 20px; border: 1px solid #d9e6de; border-radius: 9px; padding: 14px 16px; min-width: 0; }
+.diary-cost-choice legend { font-weight: 600; color: #173e30; font-size: 14px; padding: 0 6px; }
+.diary-source-options { display: flex; gap: 16px; flex-wrap: wrap; }
+.diary-source-options label, .diary-source-records label { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.diary-cost-choice input[type="radio"], .diary-cost-choice input[type="checkbox"] { accent-color: #126a4e; width: auto; flex-shrink: 0; }
+.diary-period { margin: 14px 0; }
+.diary-period .advanced-fields { margin-top: 14px; }
+.diary-source-total { padding: 10px 0; color: #173e30; font-size: 14px; }
+.diary-source-records > div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid #edf1ee; font-size: 12px; }
+.diary-source-records strong { white-space: nowrap; }
+.diary-period .diary-date-picker input { width: 100%; box-sizing: border-box; }
+
+.diary-source-records { margin-top:16px; margin-bottom:12px; }
+.diary-cost-choice .diary-source-records input[type="checkbox"] { appearance:none; width:18px; height:18px; margin:0; border:1px solid #b8cec3; border-radius:4px; background:#fff; position:relative; cursor:pointer; }
+.diary-cost-choice .diary-source-records input[type="checkbox"]:checked { background:#126a4e; border-color:#126a4e; }
+.diary-cost-choice .diary-source-records input[type="checkbox"]:checked::after { content:""; position:absolute; left:5px; top:2px; width:5px; height:9px; border:solid white; border-width:0 2px 2px 0; transform:rotate(45deg); }
+.diary-cost-choice .diary-source-records input[type="checkbox"]:focus-visible { outline:2px solid #126a4e; outline-offset:3px; }
+.diary-cost-choice .diary-source-records input[type="checkbox"]:disabled { opacity:.5; cursor:default; }
+
+/* Kompakta darbība pie dienasgrāmatas izmaksu saraksta. */
+.diary-cost-choice details > .advanced-secondary { padding:8px 12px; min-height:34px; font-size:13px; border-radius:6px; line-height:1.3; }
+
+.diary-cost-choice .advanced-field-error { font-size:12px; font-weight:400; line-height:1.5; }
+
+.initial-investment-blocks { display:grid; gap:18px; }
+.investment-input-block { min-width:0; margin:0; padding:18px; border:1px solid #dce6df; border-radius:10px; }
+.investment-input-block legend { padding:0 6px; font-size:14px; font-weight:600; color:#16483d; }
+.initial-investment-blocks .diary-cost-choice, .initial-investment-blocks .renovation-period { margin:0; }
+.initial-investment-blocks .advanced-fields { margin-bottom:0; }
+.investment-repair-result { display:flex; flex-direction:column; gap:8px; font-size:14px; color:#435e50; }
+.investment-repair-result output { display:flex; align-items:center; width:100%; min-width:0; padding:13px 15px; box-sizing:border-box; border:1px solid #d9e6de; border-radius:9px; background:#e6f7ef; color:#173e30; font:inherit; font-weight:400; }
+.investment-input-block .advanced-rows { margin-top:14px; }
+
+.initial-investment-blocks .diary-source-options + .advanced-fields { margin-top:18px; }
+
+
+.initial-investment-blocks .diary-cost-choice .advanced-fields input, .investment-repair-result output { height:49px; box-sizing:border-box; font-size:14px; line-height:21px; font-weight:400; }
+
+.initial-investment-blocks .renovation-period.is-embedded { padding:18px 0 0; margin-top:20px; border:0; border-top:1px solid #e1eae4; border-radius:0; }
+.renovation-period.is-embedded h4 { margin:0 0 14px; font-size:14px; font-weight:600; color:#16483d; }
+.initial-investment-blocks .diary-cost-choice.is-embedded { border:0; padding:16px 0 0; border-radius:0; }
+
+.renovation-date-actions { display:flex; justify-content:flex-end; margin-bottom:10px; }
+.renovation-date-actions .advanced-secondary { padding:6px 10px; min-height:30px; font-size:12px; line-height:1.3; }
+
+.owner-expense-blocks { display:grid; gap:20px; }
+.owner-source-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:16px 0 22px; }
+.owner-source-card { position:relative; display:flex; flex-direction:column; gap:10px; padding:18px 42px 18px 18px; border:1px solid #d9e6de; border-radius:10px; color:#435e50; font-size:13px; cursor:pointer; }
+.owner-source-card.selected { background:#e6f7ef; border-color:#126a4e; }
+.owner-source-card input { position:absolute; top:18px; right:18px; width:16px; height:16px; margin:0; accent-color:#126a4e; }
+.owner-source-card:focus-within { outline:2px solid #126a4e; outline-offset:2px; }
+.owner-source-title { font-size:14px; font-weight:600; color:#173e30; }
+.owner-source-check { position:absolute; right:17px; top:17px; color:#126a4e; pointer-events:none; background:#e6f7ef; }
+.owner-cost-result { display:flex; flex-direction:column; gap:9px; margin-top:16px; padding:16px; border:1px solid #d9e6de; border-radius:9px; background:#edf7f2; color:#435e50; font-size:13px; }
+.owner-cost-result output { font-size:20px; color:#126a4e; }
+.owner-cost-result small { font-size:12px; line-height:1.5; }
+.owner-expense-blocks .diary-cost-choice.is-embedded { padding:16px 0 0; border:0; margin:0; }
+.owner-future-utilities { border-top:1px solid #e1eae4; margin-top:20px; padding-top:16px; }
+.owner-future-utilities h4 { margin:0; font-size:14px; }
+@media(max-width:600px) { .owner-source-cards { grid-template-columns:minmax(0,1fr); } }
+
+.owner-source-options { margin:16px 0 22px; }
+.owner-source-options label { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:400; cursor:pointer; }
+.owner-source-options input[type="radio"] { accent-color:#126a4e; width:auto; flex-shrink:0; margin:0; }
+
+.owner-season-average { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px 16px; margin:16px 0; padding:10px 0; border-top:1px solid #edf1ee; border-bottom:1px solid #edf1ee; color:#435e50; font-size:13px; }
+.owner-season-average output { font:inherit; font-weight:400; color:#173e30; }
+.owner-other-expenses > .advanced-fields { margin-top:18px; }
+
+.owner-diary-summary { display:flex; flex-direction:column; gap:8px; margin:16px 0; padding:10px 0; border-top:1px solid #edf1ee; border-bottom:1px solid #edf1ee; color:#435e50; font-size:13px; }
+.owner-diary-summary output { font:inherit; color:#173e30; font-weight:400; }
+
+.owner-utility-summary { margin:16px 0; padding:0; border-top:1px solid #edf1ee; border-bottom:1px solid #edf1ee; color:#435e50; font-size:13px; }
+.owner-utility-summary-row { display:flex; justify-content:space-between; align-items:baseline; gap:8px 16px; padding:10px 0; }
+.owner-utility-summary-row + .owner-utility-summary-row { border-top:1px solid #edf1ee; }
+.owner-utility-summary output { font:inherit; color:#173e30; font-weight:400; text-align:right; }
+.owner-utility-summary small { font:inherit; }
+@media(max-width:480px) { .owner-utility-summary-row { flex-wrap:wrap; } }
+
+.initial-investment-blocks input[name="renovation-required"] { accent-color:#126a4e; width:auto; flex-shrink:0; }
+
+.owner-expense-summaries { display:grid; gap:22px; }
+.owner-expense-summaries section + section { padding-top:18px; border-top:1px solid #e1eae4; }
+.owner-expense-summaries h4 { margin:0 0 12px; font-size:14px; color:#16483d; }
+
+.renovation-summary .renovation-summary-period { margin-bottom:22px; }
+.renovation-summary-grid { grid-template-columns:repeat(5,minmax(0,1fr)); gap:20px; }
+.renovation-summary-grid small, .renovation-diary-grid small { display:block; margin-top:8px; color:#667b6e; font-size:12px; line-height:1.5; }
+.renovation-summary-grid details { margin-top:12px; font-size:12px; }
+.renovation-diary-costs { margin-top:22px; padding-top:18px; border-top:1px solid #e1eae4; }
+.renovation-diary-costs h4 { margin:0 0 14px; font-size:14px; }
+.renovation-diary-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.renovation-diary-grid span { display:block; color:#667b6e; font-size:12px; }
+.renovation-diary-grid strong { display:block; margin-top:6px; font-size:16px; }
+@media(max-width:1000px) { .renovation-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:450px) { .renovation-summary-grid, .renovation-diary-grid { grid-template-columns:minmax(0,1fr); } }
+
+.renovation-summary-help { margin-top:20px; font-size:12px; }
+.renovation-diary-lines { margin-top:16px; }
+.renovation-diary-lines .advanced-note { margin:8px 0 0; }
+.renovation-diary-lines strong { font-size:inherit; }
+
+.renovation-summary-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+@media(max-width:1000px) { .renovation-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:450px) { .renovation-summary-grid { grid-template-columns:minmax(0,1fr); } }
+
+.advanced-kpi-main span:not(.advanced-icon) { font-size:12px; line-height:16px; min-height:16px; white-space:nowrap; }
+.advanced-kpi small { font-size:11px; line-height:16px; min-height:30px; }
+
+@media(max-width:700px) { .advanced-kpi-main span:not(.advanced-icon) { white-space:normal; } }
+
+.advanced-guide-grid ul { margin:6px 0; padding-left:20px; font-family:inherit; font-size:13px; line-height:1.6; color:#526b60; font-weight:400; }
+.advanced-guide-grid li { font:inherit; color:inherit; }
+.advanced-guide-grid li strong { font-weight:400; }

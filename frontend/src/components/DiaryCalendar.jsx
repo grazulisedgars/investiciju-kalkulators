@@ -1,3 +1,4 @@
+import CalendarMonthPicker from "./CalendarMonthPicker";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -64,12 +65,6 @@ function DiaryCalendar({ property }) {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
-    const monthName = new Intl.DateTimeFormat("lv-LV", {
-        month: "long",
-    }).format(currentDate);
-
-    const calendarTitle =
-        `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
 
     const firstDay = new Date(year, month, 1);
 
@@ -281,7 +276,7 @@ function DiaryCalendar({ property }) {
             <div className="diary-calendar-sidebar">
 
                 <div className="diary-calendar-header">
-                    <h3>{calendarTitle}</h3>
+                    <CalendarMonthPicker year={year} month={month} onChange={setCurrentDate} />
 
                     <div className="diary-calendar-controls">
                         <button

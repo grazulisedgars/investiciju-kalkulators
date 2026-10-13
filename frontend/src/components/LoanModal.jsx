@@ -1,3 +1,4 @@
+import CalendarMonthPicker from "./CalendarMonthPicker";
 import { useEffect, useRef, useState } from "react";
 import {
     CalendarDays,
@@ -422,14 +423,7 @@ function LoanModal({
                         {showLoanDatePicker && (
                             <div className="expense-date-calendar">
                                 <div className="expense-date-calendar-header">
-                                    <strong>
-                                        {
-                                            loanCalendarMonthNames[
-                                            loanCalendarMonth
-                                            ]
-                                        }{" "}
-                                        {loanCalendarYear}
-                                    </strong>
+                                    <CalendarMonthPicker year={loanCalendarYear} month={loanCalendarMonth} onChange={setLoanCalendarDate} />
 
                                     <div className="expense-date-calendar-navigation">
                                         <button

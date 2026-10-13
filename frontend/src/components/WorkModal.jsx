@@ -1,3 +1,4 @@
+import CalendarMonthPicker from "./CalendarMonthPicker";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -381,14 +382,7 @@ function WorkModal({
                         {showWorkDatePicker && (
                             <div className="expense-date-calendar">
                                 <div className="expense-date-calendar-header">
-                                    <strong>
-                                        {
-                                            workCalendarMonthNames[
-                                            workCalendarMonth
-                                            ]
-                                        }{" "}
-                                        {workCalendarYear}
-                                    </strong>
+                                    <CalendarMonthPicker year={workCalendarYear} month={workCalendarMonth} onChange={setWorkCalendarDate} />
 
                                     <div className="expense-date-calendar-navigation">
                                         <button
