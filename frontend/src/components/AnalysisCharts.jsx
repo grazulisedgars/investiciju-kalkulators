@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 const money = value => value.toLocaleString("lv-LV", { maximumFractionDigits: 0 }) + " €";
 
-export function CashFlowChart({ results, annualBars = false, receivedRent = null, progressLabel = "Saņemtā īre", rentedMonths = null }) {
+export function CashFlowChart({ results, annualBars = false, rentedMonths = null, hasActualProgress = null, actualProgress = null }) {
     const ref = useRef(null);
     const [width, setWidth] = useState(360);
     const [progressPinned, setProgressPinned] = useState(false);
@@ -24,7 +24,7 @@ export function CashFlowChart({ results, annualBars = false, receivedRent = null
         curvePoints.push({year:results.payback,value:0});
         curvePoints.sort((a,b)=>a.year-b.year);
     }
-    const values = [...curvePoints.map(p => p.value), ...points.map(p => p.cash ?? 0), 0, ...(annualBars ? [results.net_annual, results.gross_annual] : [])];
+    const values = [...curvePoints.map(p => p.value), ...points.map(p => p.cash ?? 0), ...(actualProgress && actualProgress.year>=0 && actualProgress.year<=years?[actualProgress.value]:[]), 0, ...(annualBars ? [results.net_annual, results.gross_annual] : [])];
     // Vienmērīgas ass iedaļas un precīza nulles līnija.
     const range = Math.max(...values) - Math.min(...values);
     const magnitude = 10 ** Math.floor(Math.log10(Math.max(range / 5, 1)));
@@ -36,19 +36,12 @@ export function CashFlowChart({ results, annualBars = false, receivedRent = null
     const y = value => top + (hi+padding-value)/(hi-lo+2*padding)*(height-top-bottom);
     const tickYears = width < 350 ? [0, 5, 10] : [0, 2, 4, 6, 8, 10];
     const line = curvePoints.map((p, i) => `${i ? "L" : "M"}${x(p.year)},${y(p.value)}`).join(" ");
-    let progressYear = receivedRent !== null && results.net_annual > 0 ? receivedRent / results.net_annual : null;
-    const initial = results.own_capital ?? results.investment;
-    const progressValue = receivedRent === null ? null : -initial + receivedRent;
-    if (results.timeline && receivedRent !== null) {
-        progressYear = receivedRent === 0 && curvePoints[0].value === progressValue ? 0 : null;
-        for (let i = 1; i < curvePoints.length && progressYear === null; i++) {
-            const previous = curvePoints[i-1], next = curvePoints[i];
-            if (next.value > previous.value && progressValue >= Math.min(previous.value,next.value) && progressValue <= Math.max(previous.value,next.value)) progressYear = previous.year + (next.year-previous.year)*(progressValue-previous.value)/(next.value-previous.value);
-        }
-    }
-    const showProgress = progressYear !== null && progressYear >= 0 && progressYear <= years;
+    const progressYear=actualProgress?.year ?? null;
+    const progressValue=actualProgress?.value ?? null;
+    const showProgress=actualProgress!==null && progressYear>=0 && progressYear<=years;
+    const progressDate=actualProgress?.date.split('-').reverse().join('.');
 
-    const bubbleWidth = Math.min(174, width-left-right);
+    const bubbleWidth = Math.min(210, width-left-right);
     const paybackBubbleWidth = Math.min(240, width-left-right);
     const bubbleX = showProgress ? Math.max(left, Math.min(width-right-bubbleWidth, x(progressYear)-bubbleWidth/2)) : 0;
     const bubbleY = showProgress ? Math.max(top, Math.min(height-bottom-52, y(progressValue)-62)) : 0;
@@ -77,12 +70,13 @@ export function CashFlowChart({ results, annualBars = false, receivedRent = null
             {showProgress && <g className={`analysis-rent-marker ${progressPinned ? "is-pinned" : ""}`}>
                 <circle cx={x(progressYear)} cy={y(progressValue)} r="12" fill="#d18a18" opacity=".2" />
                 <circle cx={x(progressYear)} cy={y(progressValue)} r="6" fill="#d18a18" stroke="white" strokeWidth="2" />
-                <circle className="analysis-rent-hit" cx={x(progressYear)} cy={y(progressValue)} r="20" fill="transparent" role="button" tabIndex={0} aria-label={`Pašreizējais progress. ${progressLabel} ${money(receivedRent)}; atlikums ${money(progressValue)}, pirms nodokļiem un izdevumiem.`} aria-pressed={progressPinned} onClick={() => setProgressPinned(value => !value)} onKeyDown={event => { if (["Enter", " "].includes(event.key)) { event.preventDefault(); setProgressPinned(value => !value); } else if (event.key === "Escape") setProgressPinned(false); }} />
-                <g className="analysis-rent-tooltip" pointerEvents="none"><line className="analysis-grid" strokeDasharray="3 4" x1={x(progressYear)} x2={x(progressYear)} y1={y(progressValue)} y2={height-bottom} /><rect className="analysis-rent-bubble" x={bubbleX} y={bubbleY} width={bubbleWidth} height="44" rx="7" /><text x={bubbleX+10} y={bubbleY+17}>Šobrīd · {money(receivedRent)}</text><text x={bubbleX+10} y={bubbleY+33}>{progressValue >= 0 ? "Virs ieguldījuma " : "Atlikums "}{money(progressValue)}</text></g>
+                <circle className="analysis-rent-hit" cx={x(progressYear)} cy={y(progressValue)} r="20" fill="transparent" role="button" tabIndex={0} aria-label={`Faktiskais progress ${progressDate}. Saņemtā īre ${money(actualProgress.rent)}; atlikums ${money(progressValue)}. Nodokļi un neierakstītie izdevumi nav atskaitīti.`} aria-pressed={progressPinned} onClick={() => setProgressPinned(value => !value)} onKeyDown={event => { if (["Enter", " "].includes(event.key)) { event.preventDefault(); setProgressPinned(value => !value); } else if (event.key === "Escape") setProgressPinned(false); }} />
+                <g className="analysis-rent-tooltip" pointerEvents="none"><line className="analysis-grid" strokeDasharray="3 4" x1={x(progressYear)} x2={x(progressYear)} y1={y(progressValue)} y2={height-bottom} /><rect className="analysis-rent-bubble" x={bubbleX} y={bubbleY} width={bubbleWidth} height="44" rx="7" /><text x={bubbleX+10} y={bubbleY+17}>Faktiski · {progressDate}</text><text x={bubbleX+10} y={bubbleY+33}>{progressValue >= 0 ? "Virs ieguldījuma " : "Atlikums "}{money(progressValue)}</text></g>
             </g>}
             {tickYears.map(year => <text key={year} x={x(year)} y={height-22} textAnchor={year === 0 ? "start" : year === 10 ? "end" : "middle"}>{year}</text>)}
-            <text x={width-right} y={height-3} textAnchor="end">Gadi</text>
+            <text x={width-right} y={height-3} textAnchor="end">Prognozes gadi</text>
         </svg>
+        {hasActualProgress === false && <p className="advanced-note">Faktiskā progresa vēl nav — dienasgrāmatā nav reģistrētu {results.loan_amount !== undefined ? 'īres vai kredītmaksājumu' : 'saņemtās īres'} ierakstu.</p>}
         {Number(rentedMonths) === 0 && rentedMonths !== null && <p className="advanced-scenario-note">Izīrēti 0 mēneši nozīmē, ka īres nav arī pēc renovācijas. Negatīvie stabiņi rāda maksājumus, kurus sedz tu. Lai pēc renovācijas sāktos ienākumi, norādi izīrētos mēnešus pēc renovācijas.</p>}
         <details className="analysis-chart-help"><summary>Kā lasīt šo grafiku?</summary><ol className="analysis-chart-explanation">
             <li><strong>Ieguldītā nauda.</strong> {results.chart_initial < (results.own_capital ?? results.investment) ? "Sākuma stabiņš rāda pirkumam ieguldīto naudu un iegādes papildu izdevumus. Remontu pievieno pakāpeniski renovācijas laikā: pēc dienasgrāmatas ierakstu datumiem vai, manuālajā variantā, vienmērīgi pa mēnešiem. Tāpēc līkne renovācijas laikā iet zemāk." : "Summa, ko esi ieguldījis un vēl neesi atguvis. Tāpēc grafiks sākas mīnusā."}</li>
@@ -90,7 +84,7 @@ export function CashFlowChart({ results, annualBars = false, receivedRent = null
             {annualBars && <li><strong>Atlikums pēc maksājumiem</strong> — īres ienākumi mīnus nodoklis{results.loan_amount !== undefined ? ", īpašnieka izdevumi un kredītmaksājumi" : " un īpašnieka izdevumi"}. {results.chart_initial < (results.own_capital ?? results.investment) && " Renovācijas gados atņem arī šajā gadā reģistrēto remontu."} Ja stabiņš ir zem 0 €, šī summa jāsedz tev. Grafikā tie ir zaļie stabiņi.</li>}
             <li><strong>Līnija</strong> — prognoze, kā pamazām atgūsti ieguldīto naudu. Renovācijas posms attēlots kā taisns nogrieznis līdz zemākajam atlikumam; aprēķinā izmaksas joprojām ieskaita pa maksājumu mēnešiem. Kad līnija sasniedz 0 €, ieguldījums ir atgūts.</li>
             <li><strong>Lielais zaļais punkts</strong> — prognozētais ieguldījuma atgūšanas brīdis.{results.loan_amount !== undefined && " Tas nenozīmē, ka kredīts ir pilnībā atmaksāts."}{results.payback === null ? " Pie šiem pieņēmumiem ieguldījums neatmaksājas, tāpēc punkta nav." : results.payback > 10 ? " Šajā scenārijā tas ir pēc vairāk nekā 10 gadiem, tāpēc punkts ir ārpus grafika." : ""}</li>
-            <li><strong>Dzeltenais punkts</strong> — progress pēc dienasgrāmatā ievadītās saņemtās īres{results.loan_amount !== undefined ? " un kredītmaksājumiem. No saņemtās īres atņem visus reģistrētos kredītmaksājumus." : "."} Nodoklis un pārējie īpašnieka izdevumi vēl nav atskaitīti. Punkta vieta rāda sasniegto summu, nevis pagājušo laiku.{receivedRent !== null && !showProgress && " Pašreizējā summa ir ārpus attēlotās līknes, tāpēc punkts grafikā nav redzams."}</li>
+            <li><strong>Dzeltenais punkts</strong> — atlikums pēc dienasgrāmatas datiem pēdējā izmantotā ieraksta datumā. Tas rāda saņemto īri, atņemot atlasīto remontu, komunālos{results.loan_amount!==undefined?' un reģistrētos kredītmaksājumus':''}, kā arī sākotnējo ieguldījumu. Manuāli ievadītais remonts ieskaitīts pilnā summā vienreiz. Nodokļi un neierakstītie īpašnieka izdevumi nav atskaitīti. Punkts var atrasties virs vai zem prognozes līknes.{actualProgress && !showProgress && " Ieraksta datums ir ārpus attēlotajiem 10 prognozes gadiem."}</li>
         </ol></details>
     </div>;
 }

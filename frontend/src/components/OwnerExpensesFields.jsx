@@ -5,7 +5,7 @@ import {analysisSteps} from './advancedCalculations';
 const money=n=>n.toLocaleString('lv-LV',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 
 // Šis bloks maina tikai padziļinātās analīzes ievadi, nevis dienasgrāmatas ierakstus.
-export default function OwnerExpensesFields({draft,setDraft,diary,disabled,field}) {
+export default function OwnerExpensesFields({draft,setDraft,diary,disabled,field,mortgage=false}) {
     const source=draft.utilities_source || 'manual';
     const info=diaryCostSources(draft,diary.entries);
     const used=new Set(info.usedUtilityIds);
@@ -38,6 +38,6 @@ export default function OwnerExpensesFields({draft,setDraft,diary,disabled,field
                 {Number(draft.rented_months)<12 && <div className="owner-future-utilities"><h4>Komunālie neizīrētajos mēnešos pēc renovācijas</h4><p className="advanced-note">Šeit norādītās summas izmanto nākotnes prognozei. Dienasgrāmatas vidējo automātiski nepārnes uz visu gadu.</p><div className="advanced-fields">{renderFields(['summer_cost','winter_cost'])}</div></div>}
             </>}
         </fieldset>
-        <fieldset className="investment-input-block owner-other-expenses"><legend>Citi īpašnieka izdevumi</legend><p className="advanced-note">Apdrošināšanu un NĪN ņem vērā arī renovācijas laikā.</p><div className="advanced-fields">{renderFields(['insurance','cadastral_value'])}</div><p className="advanced-note">* Kadastrālo vērtību nepieciešams norādīt, lai varētu aprēķināt NĪN.</p></fieldset>
+        <fieldset className="investment-input-block owner-other-expenses"><legend>Citi īpašnieka izdevumi</legend><p className="advanced-note">Apdrošināšanu un NĪN ņem vērā arī renovācijas laikā.</p><div className="advanced-fields">{renderFields(['insurance','cadastral_value'])}{mortgage && field(['loan_insurance_monthly','Kredītmaksājuma apdrošināšana (€/mēn.) — nav obligāti'])}</div><p className="advanced-note">* Kadastrālo vērtību nepieciešams norādīt, lai varētu aprēķināt NĪN.</p></fieldset>
     </div>;
 }

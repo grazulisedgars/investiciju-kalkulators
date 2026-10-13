@@ -2,11 +2,10 @@ import { calculateAdvanced } from './advancedCalculations';
 import { applyMonthlyForecast } from './monthlyForecast';
 
 export const mortgageSteps = [
-    { title: 'Īpašums un hipotēka', fields: [['purchase_price', 'Īpašuma iegādes cena (€)', 0.01], ['area', 'Īpašuma platība (m²)', 0.01], ['down_payment_percent', 'Pirmā iemaksa (%)', 0, 99.99], ['bank_rate', 'Bankas pamata likme (%)', 0, 100], ['euribor_rate', 'Euribor likme (%)', 0, 100], ['loan_years', 'Atmaksas termiņš (gadi)', 1, 50]] },
-    { title: 'Iegādes izdevumi', fields: [['loan_insurance_monthly', 'Kredītmaksājuma apdrošināšana (€/mēn.) — nav obligāti'], ['bank_fee', 'Bankas komisija (€) — nav obligāti'], ['office_fee', 'Kancelejas nodeva (€) — nav obligāti'], ['valuation', 'Īpašuma vērtējums (€) — nav obligāti']] },
-    { title: 'Īres ienākumi', fields: [['renovation_years', 'Renovācijas gadi', 0, 50], ['renovation_months', 'Renovācijas mēneši', 0, 12], ['monthly_rent', 'Bruto īre mēnesī (€)'], ['tax_rate', 'Īres nodokļa pieņēmums (%)', 0, 100], ['rented_months', 'Izīrētie mēneši gadā', 0, 12]] },
-    { title: 'Īpašnieka izdevumi', fields: [['summer_cost', 'Apsaimniekošana un komunālie vasarā (€/mēn.)'], ['winter_cost', 'Apsaimniekošana un komunālie ziemā (€/mēn.)'], ['insurance', 'Īpašuma apdrošināšana gadā (€)'], ['cadastral_value', 'Kadastrālā vērtība (€)']] },
-    { title: 'Remonta izmaksas', fields: [['renovation_cost_per_m2', 'Remonts uz m² (€)'], ['future_price_per_m2', 'Prognozētā cena uz m² (€) — nav obligāti']] },
+    {title:'Ieguldījums',fields:[['purchase_price','Īpašuma iegādes cena (€)',0.01],['area','Īpašuma platība (m²)',0.01],['down_payment_percent','Pirmā iemaksa (%)',0,99.99],['bank_rate','Bankas pamata likme (%)',0,100],['euribor_rate','Euribor likme (%)',0,100],['loan_years','Atmaksas termiņš (gadi)',1,50],['renovation_cost_per_m2','Remonts uz m² (€)'],['renovation_years','Renovācijas gadi',0,50],['renovation_months','Renovācijas mēneši',0,12],['bank_fee','Bankas komisija (€) — nav obligāti'],['office_fee','Kancelejas nodeva (€) — nav obligāti'],['valuation','Īpašuma vērtējuma izmaksas (€) — nav obligāti']]},
+    {title:'Īres scenārijs',fields:[['monthly_rent','Bruto īre mēnesī (€)'],['rented_months','Izīrētie mēneši gadā',0,12],['tax_rate','Īres nodokļa pieņēmums (%)',0,100]]},
+    {title:'Īpašnieka izdevumi',fields:[['summer_cost','Vasaras maksājums (€/mēn.)'],['winter_cost','Ziemas maksājums (€/mēn.)'],['insurance','Īpašuma apdrošināšana gadā (€)'],['cadastral_value','Kadastrālā vērtība (€)'],['loan_insurance_monthly','Kredītmaksājuma apdrošināšana (€/mēn.) — nav obligāti']]},
+    {title:'Vērtība pēc remonta',fields:[['future_price_per_m2','Prognozētā tirgus cena uz m² (€) — nav obligāti']]},
 ];
 
 export function validateMortgage(draft, step = null) {
