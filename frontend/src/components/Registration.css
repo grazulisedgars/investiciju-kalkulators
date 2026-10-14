@@ -268,3 +268,5 @@
         grid-column: 1;
     }
 }
+.registration-password-help { margin:6px 0 0; color:#667b6e; font-size:.78rem; line-height:1.5; }
+.registration-form input[aria-invalid="true"] { border-color:#b42318; }

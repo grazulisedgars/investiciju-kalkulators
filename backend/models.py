@@ -32,6 +32,13 @@ class User(Base):
         nullable=False
     )
 
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    email_verification_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, unique=True)
+    email_verification_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    email_verification_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    avatar_filename: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
     password_hash: Mapped[str] = mapped_column(
         String(255),
         nullable=False

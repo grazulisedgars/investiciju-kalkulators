@@ -7,7 +7,9 @@ import FreeAnalysisInputs from "./components/FreeAnalysisInputs";
 import FreeAnalysisResults from "./components/FreeAnalysisResults";
 import MortgageInputs from "./components/MortgageInputs";
 import MortgageSummary from "./components/MortgageSummary";
+import EmailVerification from "./components/EmailVerification";
 import Registration from "./components/Registration";
+import MyProfile from "./components/MyProfile";
 import Dashboard from "./components/Dashboard";
 import AccountFooter from "./components/AccountFooter";
 import Login from "./components/Login";
@@ -19,6 +21,7 @@ import investmentIcon from "./assets/icons/propfolio-step-03-investment.svg";
 import PropertyDetail from "./components/PropertyDetail";
 
 function App() {
+  const [verificationToken,setVerificationToken]=useState(()=>new URLSearchParams(window.location.search).get("verify_email"));
   const [financing, setFinancing] = useState(null);
 
   const [purchasePrice, setPurchasePrice] = useState("");
@@ -34,6 +37,8 @@ function App() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showProfile,setShowProfile] = useState(false);
+  const [profileSection,setProfileSection] = useState("profile");
   const [selectedProperty, setSelectedProperty] = useState(null);
 
   const [showLogin, setShowLogin] = useState(false);
@@ -254,6 +259,15 @@ function App() {
       console.error("Īpašuma saglabāšanas kļūda:", error);
     }
   }
+
+  async function finishVerification(){
+    window.history.replaceState({},'',window.location.pathname);
+    setVerificationToken(null);
+    const response=await fetch('http://localhost:8000/me',{credentials:'include'});
+    if(response.ok){setCurrentUser(await response.json());setShowDashboard(true);setShowProfile(false);}
+    else{setCurrentUser(null);setShowLogin(true);setShowDashboard(false);}
+  }
+  if(verificationToken || (currentUser && currentUser.email_verified===false && !showProfile))return <EmailVerification token={verificationToken} user={currentUser} onContinue={finishVerification} onProfile={()=>{setShowProfile(true);setShowDashboard(true);}} onLogout={async()=>{const response=await fetch('http://localhost:8000/logout',{method:'POST',credentials:'include'});if(response.ok){setCurrentUser(null);setShowDashboard(false);setShowLogin(true);}}}/>;
 
   return (
     <main
@@ -812,11 +826,7 @@ function App() {
           onRegistered={async (user) => {
             setCurrentUser(user);
 
-            try {
-              await saveCurrentProperty();
-            } catch (error) {
-              console.error(error);
-            }
+            if(user.email_verified){try {await saveCurrentProperty();} catch(error){console.error(error);}}
 
             setShowRegistration(false);
             setShowDashboard(true);
@@ -824,9 +834,10 @@ function App() {
         />
       )}
 
-      {showDashboard && (
+      {showDashboard && !showProfile && (
         <Dashboard
           user={currentUser}
+          onOpenProfile={()=>{setProfileSection("profile");setShowProfile(true);setSelectedProperty(null);window.scrollTo({top:0});}}
           onLogout={async () => {
             try {
               await fetch(
@@ -840,7 +851,7 @@ function App() {
               console.error(error);
             }
 
-            setCurrentUser(null);
+            setCurrentUser(null); setShowProfile(false);
             setShowDashboard(false);
             setSelectedProperty(null);
             setFinancing(null);
@@ -864,6 +875,7 @@ function App() {
         />
       )}
 
+      {showProfile && currentUser && <MyProfile onDeleted={()=>{setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);setShowLogin(false);setShowRegistration(false);setVerificationToken(null);setFinancing(null);setPropertyFlow(null);resetCalculator();window.history.replaceState({},"",window.location.pathname);window.scrollTo({top:0});}} key={profileSection} initialSection={profileSection} user={currentUser} onUserUpdated={setCurrentUser} onBack={()=>{setShowProfile(false);setShowDashboard(true);window.scrollTo({top:0});}} onLogout={async()=>{const response=await fetch("http://localhost:8000/logout",{method:"POST",credentials:"include"});if(response.ok){setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);}}}/>}
       {selectedProperty && !showDashboard && (
         <PropertyDetail
           property={selectedProperty}
@@ -1086,9 +1098,9 @@ function App() {
             />
           </section>
         )}
-      {currentUser && (showDashboard || selectedProperty) && <AccountFooter onDashboard={() => { setSelectedProperty(null); setShowDashboard(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} onLogout={async () => {
+      {currentUser && (showDashboard || selectedProperty) && <AccountFooter onPassword={()=>{setProfileSection("password");setSelectedProperty(null);setShowDashboard(true);setShowProfile(true);window.scrollTo({top:0});}} onProfile={()=>{setProfileSection("profile");setSelectedProperty(null);setShowDashboard(true);setShowProfile(true);window.scrollTo({top:0});}} onDashboard={() => { setSelectedProperty(null); setShowDashboard(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} onLogout={async () => {
         const response = await fetch("http://localhost:8000/logout", { method: "POST", credentials: "include" });
-        if (response.ok) { setCurrentUser(null); setSelectedProperty(null); setShowDashboard(false); }
+        if (response.ok) { setCurrentUser(null); setShowProfile(false); setSelectedProperty(null); setShowDashboard(false); }
       }} />}
     </main>
   );

@@ -1,0 +1,1 @@
+export const passwordRules=[['Vismaz 8 rakstzīmes',v=>[...v].length>=8],['Vismaz viens lielais burts',v=>/\p{Lu}/u.test(v)],['Vismaz viens mazais burts',v=>/\p{Ll}/u.test(v)],['Vismaz viens cipars',v=>/\p{Nd}/u.test(v)],['Vismaz viens speciālais simbols',v=>/[^\p{L}\p{N}\s]/u.test(v)]];

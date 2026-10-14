@@ -9,7 +9,6 @@ import {
 import propfolioLogo from "../assets/icons/propfolio-logo.svg";
 import "./Dashboard.css"
 import userIcon from "../assets/icons/user.svg";
-import linkIcon from "../assets/icons/link.svg";
 import logoutIcon from "../assets/icons/logout.svg";
 import chevronDown from "../assets/icons/chevron-down.svg";
 import portfolioPropertiesIcon from "../assets/icons/portfolio-properties.svg";
@@ -22,6 +21,7 @@ function Dashboard({
     onLogout,
     onAddProperty,
     onOpenProperty,
+    onOpenProfile,
 }) {
     const [properties, setProperties] = useState([]);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -381,8 +381,7 @@ function Dashboard({
                             }}
                         >
                             <span className="profile-button">
-                                {user?.first_name?.charAt(0).toUpperCase()}
-                                {user?.last_name?.charAt(0).toUpperCase()}
+                                {user?.avatar_url ? <img className="dashboard-profile-photo" src={`http://localhost:8000${user.avatar_url}`} alt=""/> : <>{user?.first_name?.charAt(0).toUpperCase()}{user?.last_name?.charAt(0).toUpperCase()}</>}
                             </span>
 
                             {showProfileMenu && (
@@ -396,22 +395,13 @@ function Dashboard({
 
                         {showProfileMenu && (
                             <div className="profile-menu">
-                                <button type="button">
+                                <button type="button" onClick={()=>{setShowProfileMenu(false);onOpenProfile();}}>
                                     <img
                                         src={userIcon}
                                         alt=""
                                         className="profile-menu-icon"
                                     />
                                     Mans profils
-                                </button>
-
-                                <button type="button">
-                                    <img
-                                        src={linkIcon}
-                                        alt=""
-                                        className="profile-menu-icon"
-                                    />
-                                    Mainīt paroli
                                 </button>
 
                                 <button

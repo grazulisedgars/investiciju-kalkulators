@@ -48,6 +48,8 @@ from security import (
     create_access_token,
     decode_access_token,
 )
+from email_verification import router as email_router,send_verification
+from account_profile import router as profile_router
 from gallery import router as gallery_router, photo_path
 from advanced_analysis import router as analysis_router
 from models import GalleryPhoto, AdvancedAnalysis
@@ -57,6 +59,8 @@ app = FastAPI()
 # Galerijas endpointi atrodas atsevišķā modulī.
 app.include_router(gallery_router)
 app.include_router(analysis_router)
+app.include_router(profile_router)
+app.include_router(email_router)
 
 app.mount(
     "/uploads",
@@ -173,6 +177,9 @@ def register_user(
     db.commit()
     db.refresh(new_user)
 
+    delivery_error=False
+    try:send_verification(new_user,db)
+    except HTTPException:delivery_error=True
     access_token = create_access_token(new_user.id)
 
     response.set_cookie(
@@ -189,7 +196,10 @@ def register_user(
         "first_name": new_user.first_name,
         "last_name": new_user.last_name,
         "username": new_user.username,
-        "email": new_user.email
+        "email": new_user.email,
+        "email_verified": False,
+        "verification_delivery": "local",
+        "verification_send_failed": delivery_error
     }
 
 # --------------------------------------------------------------------------
@@ -229,7 +239,7 @@ def login_user(
         value=access_token,
         httponly=True,
         samesite="lax",
-        secure="False",
+        secure=False,
         max_age=60*60*24*7
     )
 
@@ -239,7 +249,10 @@ def login_user(
             "first_name": user.first_name,
             "last_name": user.last_name,
             "username": user.username,
-            "email": user.email
+            "email": user.email,
+        "email_verified": bool(user.email_verified_at),
+            "created_at": user.created_at,
+            "avatar_url": f"/account/profile/photo?v={user.avatar_filename}" if user.avatar_filename else None
         }
     }
 
@@ -288,7 +301,10 @@ def get_current_user(
         "first_name": user.first_name,
         "last_name": user.last_name,
         "username": user.username,
-        "email": user.email
+        "email": user.email,
+        "email_verified": bool(user.email_verified_at),
+            "created_at": user.created_at,
+            "avatar_url": f"/account/profile/photo?v={user.avatar_filename}" if user.avatar_filename else None
     }
 # --------------------------------------------------------------------------
 
@@ -346,6 +362,9 @@ def create_property(
             status_code=404,
             detail="Lietotājs nav atrasts."
         )
+
+    if not user.email_verified_at:
+        raise HTTPException(403,"Lai pievienotu īpašumu, vispirms apstiprini e-pasta adresi.")
 
     property_count = (
         db.query(Property)

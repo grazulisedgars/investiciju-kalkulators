@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Literal
 
 
@@ -27,6 +27,14 @@ class UserRegister(BaseModel):
         min_length=8,
         max_length=128
     )
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls,value):
+        if not (any(c.isupper() for c in value) and any(c.islower() for c in value)
+                and any(c.isdecimal() for c in value) and any(not c.isalnum() and not c.isspace() for c in value)):
+            raise ValueError("Parolei nepieciešams lielais un mazais burts, cipars un speciālais simbols.")
+        return value
 
 
 class UserLogin(BaseModel):

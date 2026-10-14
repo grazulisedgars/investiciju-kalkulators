@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./Registration.css";
+import {passwordRules} from "./passwordRules";
 
 function Registration({ onBack, onRegistered }) {
     const [firstName, setFirstName] = useState("");
@@ -11,9 +12,14 @@ function Registration({ onBack, onRegistered }) {
 
 
     const [errors, setErrors] = useState({});
+    const [passwordTouched,setPasswordTouched]=useState(false);
+    const missingPasswordRules=passwordRules.map(([,test],index)=>test(password)?null:index).filter(index=>index!==null);
+    const missingLabels=['vismaz 8 rakstzīmes','lielais burts','mazais burts','cipars','speciālais simbols'];
+    const passwordError=!password?'Ievadi paroli.':missingPasswordRules.length?'Parolē nepieciešams: '+missingPasswordRules.map(index=>missingLabels[index]).join(', ')+'.':'';
 
     function validateForm() {
         const newErrors = {};
+        setPasswordTouched(true);
 
         if (!firstName.trim()) {
             setErrors("Lūdzu, ievadi vārdu.");
@@ -37,8 +43,8 @@ function Registration({ onBack, onRegistered }) {
 
         if (!password) {
             newErrors.password = "Ievadi paroli.";
-        } else if (password.length < 8) {
-            newErrors.password = "Parolei jābūt vismaz 8 rakstzīmes garai.";
+        } else if (!passwordRules.every(([,test])=>test(password))) {
+            newErrors.password = passwordError;
         }
 
         if (!confirmPassword) {
@@ -82,7 +88,7 @@ function Registration({ onBack, onRegistered }) {
 
             if (!response.ok) {
                 setErrors({
-                    general: data.detail || "Reģistrācija neizdevās.",
+                    general: typeof data.detail === "string" ? data.detail : "Pārbaudi ievadītos datus un paroles prasības.",
                 });
 
                 return;
@@ -179,27 +185,33 @@ function Registration({ onBack, onRegistered }) {
                         <label htmlFor="password">Parole</label>
                         <input
                             id="password"
+                            autoComplete="new-password"
+                            maxLength={128}
+                            aria-describedby={passwordTouched && passwordError?"registration-password-help registration-password-error":"registration-password-help"}
+                            aria-invalid={passwordTouched && !!passwordError}
+                            onBlur={()=>setPasswordTouched(true)}
                             type="password"
                             value={password}
-                            onChange={(event) => setPassword(event.target.value)}
+                            onChange={(event) => {setPassword(event.target.value);setErrors(current=>({...current,password:null,confirmPassword:null}));}}
                         />
 
-                        {errors.password && (
-                            <p className="form-error">{errors.password}</p>
-                        )}
+                        <p className="registration-password-help" id="registration-password-help">Vismaz 8 rakstzīmes, lielais un mazais burts, cipars un speciālais simbols.</p>
+                        {passwordTouched && passwordError && <p className="form-error" id="registration-password-error" aria-live="polite">{passwordError}</p>}
                     </div>
 
                     <div className="input-group">
                         <label htmlFor="confirmPassword">Atkārtot paroli</label>
                         <input
                             id="confirmPassword"
+                            autoComplete="new-password"
+                            maxLength={128}
                             type="password"
                             value={confirmPassword}
-                            onChange={(event) => setConfirmPassword(event.target.value)}
+                            onChange={(event) => {setConfirmPassword(event.target.value);setErrors(current=>({...current,confirmPassword:null}));}}
                         />
 
-                        {errors.confirmPassword && (
-                            <p className="form-error">{errors.confirmPassword}</p>
+                        {(errors.confirmPassword || (confirmPassword && password!==confirmPassword)) && (
+                            <p className="form-error">{errors.confirmPassword || "Paroles nesakrīt."}</p>
                         )}
                     </div>
 
