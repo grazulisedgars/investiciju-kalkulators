@@ -149,8 +149,17 @@ function Dashboard({
             const marker = Math.min(window.innerHeight * .3, 180);
             const propertiesHeading = document.getElementById('dashboard-properties');
             const faq = document.getElementById('dashboard-faq');
-            const next = faq && faq.getBoundingClientRect().top <= marker ? 'faq'
-                : propertiesHeading && propertiesHeading.getBoundingClientRect().top <= marker ? 'properties' : 'home';
+            const propertiesList = document.querySelector('.property-list');
+            const footer = document.querySelector('.account-footer');
+            const atPageEnd = window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4;
+            const inFooter = footer && (footer.getBoundingClientRect().top <= marker || atPageEnd);
+            const faqBounds = faq?.getBoundingClientRect();
+            const listBounds = propertiesList?.getBoundingClientRect();
+            const next = inFooter ? null
+                : faqBounds && faqBounds.top <= marker && faqBounds.bottom > marker ? 'faq'
+                : propertiesHeading && propertiesHeading.getBoundingClientRect().top <= marker
+                    ? (listBounds && listBounds.bottom > marker ? 'properties' : null)
+                    : 'home';
             setMobileSection(next);
         }
         function scheduleUpdate() {

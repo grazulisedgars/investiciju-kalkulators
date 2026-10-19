@@ -39,3 +39,37 @@
 .account-footer nav[aria-label="Juridiskā informācija"] a { text-decoration: underline; text-underline-offset: 2px; }
 .account-footer button:disabled { color: #d1e2da; opacity: 1; cursor: default; }
 .account-footer button:disabled:hover { text-decoration: none; }
+
+.account-footer .account-footer-section-toggle { display:none; }
+.account-footer-section-links { display:flex; flex-direction:column; align-items:flex-start; gap:5px; }
+@media(max-width:600px) {
+ .account-footer { background:#f0f6f3; color:#173e30; border-top:1px solid #dce7e1; margin-top:24px; }
+ .account-footer-inner { display:flex; flex-direction:column; gap:0; padding:24px 16px 20px; }
+ .account-footer-brand { margin-bottom:22px; }
+ .account-footer-brand img { width:220px; height:auto; }
+ .account-footer-brand p { display:none; }
+ .account-footer nav { display:block; border-bottom:1px solid #dce7e1; width:100%; }
+ .account-footer .account-footer-section-toggle { display:flex; align-items:center; gap:11px; width:100%; min-height:52px; padding:12px 0; color:#173e30; font-size:13px; font-weight:500; text-align:left; }
+ .account-footer-section-toggle span { flex:1; }
+ .account-footer-section-toggle>svg:last-child { transition:transform .18s; }
+ .account-footer nav.is-expanded .account-footer-section-toggle>svg:last-child { transform:rotate(180deg); }
+ .account-footer-section-links { display:none; padding:0 0 12px 29px; gap:0; }
+ .account-footer nav.is-expanded .account-footer-section-links { display:flex; }
+ .account-footer-section-links h3 { display:none; }
+ .account-footer a, .account-footer button { color:#4e685b; font-family:inherit; font-size:13px; }
+ .account-footer-section-links a, .account-footer-section-links button { display:flex; align-items:center; min-height:40px; text-decoration:none; }
+ .account-footer a:hover, .account-footer button:hover { color:#0f6b4d; }
+ .account-footer a:focus-visible, .account-footer button:focus-visible { outline-color:#147456; }
+ .account-footer-contact { padding-top:20px; }
+ .account-footer-contact h3 { margin:0 0 8px; color:#173e30; font-size:13px; }
+ .account-footer-contact>a { min-height:40px; }
+ .account-footer-contact .account-footer-linkedin { display:inline-flex; align-items:center; justify-content:center; min-width:40px; min-height:40px; margin:6px 0 0; border-radius:8px; background:#e0eee6; color:#17634b; }
+ .account-footer-copyright { margin-top:22px; font-size:10px; line-height:1.5; color:#64796d; }
+}
+
+@media(max-width:600px) {
+ .account-footer-contact { display:grid; grid-template-columns:minmax(0,1fr) 40px; gap:0 12px; align-items:center; }
+ .account-footer-contact h3 { grid-column:1/-1; }
+ .account-footer-contact>a:first-of-type { min-width:0; overflow-wrap:anywhere; }
+ .account-footer-contact .account-footer-linkedin { margin:0; justify-self:end; }
+}

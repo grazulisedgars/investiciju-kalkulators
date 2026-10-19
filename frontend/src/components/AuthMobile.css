@@ -1,0 +1,31 @@
+
+.app .auth-field {position:relative;width:100%;min-width:0}
+.app .auth-field input {box-sizing:border-box;padding-left:42px;padding-right:44px}
+.app .auth-field-icon {position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#65746d;pointer-events:none}
+.app .auth-password-toggle {position:absolute;right:2px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:#52645a;cursor:pointer;border-radius:7px}
+.app .auth-password-toggle:focus-visible {outline:2px solid #146c50;outline-offset:-3px}
+.app .auth-switch {grid-column:1/-1;margin:8px 0 0;text-align:center;font-size:13px;line-height:1.6;color:#647469}
+.app .auth-switch button {border:0;padding:4px;background:transparent;color:#11664b;font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+@media(max-width:700px) {
+.app:has(.login-page), .app:has(.registration-page) {box-sizing:border-box;width:100%;max-width:none;padding:0;min-height:100dvh;background:radial-gradient(ellipse at bottom left,#e3f0e8,transparent 55%),#f5f9f6}
+.app .login-page, .app .registration-page {box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;width:100%;max-width:460px;min-height:100dvh;margin:0 auto;padding:24px 20px 32px;transform:none}
+.app .login-page .back-button, .app .registration-page .back-button {position:static;align-self:flex-start;min-height:44px;margin:0 0 20px;padding:8px 0;font-size:13px;font-weight:500;color:#17664c}
+.app .login-card, .app .registration-card {box-sizing:border-box;width:100%;padding:0;border:0;background:transparent;border-radius:0}
+.app .login-header, .app .registration-header {margin:0 8px 20px}
+.app .login-eyebrow, .app .registration-eyebrow {margin:0 0 8px;font-size:10px;line-height:1.5;letter-spacing:2px;color:#14654b}
+.app .login-header h1, .app .registration-header h1 {margin:0;font-size:26px;line-height:1.2;letter-spacing:-.7px;color:#17251e}
+.app .login-header>p:last-child, .app .registration-header>p:last-child {margin:10px 0 0;font-size:13px;line-height:1.6;color:#617166}
+.app .login-form, .app .registration-form {box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin:0;padding:20px 16px;background:#fff;border:1px solid #e0eae3;border-radius:18px}
+.app .login-form label, .app .registration-form label {margin:0 0 6px;font-size:13px;line-height:1.4;font-weight:500;color:#283e32}
+.app .login-form .auth-field input, .app .registration-form .auth-field input {width:100%;min-height:46px;padding:10px 42px;border:1px solid #dce4df;border-radius:8px;background:#fff;color:#253a2f;font-family:inherit;font-size:16px;line-height:24px}
+.app .auth-field input::placeholder {color:#8a9790;font-size:13px;opacity:1}
+.app .login-submit, .app .registration-submit {grid-column:1;min-height:46px;margin:4px 0 0;padding:11px 14px;border-radius:8px;background:#10684d;font:inherit;font-size:14px;font-weight:600;line-height:22px}
+.app .login-submit:hover, .app .registration-submit:hover {background:#0c563e}
+.app .registration-password-help, .app .login-form .form-error, .app .registration-form .form-error {margin:6px 0 0;font-size:11px;line-height:1.5}
+.app .auth-switch {margin:2px 0 0;font-size:12px}
+}
+
+@media(max-width:700px) {
+ .app:has(.login-page) { background-color:#f5f9f6; background-image:url('../assets/login-neighborhood-v1.webp'); background-repeat:no-repeat; background-position:center bottom; background-size:100% auto; }
+ .app .login-page { padding-bottom:200px; }
+}

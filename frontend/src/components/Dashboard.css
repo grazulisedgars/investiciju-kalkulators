@@ -1340,3 +1340,11 @@
 .property-limit-upgrade { width: 100%; border: 0; border-radius: 8px; background: #0f5138; color: white; font-weight: 500 !important; }
 .property-limit-later { display: block; margin: 8px auto 0; border: 0; background: transparent; color: #61736c; text-decoration: underline; }
 }
+
+/* Readable secondary information across dashboard sizes. */
+.dashboard-page .property-card-footer { color:#52665a; font-size:12px; line-height:1.5; }
+.dashboard-page .property-card-footer>span { min-width:0; }
+.dashboard-page .portfolio-summary-note { color:#52665a; font-size:12px; line-height:1.5; }
+@media(max-width:600px) {
+ .dashboard-page .portfolio-summary-note { font-size:11px; }
+}

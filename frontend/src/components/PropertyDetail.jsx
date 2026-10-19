@@ -1,3 +1,4 @@
+import { helpFaq } from "./helpContent";
 import { propertyGrossYield } from "./propertyYield";
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import "./PropertyDetail.css";
@@ -81,6 +82,17 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
                 tabs.scrollTo({left:Math.max(0,left - (tabs.clientWidth-active.offsetWidth)/2),behavior:'instant'});
         }
     }, [activeTab, activeDiarySection, showDiarySections]);
+    const [showPropertyFaq, setShowPropertyFaq] = useState(false);
+    const propertyFaqRef = useRef(null);
+    useEffect(() => {
+        if (!showPropertyFaq) return;
+        const dialog = propertyFaqRef.current;
+        const previousFocus = document.activeElement;
+        const overflow = document.body.style.overflow;
+        dialog.showModal();
+        document.body.style.overflow = 'hidden';
+        return () => { dialog.close(); document.body.style.overflow = overflow; previousFocus?.focus(); };
+    }, [showPropertyFaq]);
     const [propertyAddDialog, setPropertyAddDialog] = useState(null);
     const propertyAddDialogRef = useRef(null);
     useEffect(() => {
@@ -457,9 +469,15 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
                 <button type="button" onClick={() => onMobileNavigate('home')}><House size={21}/><span>Sākums</span></button>
                 <button type="button" aria-current="page" onClick={() => onMobileNavigate('properties')}><Building2 size={21}/><span>Īpašumi</span></button>
                 <button type="button" onClick={openPropertyAdd}><CirclePlus size={21}/><span>Pievienot</span></button>
-                <button type="button" onClick={() => onMobileNavigate('faq')}><CircleHelp size={21}/><span>FAQ</span></button>
+                <button type="button" onClick={() => setShowPropertyFaq(true)}><CircleHelp size={21}/><span>FAQ</span></button>
             </nav>
 
+            {showPropertyFaq && <dialog ref={propertyFaqRef} className="property-faq-dialog" aria-labelledby="property-faq-title"
+                onCancel={() => setShowPropertyFaq(false)}
+                onClick={event => { if (event.target === event.currentTarget) { const rect = event.currentTarget.getBoundingClientRect(); if(event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) setShowPropertyFaq(false); } }}>
+                <div className="property-faq-heading"><h2 id="property-faq-title">Biežāk uzdotie jautājumi</h2><button type="button" aria-label="Aizvērt FAQ" onClick={() => setShowPropertyFaq(false)}><X size={20}/></button></div>
+                <div className="property-faq-questions">{helpFaq.map(({question,answer}) => <details key={question} name="property-faq"><summary>{question}<ChevronDown size={17} aria-hidden="true"/></summary><p>{answer}</p></details>)}</div>
+            </dialog>}
             {propertyAddDialog && <dialog ref={propertyAddDialogRef} className="add-property-modal"
                 style={{position:'fixed',inset:'auto 0 0',margin:'0 auto',border:'1px solid #dce7e1',maxWidth:'100%',width:'100%',boxSizing:'border-box',boxShadow:'0 0 0 100vmax rgb(0 0 0 / 42%)'}}
                 aria-labelledby="property-add-title" onCancel={() => setPropertyAddDialog(null)}>

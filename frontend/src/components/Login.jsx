@@ -1,7 +1,9 @@
 import { useState } from "react";
 import "./Login.css";
+import AuthField from "./AuthField";
+import "./AuthMobile.css";
 
-function Login({ onBack, onLogin }) {
+function Login({ onBack, onLogin, onRegister }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
@@ -82,20 +84,20 @@ function Login({ onBack, onLogin }) {
                 >
 
                     <div className="input-group">
-                        <label>E-pasts</label>
+                        <label htmlFor="login-email">E-pasts</label>
 
-                        <input
-                            type="email"
+                        <AuthField
+                            id="login-email" autoComplete="email" placeholder="Ievadi savu e-pastu" type="email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
                         />
                     </div>
 
                     <div className="input-group">
-                        <label>Parole</label>
+                        <label htmlFor="login-password">Parole</label>
 
-                        <input
-                            type="password"
+                        <AuthField
+                            id="login-password" autoComplete="current-password" placeholder="Ievadi paroli" type="password"
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
                         />
@@ -105,7 +107,7 @@ function Login({ onBack, onLogin }) {
                         type="submit"
                         className="login-submit"
                     >
-                        Ielogoties
+                        Ieiet profilā
                     </button>
 
                     {errors.general && (
@@ -113,6 +115,7 @@ function Login({ onBack, onLogin }) {
                             {errors.general}
                         </p>
                     )}
+                {onRegister && <p className="auth-switch">Vēl nav konta? <button type="button" onClick={onRegister}>Reģistrēties</button></p>}
                 </form>
             </div>
         </section>

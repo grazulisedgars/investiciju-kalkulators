@@ -1,8 +1,10 @@
 import { useState } from "react";
 import "./Registration.css";
+import AuthField from "./AuthField";
+import "./AuthMobile.css";
 import {passwordRules} from "./passwordRules";
 
-function Registration({ onBack, onRegistered }) {
+function Registration({ onBack, onRegistered, onLogin }) {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -21,12 +23,12 @@ function Registration({ onBack, onRegistered }) {
         setPasswordTouched(true);
 
         if (!firstName.trim()) {
-            setErrors("Lūdzu, ievadi vārdu.");
+            setErrors({general:"Lūdzu, ievadi vārdu."});
             return false;
         }
 
         if (!lastName.trim()) {
-            setErrors("Lūdzu, ievadi uzvārdu.");
+            setErrors({general:"Lūdzu, ievadi uzvārdu."});
             return false;
         }
 
@@ -131,8 +133,8 @@ function Registration({ onBack, onRegistered }) {
                 >
                     <div className="input-group">
                         <label htmlFor="firstName">Vārds</label>
-                        <input
-                            id="firstName"
+                        <AuthField
+                            id="firstName" autoComplete="given-name" placeholder="Tavs vārds"
                             type="text"
                             value={firstName}
                             onChange={(event) => setFirstName(event.target.value)}
@@ -141,8 +143,8 @@ function Registration({ onBack, onRegistered }) {
 
                     <div className="input-group">
                         <label htmlFor="lastName">Uzvārds</label>
-                        <input
-                            id="lastName"
+                        <AuthField
+                            id="lastName" autoComplete="family-name" placeholder="Tavs uzvārds"
                             type="text"
                             value={lastName}
                             onChange={(event) => setLastName(event.target.value)}
@@ -153,8 +155,8 @@ function Registration({ onBack, onRegistered }) {
 
                     <div className="input-group">
                         <label htmlFor="email">E-pasts</label>
-                        <input
-                            id="email"
+                        <AuthField
+                            id="email" autoComplete="email" placeholder="Ievadi savu e-pastu"
                             type="email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
@@ -167,8 +169,8 @@ function Registration({ onBack, onRegistered }) {
 
                     <div className="input-group">
                         <label htmlFor="password">Parole</label>
-                        <input
-                            id="password"
+                        <AuthField
+                            id="password" placeholder="Izveido paroli"
                             autoComplete="new-password"
                             maxLength={128}
                             aria-describedby={passwordTouched && passwordError?"registration-password-help registration-password-error":"registration-password-help"}
@@ -185,8 +187,8 @@ function Registration({ onBack, onRegistered }) {
 
                     <div className="input-group">
                         <label htmlFor="confirmPassword">Atkārtot paroli</label>
-                        <input
-                            id="confirmPassword"
+                        <AuthField
+                            id="confirmPassword" placeholder="Atkārto paroli"
                             autoComplete="new-password"
                             maxLength={128}
                             type="password"
@@ -211,6 +213,7 @@ function Registration({ onBack, onRegistered }) {
                             {errors.general}
                         </p>
                     )}
+                {onLogin && <p className="auth-switch">Jau ir konts? <button type="button" onClick={onLogin}>Ieiet</button></p>}
                 </form>
             </div>
         </section>

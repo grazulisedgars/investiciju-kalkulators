@@ -216,3 +216,47 @@
   font-family:Arial,sans-serif; font-size:13px; font-weight:400; line-height:18px; letter-spacing:normal; color:#173e30;
  }
 }
+
+/* Shared mobile typography for all diary create/edit forms. */
+@media(max-width:600px) {
+ .diary-modal, .gallery-form-dialog { font-family:Arial,sans-serif; font-size:13px; line-height:1.45; padding:20px 16px; border-radius:16px; }
+ .diary-modal-header { align-items:flex-start; gap:12px; }
+ .diary-modal-header>div { min-width:0; }
+ .diary-modal-header h3, .gallery-form-dialog .gallery-dialog-header h3 { margin:4px 0 0; font-size:20px; line-height:1.25; font-weight:600; }
+ .diary-modal-eyebrow { font-size:10px; line-height:1.4; font-weight:600; letter-spacing:.08em; }
+ .diary-modal-date { margin:8px 0 18px; font-size:12px; line-height:1.5; }
+ .diary-modal-close, .gallery-form-dialog .gallery-dialog-header>button { width:36px; height:36px; flex-shrink:0; padding:0; font-family:inherit; font-size:20px; }
+ .diary-expense-form { gap:13px; }
+ .diary-form-group { gap:6px; }
+ .diary-modal .diary-form-group label, .gallery-form-dialog .diary-form-group label { font-family:inherit; font-size:12px; line-height:1.4; font-weight:500; }
+ .diary-modal .diary-form-group label span, .gallery-form-dialog .diary-form-group label span { font-size:12px; font-weight:400; }
+ .diary-modal .diary-form-group input, .diary-modal .diary-form-group textarea, .diary-modal .diary-form-group select,
+ .gallery-form-dialog .diary-form-group input, .gallery-form-dialog .diary-form-group textarea,
+ .diary-modal .loan-payment-select-trigger, .gallery-form-dialog .gallery-category-trigger { box-sizing:border-box; width:100%; font-family:inherit; font-size:14px; font-weight:400; line-height:20px; border-radius:8px; }
+ .diary-modal .diary-form-group input, .diary-modal .diary-form-group select,
+ .diary-modal .loan-payment-select-trigger, .gallery-form-dialog .gallery-category-trigger { min-height:42px; height:42px; padding:10px 12px; }
+ .diary-modal .diary-form-group input::placeholder, .diary-modal .diary-form-group textarea::placeholder, .gallery-form-dialog textarea::placeholder { font:inherit; color:#8a9b92; opacity:1; }
+ .diary-modal .diary-form-group textarea, .gallery-form-dialog .diary-form-group textarea { min-height:80px; height:80px; padding:10px 12px; resize:vertical; }
+ .diary-modal-actions { margin-top:18px; gap:10px; }
+ .diary-modal-actions button, .gallery-form-dialog .gallery-dialog-actions button { min-height:44px; font-family:inherit; font-size:13px; font-weight:500; line-height:20px; padding:10px 12px; }
+ .diary-modal .loan-payment-select-menu button, .gallery-form-dialog .gallery-category-option { min-height:40px; font-family:inherit; font-size:13px; font-weight:400; line-height:18px; }
+ .diary-modal .diary-form-error, .gallery-form-dialog .gallery-form-hint { font-size:12px; line-height:1.5; }
+}
+
+.property-faq-dialog { position:fixed; inset:auto 0 0; box-sizing:border-box; width:min(100%,520px); margin:0 auto; max-height:85dvh; padding:20px 16px max(24px,env(safe-area-inset-bottom)); border:1px solid #dce7e1; border-radius:20px 20px 0 0; background:white; color:#173e30; font-family:Arial,sans-serif; overflow-y:auto; }
+.property-faq-dialog::backdrop { background:rgb(0 0 0 / 42%); }
+.property-faq-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+.property-faq-heading h2 { margin:0; font-size:20px; line-height:1.3; }
+.property-faq-heading button { display:grid; place-items:center; width:40px; height:40px; flex-shrink:0; padding:0; border:0; border-radius:8px; background:transparent; color:#173e30; cursor:pointer; }
+.property-faq-questions { display:grid; gap:10px; }
+.property-faq-questions details { border:1px solid #e1eae4; border-radius:9px; background:#f8fbf9; }
+.property-faq-questions summary { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 12px; min-height:44px; box-sizing:border-box; list-style:none; font-size:13px; line-height:1.45; cursor:pointer; }
+.property-faq-questions summary::-webkit-details-marker { display:none; }
+.property-faq-questions summary svg { flex-shrink:0; }
+.property-faq-questions details[open] summary svg { transform:rotate(180deg); }
+.property-faq-questions p { margin:0; padding:0 12px 14px; color:#61736a; font-size:13px; line-height:1.6; }
+.property-faq-dialog button:focus-visible, .property-faq-dialog summary:focus-visible { outline:2px solid #147456; outline-offset:2px; }
+
+@media(max-width:600px) {
+ .property-faq-dialog { inset:auto 0 0; width:100%; max-width:100%; margin:0 auto; border-radius:20px 20px 0 0; }
+}

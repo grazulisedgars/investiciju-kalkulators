@@ -1,3 +1,6 @@
+import mobileHeroBackground from "./assets/hero-mobile-v1.webp";
+import aboutPropfolioImage from "./assets/about-propfolio.png";
+import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import "./App.css";
 import propfolioLogo from "./assets/icons/propfolio-logo.svg";
@@ -52,8 +55,11 @@ function App() {
   const [selectedProperty, setSelectedProperty] = useState(null);
 
   const [showLogin, setShowLogin] = useState(false);
+  const [mobileHeroMenu, setMobileHeroMenu] = useState(false);
   const [propertyFlow, setPropertyFlow] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
+
+  useEffect(() => { if (financing) window.scrollTo({top:0,behavior:"instant"}); }, [financing]);
 
   const totalRenovationCosts =
     Number(area || 0) * Number(renovationCostPerM2 || 0);
@@ -311,6 +317,7 @@ function App() {
           >
 
 
+            <img className="hero-mobile-photo" src={mobileHeroBackground} alt="" aria-hidden="true"/>
             {!showDashboard && (
               <header
                 className={`header ${financing !== null ? "header-compact" : ""}`}
@@ -323,29 +330,9 @@ function App() {
                   />
                 </div>
 
+                {propertyFlow !== "dashboard" && <button type="button" className="hero-mobile-menu-toggle" aria-label={mobileHeroMenu ? 'Aizvērt izvēlni' : 'Atvērt izvēlni'} aria-expanded={mobileHeroMenu} aria-controls="hero-navigation" onClick={() => setMobileHeroMenu(open => !open)}>{mobileHeroMenu ? <X size={22}/> : <Menu size={22}/>}</button>}
                 {propertyFlow !== "dashboard" && (
-                  <nav className="navigation">
-
-                    <a href="#about">
-                      Par mums
-                    </a>
-
-                    <a href="#faq" onClick={goToFaq}>
-                      FAQ
-                    </a>
-
-                    <button
-                      type="button"
-                      className="register-button"
-                      onClick={() => {
-                        setShowRegistration(true);
-                        setShowLogin(false);
-                        setShowDashboard(false);
-                        setFinancing(null);
-                      }}
-                    >
-                      Reģistrēties
-                    </button>
+                  <nav id="hero-navigation" className={`navigation ${mobileHeroMenu ? 'mobile-is-open' : ''}`} onClick={() => setMobileHeroMenu(false)} onKeyDown={event => {if(event.key === 'Escape') setMobileHeroMenu(false);}}>
 
                     <button
                       type="button"
@@ -359,6 +346,27 @@ function App() {
                     >
                       Ieiet
                     </button>
+                    <button
+                      type="button"
+                      className="register-button"
+                      onClick={() => {
+                        setShowRegistration(true);
+                        setShowLogin(false);
+                        setShowDashboard(false);
+                        setFinancing(null);
+                      }}
+                    >
+                      Reģistrēties
+                    </button>
+
+                    <a href="#about">
+                      Par mums
+                    </a>
+
+                    <a href="#faq" onClick={goToFaq}>
+                      FAQ
+                    </a>
+
                   </nav>
                 )}
               </header>
@@ -381,7 +389,7 @@ function App() {
 
                       <h1>
                         Vai šis īpašums
-                        <br />
+                        <br />{" "}
                         ir  <span className="hero-highlight">laba investīcija?</span>
                       </h1>
 
@@ -542,7 +550,7 @@ function App() {
 
                 <h2>
                   No īpašuma cenas līdz skaidram
-                  <br />
+                  <br />{" "}
                   investīcijas novērtējumam.
                 </h2>
               </div>
@@ -599,7 +607,7 @@ function App() {
                   ieguldījumi rītdienai.
                 </p>
                 <img
-                  src="/src/assets/about-propfolio.png"
+                  src={aboutPropfolioImage}
                   alt="Nekustamā īpašuma investīcijas"
                 />
               </div>
@@ -659,6 +667,7 @@ function App() {
 
       {showRegistration && (
         <Registration
+          onLogin={() => {setShowRegistration(false);setShowLogin(true);}}
           onBack={() => setShowRegistration(false)}
           onRegistered={async (user) => {
             setCurrentUser(user);
@@ -739,6 +748,7 @@ function App() {
 
       {showLogin && (
         <Login
+          onRegister={() => {setShowLogin(false);setShowRegistration(true);}}
           onBack={() => setShowLogin(false)}
           onLogin={(user) => {
             setCurrentUser(user);
@@ -755,7 +765,7 @@ function App() {
       {!showRegistration &&
         !showDashboard &&
         financing === "cash" && (
-          <section className="calculator-page cash-calculator-page">
+          <section className={`calculator-page cash-calculator-page calculator-page--mobile-form ${propertyFlow === "dashboard" ? "calculator-page--property-create" : ""}`}>
 
             <div className="calculator-page-header">
 
@@ -838,6 +848,15 @@ function App() {
               }
             />
 
+            {propertyFlow === "dashboard" && <div className="calculator-mobile-actions">
+              <button type="button" className="calculator-cancel-button" onClick={goBackFromCalculator}>Atcelt</button>
+              <button type="button" className="calculator-save-button" onClick={saveDashboardProperty} disabled={!purchasePrice || !area}>Saglabāt īpašumu</button>
+            </div>}
+            {propertyFlow !== "dashboard" && <div className="calculator-mobile-actions calculator-guest-actions">
+              <button type="button" className="calculator-cancel-button" onClick={goBackFromCalculator}>Atpakaļ</button>
+              <button type="button" className="calculator-save-button" onClick={() => {setShowRegistration(true);window.scrollTo({top:0});}} disabled={!purchasePrice || !area || !freeAnalysisResults}>Saglabāt analīzi</button>
+            </div>}
+
           </section>
         )}
 
@@ -847,7 +866,7 @@ function App() {
       {!showRegistration &&
         !showDashboard &&
         financing === "mortgage" && (
-          <section className="calculator-page">
+          <section className={`calculator-page calculator-page--mobile-form ${propertyFlow === "dashboard" ? "calculator-page--property-create" : ""}`}>
 
             <div className="calculator-page-header">
               <div className="calculator-page-title">
@@ -944,6 +963,15 @@ function App() {
                 )
               }
             />
+            {propertyFlow === "dashboard" && <div className="calculator-mobile-actions">
+              <button type="button" className="calculator-cancel-button" onClick={goBackFromCalculator}>Atcelt</button>
+              <button type="button" className="calculator-save-button" onClick={saveDashboardProperty} disabled={!purchasePrice || !area || !downPaymentPercent}>Saglabāt īpašumu</button>
+            </div>}
+            {propertyFlow !== "dashboard" && <div className="calculator-mobile-actions calculator-guest-actions">
+              <button type="button" className="calculator-cancel-button" onClick={goBackFromCalculator}>Atpakaļ</button>
+              <button type="button" className="calculator-save-button" onClick={() => {setShowRegistration(true);window.scrollTo({top:0});}} disabled={!purchasePrice || !area || !downPaymentPercent || !freeAnalysisResults}>Saglabāt analīzi</button>
+            </div>}
+
           </section>
         )}
       {currentUser && (showDashboard || selectedProperty) && <AccountFooter onHelp={()=>{setShowHelp(true);window.scrollTo({top:0});}} onPlans={()=>{setShowPlans(true);window.scrollTo({top:0});}} onPassword={()=>{setProfileSection("password");setSelectedProperty(null);setShowDashboard(true);setShowProfile(true);window.scrollTo({top:0});}} onProfile={()=>{setProfileSection("profile");setSelectedProperty(null);setShowDashboard(true);setShowProfile(true);window.scrollTo({top:0});}} onDashboard={() => { setSelectedProperty(null); setShowDashboard(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} onLogout={async () => {
