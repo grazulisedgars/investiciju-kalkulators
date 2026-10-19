@@ -10,7 +10,10 @@ import MortgageSummary from "./components/MortgageSummary";
 import EmailVerification from "./components/EmailVerification";
 import Registration from "./components/Registration";
 import MyProfile from "./components/MyProfile";
+import Plans from "./components/Plans";
 import Dashboard from "./components/Dashboard";
+import Help from "./components/Help";
+import {helpFaq,helpSteps} from "./components/helpContent";
 import AccountFooter from "./components/AccountFooter";
 import Login from "./components/Login";
 import propfolioBackground from "./assets/propfolio-background11.png";
@@ -37,6 +40,8 @@ function App() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showHelp,setShowHelp]=useState(false);
+  const [showPlans,setShowPlans]=useState(false);
   const [showProfile,setShowProfile] = useState(false);
   const [profileSection,setProfileSection] = useState("profile");
   const [selectedProperty, setSelectedProperty] = useState(null);
@@ -260,6 +265,14 @@ function App() {
     }
   }
 
+  function goToDashboard(){
+    setShowPlans(false);setShowHelp(false);setShowProfile(false);
+    setSelectedProperty(null);setShowDashboard(true);
+    setShowLogin(false);setShowRegistration(false);setFinancing(null);setPropertyFlow(null);
+    window.history.replaceState({},'',window.location.pathname);
+    window.scrollTo({top:0});
+  }
+
   async function finishVerification(){
     window.history.replaceState({},'',window.location.pathname);
     setVerificationToken(null);
@@ -268,6 +281,10 @@ function App() {
     else{setCurrentUser(null);setShowLogin(true);setShowDashboard(false);}
   }
   if(verificationToken || (currentUser && currentUser.email_verified===false && !showProfile))return <EmailVerification token={verificationToken} user={currentUser} onContinue={finishVerification} onProfile={()=>{setShowProfile(true);setShowDashboard(true);}} onLogout={async()=>{const response=await fetch('http://localhost:8000/logout',{method:'POST',credentials:'include'});if(response.ok){setCurrentUser(null);setShowDashboard(false);setShowLogin(true);}}}/>;
+
+  if(showPlans && currentUser)return <Plans user={currentUser} onBack={goToDashboard}/>;
+
+  if(showHelp && currentUser)return <Help onBack={goToDashboard} onPlans={()=>{setShowPlans(true);window.scrollTo({top:0});}}/>;
 
   return (
     <main
@@ -529,77 +546,7 @@ function App() {
                 vai šis īpašums ir laba investīcija.
               </p>
 
-              <div className="steps">
-
-                {/* 01 */}
-
-                <div className="step">
-
-                  <div className="step-top">
-                    <span className="step-number">01</span>
-
-                    <img
-                      src={propertyDataIcon}
-                      alt=""
-                      className="step-icon"
-                    />
-
-                    <span className="step-line"></span>
-                  </div>
-
-                  <h3>Ievadi īpašuma datus</h3>
-
-                  <p>
-                    Norādi iegādes cenu, platību, remonta izmaksas,
-                    īres maksu un citus nepieciešamos datus.
-                  </p>
-                </div>
-
-                {/* 02 */}
-
-                <div className="step">
-
-                  <div className="step-top">
-                    <span className="step-number">02</span>
-
-                    <img
-                      src={calculatorIcon}
-                      alt=""
-                      className="step-icon"
-                    />
-                    <span className="step-line"></span>
-                  </div>
-
-                  <h3>Saņem aprēķinus</h3>
-
-                  <p>
-                    Propfolio automātiski aprēķina iegādes izmaksas,
-                    nepieciešamo kapitālu un potenciālo ienesīgumu.
-                  </p>
-                </div>
-
-                {/* 03 */}
-                <div className="step">
-
-                  <div className="step-top">
-                    <span className="step-number">03</span>
-
-                    <img
-                      src={investmentIcon}
-                      alt=""
-                      className="step-icon"
-                    />
-                    <span className="step-line"></span>
-                  </div>
-
-                  <h3>Izvērtē investīciju</h3>
-
-                  <p>
-                    Salīdzini galvenos rādītājus un pieņem datos
-                    balstītu lēmumu par īpašuma iegādi.
-                  </p>
-                </div>
-              </div>
+              <div className="steps">{helpSteps.map(({title,text},index)=><div className="step" key={title}><div className="step-top"><span className="step-number">{String(index+1).padStart(2,'0')}</span><img src={[propertyDataIcon,calculatorIcon,investmentIcon][index]} alt="" className="step-icon"/><span className="step-line"/></div><h3>{title}</h3><p>{text}</p></div>)}</div>
             </section>
 
             <section id="about" className="about-section">
@@ -653,124 +600,7 @@ function App() {
 
             <section id="faq" className="faq-section">
 
-              <div className="faq-list">
-
-                <div className={`faq-item ${openFaq === 0 ? "open" : ""}`}>
-                  <button
-                    type="button"
-                    className="faq-question"
-                    onClick={() => setOpenFaq(openFaq === 0 ? null : 0)}
-                  >
-                    <span>Kas ir PROPFOLIO?</span>
-                    <span className="faq-plus">
-                      {openFaq === 0 ? "-" : "+"}
-                    </span>
-                  </button>
-
-                  {openFaq === 0 && (
-                    <div className="faq-answer">
-                      <p>
-                        PROPFOLIO ir nekustamā īpašuma investīciju analīzes
-                        rīks, kas palīdz vienuviet aprēķināt un izvērtēt
-                        svarīgākos investīcijas rādītājus.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className={`faq-item ${openFaq === 1 ? "open" : ""}`}>
-                  <button
-                    type="button"
-                    className="faq-question"
-                    onClick={() => setOpenFaq(openFaq === 1 ? null : 1)}
-                  >
-                    <span>Vai PROPFOLIO ir bezmaksas?</span>
-                    <span className="faq-plus">
-                      {openFaq === 1 ? "-" : "+"}
-                    </span>
-                  </button>
-
-                  {openFaq === 1 && (
-                    <div className="faq-answer">
-                      <p>
-                        Jā. Bezmaksas profilā vari veikt īpašuma sākotnējo
-                        analīzi un saglabāt līdz 3 īpašumiem savā profilā.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className={`faq-item ${openFaq === 2 ? "open" : ""}`}>
-                  <button
-                    type="button"
-                    className="faq-question"
-                    onClick={() => setOpenFaq(openFaq === 2 ? null : 2)}
-                  >
-                    <span>Kādus rādītājus PROPFOLIO aprēķina?</span>
-                    <span className="faq-plus">
-                      {openFaq === 2 ? "−" : "+"}
-                    </span>
-                  </button>
-
-                  {openFaq === 2 && (
-                    <div className="faq-answer">
-                      <p>
-                        PROPFOLIO palīdz aprēķināt īpašuma cenu par m²,
-                        kopējo investīciju, gada bruto īres ienākumus,
-                        bruto ienesīgumu un citus nekustamā īpašuma
-                        investīcijas izvērtēšanai svarīgus rādītājus.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className={`faq-item ${openFaq === 3 ? "open" : ""}`}>
-                  <button
-                    type="button"
-                    className="faq-question"
-                    onClick={() => setOpenFaq(openFaq === 3 ? null : 3)}
-                  >
-                    <span>Vai PROPFOLIO aprēķini ir precīzi?</span>
-                    <span className="faq-plus">
-                      {openFaq === 3 ? "−" : "+"}
-                    </span>
-                  </button>
-
-                  {openFaq === 3 && (
-                    <div className="faq-answer">
-                      <p>
-                        Aprēķini tiek veikti pēc lietotāja ievadītajiem
-                        datiem un PROPFOLIO izmantotajām formulām. Rezultāti
-                        paredzēti investīcijas izvērtēšanai un neaizstāj
-                        profesionālu finanšu konsultāciju.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className={`faq-item ${openFaq === 4 ? "open" : ""}`}>
-                  <button
-                    type="button"
-                    className="faq-question"
-                    onClick={() => setOpenFaq(openFaq === 4 ? null : 4)}
-                  >
-                    <span>Vai PROPFOLIO ir piemērots arī iesācējiem?</span>
-                    <span className="faq-plus">
-                      {openFaq === 4 ? "−" : "+"}
-                    </span>
-                  </button>
-
-                  {openFaq === 4 && (
-                    <div className="faq-answer">
-                      <p>
-                        Jā. PROPFOLIO veidots tā, lai svarīgākie nekustamā
-                        īpašuma investīciju aprēķini būtu saprotami arī
-                        cilvēkiem bez iepriekšējas pieredzes.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <div className="faq-list">{helpFaq.map(({question,answer},index)=><div key={question} className={`faq-item ${openFaq===index?'open':''}`}><button type="button" className="faq-question" aria-expanded={openFaq===index} onClick={()=>setOpenFaq(openFaq===index?null:index)}><span>{question}</span><span className="faq-plus">{openFaq===index?'−':'+'}</span></button>{openFaq===index && <div className="faq-answer"><p>{answer}</p></div>}</div>)}</div>
 
               <div className="faq-heading">
                 <p className="section-label">FAQ</p>
@@ -837,6 +667,7 @@ function App() {
       {showDashboard && !showProfile && (
         <Dashboard
           user={currentUser}
+          onOpenPlans={()=>{setShowPlans(true);window.scrollTo({top:0});}}
           onOpenProfile={()=>{setProfileSection("profile");setShowProfile(true);setSelectedProperty(null);window.scrollTo({top:0});}}
           onLogout={async () => {
             try {
@@ -875,7 +706,7 @@ function App() {
         />
       )}
 
-      {showProfile && currentUser && <MyProfile onDeleted={()=>{setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);setShowLogin(false);setShowRegistration(false);setVerificationToken(null);setFinancing(null);setPropertyFlow(null);resetCalculator();window.history.replaceState({},"",window.location.pathname);window.scrollTo({top:0});}} key={profileSection} initialSection={profileSection} user={currentUser} onUserUpdated={setCurrentUser} onBack={()=>{setShowProfile(false);setShowDashboard(true);window.scrollTo({top:0});}} onLogout={async()=>{const response=await fetch("http://localhost:8000/logout",{method:"POST",credentials:"include"});if(response.ok){setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);}}}/>}
+      {showProfile && currentUser && <MyProfile onOpenPlans={()=>{setProfileSection("subscription");setShowPlans(true);window.scrollTo({top:0});}} onDeleted={()=>{setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);setShowLogin(false);setShowRegistration(false);setVerificationToken(null);setFinancing(null);setPropertyFlow(null);resetCalculator();window.history.replaceState({},"",window.location.pathname);window.scrollTo({top:0});}} key={profileSection} initialSection={profileSection} user={currentUser} onUserUpdated={setCurrentUser} onBack={goToDashboard} onLogout={async()=>{const response=await fetch("http://localhost:8000/logout",{method:"POST",credentials:"include"});if(response.ok){setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);}}}/>}
       {selectedProperty && !showDashboard && (
         <PropertyDetail
           property={selectedProperty}
@@ -1098,7 +929,7 @@ function App() {
             />
           </section>
         )}
-      {currentUser && (showDashboard || selectedProperty) && <AccountFooter onPassword={()=>{setProfileSection("password");setSelectedProperty(null);setShowDashboard(true);setShowProfile(true);window.scrollTo({top:0});}} onProfile={()=>{setProfileSection("profile");setSelectedProperty(null);setShowDashboard(true);setShowProfile(true);window.scrollTo({top:0});}} onDashboard={() => { setSelectedProperty(null); setShowDashboard(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} onLogout={async () => {
+      {currentUser && (showDashboard || selectedProperty) && <AccountFooter onHelp={()=>{setShowHelp(true);window.scrollTo({top:0});}} onPlans={()=>{setShowPlans(true);window.scrollTo({top:0});}} onPassword={()=>{setProfileSection("password");setSelectedProperty(null);setShowDashboard(true);setShowProfile(true);window.scrollTo({top:0});}} onProfile={()=>{setProfileSection("profile");setSelectedProperty(null);setShowDashboard(true);setShowProfile(true);window.scrollTo({top:0});}} onDashboard={() => { setSelectedProperty(null); setShowDashboard(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} onLogout={async () => {
         const response = await fetch("http://localhost:8000/logout", { method: "POST", credentials: "include" });
         if (response.ok) { setCurrentUser(null); setShowProfile(false); setSelectedProperty(null); setShowDashboard(false); }
       }} />}

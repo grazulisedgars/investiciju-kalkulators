@@ -1,0 +1,37 @@
+.account-help { width:100%; max-width:1320px; margin:0 auto; padding:20px 32px 32px; box-sizing:border-box; color:#173e30; }.account-help h1 { margin:24px 0 6px; font-size:26px; }.account-help h2 { font-size:18px; margin:0 0 10px; }.account-help h3 { font-size:15px; margin:14px 0 8px; }.account-help p { font-size:13px; line-height:1.65; color:#667b6e; }.account-help-subtitle { margin:0 0 22px; }.account-help-back { display:flex; align-items:center; gap:8px; color:#526b60; border:0; background:none; padding:0; font:inherit; font-size:13px; cursor:pointer; }.account-help-nav { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px; }.account-help-nav a { display:flex; gap:8px; align-items:center; background:white; border:1px solid #dce6df; color:#126a4e; padding:11px 15px; border-radius:7px; font-size:13px; text-decoration:none; }.account-help-section { scroll-margin-top:20px; background:white; border:1px solid #e0e9e3; border-radius:10px; padding:24px; margin-bottom:20px; }.account-help-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; margin-top:24px; }.account-help-steps article { padding:0 24px 0 0; border-right:1px solid #e0e9e3; }.account-help-steps article:last-child { border:0; }.account-help-steps article>span { display:flex; justify-content:space-between; align-items:center; color:#126a4e; }.account-help-steps small { font-size:12px; color:#78aa94; }.account-help-steps p { margin-bottom:0; }.account-help-faq details { border-bottom:1px solid #e0e9e3; }.account-help-faq summary { padding:17px 0; cursor:pointer; font-size:14px; line-height:1.5; font-weight:500; }.account-help-faq details p { margin:0 0 18px; max-width:850px; }.account-help-plans { display:flex; gap:9px; align-items:center; border:0; padding:0; margin-top:20px; background:none; font:inherit; font-size:13px; color:#126a4e; cursor:pointer; }.account-help-contact { display:flex; justify-content:space-between; align-items:center; gap:20px; background:#eaf4ee; border-radius:10px; padding:22px 24px; }.account-help-contact h2 { font-size:16px; }.account-help-contact p { margin:0; }.account-help-contact a { display:flex; gap:8px; align-items:center; color:#126a4e; font-size:13px; overflow-wrap:anywhere; }.account-help :is(a,button,summary):focus-visible { outline:2px solid #126a4e; outline-offset:4px; }@media(max-width:768px){.account-help{padding:20px 16px 24px;}.account-help-steps{grid-template-columns:1fr;gap:20px;}.account-help-steps article{padding:0 0 18px;border-right:0;border-bottom:1px solid #e0e9e3;}.account-help-section{padding:20px;}.account-help-contact{flex-direction:column;align-items:flex-start;padding:20px;}}
+
+#help-faq { padding:28px; border-radius:12px; }
+#help-faq h2 { font-size:20px; margin:0 0 8px; }
+.account-help .account-help-faq-intro { margin:0 0 24px; }
+.account-help-faq { border-top:1px solid #e0e9e3; }
+.account-help-faq summary { display:flex; align-items:center; justify-content:space-between; gap:20px; list-style:none; padding:17px 0; font-weight:400; font-size:14px; }
+.account-help-faq summary::-webkit-details-marker { display:none; }
+.account-help-faq summary::after { content:'+'; flex-shrink:0; color:#126a4e; font-size:18px; line-height:1; }
+.account-help-faq details[open]>summary::after { content:'−'; }
+.account-help-faq details p { padding-right:28px; }
+@media(max-width:768px) { #help-faq { padding:20px; } }
+
+.account-help-hero { margin:20px 0 24px; padding:30px 20px 24px; text-align:center; border-radius:12px; background:linear-gradient(125deg,#e3f1e9,#f2f8f5 65%,#e8f4ed); border:1px solid #dcebe3; }
+.account-help-hero h1 { margin:0 0 8px; }
+.account-help-hero .account-help-subtitle { margin:0 0 20px; }
+.account-help-hero .account-help-nav { justify-content:center; margin:0; }
+.account-help-steps { position:relative; gap:30px; margin-top:26px; }
+.account-help-steps::before { content:''; position:absolute; left:16.666%; right:16.666%; top:30px; height:2px; background:#d4e8dc; }
+.account-help-steps article { position:relative; text-align:center; border:0; padding:0 18px; }
+.account-help-step-visual { position:relative; width:64px; margin:0 auto 16px; }
+.account-help-step-icon { display:flex; align-items:center; justify-content:center; box-sizing:border-box; width:64px; height:64px; background:#e0f0e8; border:5px solid white; border-radius:50%; color:#126a4e; }
+.account-help-step-number { position:absolute; right:-10px; bottom:-3px; display:flex; align-items:center; justify-content:center; width:29px; height:25px; border-radius:8px; background:#126a4e; color:white; font-size:12px; font-weight:600; border:2px solid white; }
+.account-help-steps h3 { margin:12px 0 7px; }
+.account-help-faq { display:flex; flex-direction:column; gap:8px; border-top:0; }
+.account-help-faq details { background:#f7faf8; border:1px solid #e5ede8; border-radius:8px; padding:0 16px; transition:background .15s; }
+.account-help-faq details[open] { background:#edf7f0; border-color:#cce3d4; }
+.account-help-faq summary { padding:13px 0; }
+.account-help-faq details[open] summary { color:#126a4e; font-weight:500; }
+.account-help-faq details p { margin:0 0 15px; padding-right:22px; color:#526b60; }
+.account-help-contact { background:#10543f; color:white; padding:26px 28px; }
+.account-help-contact h2 { color:white; font-size:18px; margin-bottom:6px; }
+.account-help-contact p { color:#d9ebe2; }
+.account-help-contact a { padding:11px 17px; background:white; border:1px solid white; border-radius:7px; text-decoration:none; color:#10543f; font-weight:500; white-space:nowrap; }
+.account-help-contact a:hover { background:#edf7f0; }
+@media(max-width:768px) { .account-help-hero { padding:24px 16px; }.account-help-steps { gap:24px; }.account-help-steps::before { display:none; }.account-help-steps article { border:0; padding:0; }.account-help-contact { padding:22px 20px; }.account-help-contact a { white-space:normal; } }
+@media(prefers-reduced-motion:reduce) { .account-help-faq details { transition:none; } }

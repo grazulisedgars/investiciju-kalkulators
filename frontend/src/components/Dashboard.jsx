@@ -22,6 +22,7 @@ function Dashboard({
     onAddProperty,
     onOpenProperty,
     onOpenProfile,
+    onOpenPlans,
 }) {
     const [properties, setProperties] = useState([]);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -467,7 +468,7 @@ function Dashboard({
 
                             <span className="property-limit-pro">
                                 Ja vēlies pievienot vairāk,{" "}
-                                <a href="#">
+                                <a href="#plans" onClick={event=>{event.preventDefault();onOpenPlans();}}>
                                     apskati Pro plānu →
                                 </a>
                             </span>
