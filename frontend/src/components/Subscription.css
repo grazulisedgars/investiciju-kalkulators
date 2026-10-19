@@ -6,3 +6,31 @@
 .subscription-usage { padding-top:17px; border-top:1px solid #e0e9e3; }.subscription-usage>div:first-child { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; color:#667b6e; }.subscription-usage strong { color:#173e30; font-weight:500; }.subscription-progress { height:6px; border-radius:10px; background:#e6eeea; overflow:hidden; margin-top:10px; }.subscription-progress span { display:block; height:100%; border-radius:10px; background:#126a4e; }.subscription-price { margin:20px 0 0; font-size:23px; font-weight:600; }.subscription-price span { font-size:12px; color:#667b6e; font-weight:400; }
 .subscription-discover { padding:16px; }.subscription-promo { position:relative; isolation:isolate; overflow:hidden; border-radius:8px; background:linear-gradient(115deg,#f2f8f5,#dceee6); padding:22px 18px; min-height:185px; box-sizing:border-box; }.subscription-promo>div { position:relative; z-index:1; width:72%; }.subscription-promo h2 { font-size:18px; }.subscription-promo p:not(.subscription-eyebrow) { font-size:13px; line-height:1.6; margin:10px 0 16px; }.subscription-promo img { position:absolute; right:-30px; bottom:0; width:155px; height:190px; object-fit:contain; opacity:.72; z-index:0; }.subscription-promo .my-profile-save { display:flex; align-items:center; justify-content:center; gap:12px; width:fit-content; margin:0; }.subscription-pro-features { margin:18px 6px 14px; gap:9px; color:#526b60; }.subscription-pro-features svg { flex-shrink:0; color:#78aa94; }.subscription-help { margin:0 6px 4px; font-size:11px; color:#667b6e; line-height:1.6; }
 @media(max-width:950px) { .subscription-grid { grid-template-columns:minmax(0,1fr); } }@media(max-width:650px) { .subscription-card { padding:20px; }.subscription-discover { padding:12px; }.subscription-promo { padding:18px 14px; }.subscription-promo>div { width:78%; }.subscription-promo img { right:-45px; opacity:.4; } }
+
+.subscription-management { margin-top:22px; padding-top:18px; border-top:1px solid #e0e9e3; }
+.subscription-management .subscription-help { margin:0 0 14px; }
+.subscription-cancel { padding:10px 14px; border:1px solid #dfbcb7; border-radius:7px; background:white; color:#a2372c; font:inherit; font-size:13px; cursor:pointer; }
+.subscription-cancel:hover:not(:disabled) { background:#fff5f3; border-color:#a2372c; }
+.subscription-cancel:disabled { opacity:.5; cursor:not-allowed; }
+.subscription-trial { display:flex; align-items:flex-start; gap:10px; margin:20px 6px 14px; padding:16px; border:1px solid #dceae2; border-radius:8px; background:#f5faf7; }
+.subscription-trial>svg { flex-shrink:0; color:#126a4e; margin-top:2px; }
+.subscription-trial h3 { font-size:15px; margin:0 0 8px; }
+.subscription-trial p { font-size:12px; color:#526b60; line-height:1.6; margin:8px 0 0; }
+.subscription-dialog { width:calc(100% - 40px); max-width:470px; box-sizing:border-box; border:1px solid #dce6df; border-radius:12px; padding:28px; color:#173e30; }
+.subscription-dialog::backdrop { background:#10291f80; }
+.subscription-dialog h2 { font-size:21px; padding-right:20px; margin:0 0 16px; }
+.subscription-dialog p { font-size:13px; line-height:1.65; color:#526b60; }
+.subscription-dialog-close { position:absolute; top:12px; right:12px; border:0; background:none; color:#526b60; cursor:pointer; }
+.subscription-dialog-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-top:24px; }
+.subscription-dialog-actions>button { font:inherit; font-size:13px; padding:10px 14px; border-radius:7px; cursor:pointer; }
+.subscription-dialog-actions>button:first-child { border:1px solid #126a4e; color:#126a4e; background:white; }
+.subscription-error { color:#a2372c!important; }
+
+.subscription-welcome { position:relative; isolation:isolate; overflow:hidden; background:linear-gradient(125deg,#f2f8f5,#e4f1e9); padding:28px; }
+.subscription-welcome-status { display:inline-flex; align-items:center; gap:7px; border-radius:20px; padding:6px 10px; background:#dceee6; color:#126a4e; font-size:12px; font-weight:600; margin-bottom:22px; }
+.subscription-welcome h2,.subscription-welcome p,.subscription-welcome>button,.subscription-welcome-status { position:relative; z-index:1; }
+.subscription-welcome h2 { max-width:330px; font-size:22px; line-height:1.35; }
+.subscription-welcome p { max-width:75%; font-size:14px; line-height:1.7; color:#526b60; margin:16px 0; }
+.subscription-welcome .my-profile-save { display:inline-flex; align-items:center; gap:12px; width:fit-content; margin-top:8px; }
+.subscription-welcome>img { position:absolute; width:185px; height:230px; object-fit:contain; right:-35px; bottom:0; opacity:.55; z-index:0; pointer-events:none; }
+@media(max-width:650px) { .subscription-welcome { padding:22px; }.subscription-welcome h2 { font-size:20px; }.subscription-welcome p { max-width:90%; }.subscription-welcome>img { opacity:.2; } }

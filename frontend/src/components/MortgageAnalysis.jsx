@@ -21,7 +21,7 @@ function defaults(property) {
     return { purchase_price: property.purchase_price ?? '', area: property.area ?? '', down_payment_percent: property.down_payment_percent ?? 20, bank_rate: '', euribor_rate: '', loan_years: '', bank_fee: '', loan_insurance_monthly: '', office_fee: '', valuation: '', monthly_rent: property.monthly_rent ?? '', tax_rate: 10, rented_months: 12, renovation_years: 0, renovation_months: 0, repair_source: "manual", utilities_source: "manual", renovation_start_date: null, renovation_end_date: null, repair_entry_ids: null, summer_cost: '', winter_cost: '', insurance: '', cadastral_value: '', renovation_cost_per_m2: property.renovation_cost_per_m2 ?? 0, future_price_per_m2: '' };
 }
 
-export default function MortgageAnalysis({ property }) {
+export default function MortgageAnalysis({ property, onAnalysisChanged }) {
     const sectionRef = useRef(null);
     const scrollRequested = useRef(false);
     const [draft, setDraft] = useState(() => defaults(property));
@@ -46,12 +46,12 @@ export default function MortgageAnalysis({ property }) {
                 const response = await fetch(url, { credentials: 'include', signal: controller.signal });
                 if (!response.ok) throw new Error('Neizdevās ielādēt analīzi.');
                 const data = await response.json();
-                if (!controller.signal.aborted) { if (data) { setSaved(data); setDraft(data.inputs); setEditing(false); } setLoadFailed(false); setError(''); }
+                if (!controller.signal.aborted) { if (data) { setSaved(data); onAnalysisChanged?.(data); setDraft(data.inputs); setEditing(false); } setLoadFailed(false); setError(''); }
             } catch (err) { if (!controller.signal.aborted) { setError(err.message); setLoadFailed(true); } }
             finally { if (!controller.signal.aborted) setLoading(false); }
         }
         load(); return () => controller.abort();
-    }, [url, retry]);
+    }, [url, retry, onAnalysisChanged]);
     useEffect(() => {
         if (!more) return;
         const close = event => { if (!actions.current?.contains(event.target)) setMore(false); };
@@ -108,7 +108,7 @@ export default function MortgageAnalysis({ property }) {
         try {
             const response = await fetch(url, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(numeric) });
             if (!response.ok) throw new Error('Neizdevās saglabāt analīzi. Pārbaudi ievadi.');
-            const data = await response.json(); scrollRequested.current = true; setSaved(data); setDraft(data.inputs); setEditing(false);
+            const data = await response.json(); scrollRequested.current = true; setSaved(data); onAnalysisChanged?.(data); setDraft(data.inputs); setEditing(false);
         } catch (err) { setError(err.message); } finally { setSaving(false); }
     }
     async function remove() {
@@ -116,7 +116,7 @@ export default function MortgageAnalysis({ property }) {
         try {
             const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
             if (!response.ok) throw new Error('Neizdevās dzēst analīzi.');
-            setSaved(null); setDraft(defaults(property)); setEditing(true); setStep(0); setErrors({}); setError(''); setShowDelete(false);
+            setSaved(null); onAnalysisChanged?.(null); setDraft(defaults(property)); setEditing(true); setStep(0); setErrors({}); setError(''); setShowDelete(false);
         } catch (err) { setDeleteError(err.message); } finally { setDeleting(false); }
     }
     const details = {

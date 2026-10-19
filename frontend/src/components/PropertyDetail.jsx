@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { propertyGrossYield } from "./propertyYield";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import "./PropertyDetail.css";
 import FreeAnalysisOverview from "./FreeAnalysisOverview";
 import PropertyDiary from "./PropertyDiary";
@@ -22,11 +23,43 @@ import {
     Hammer,
     Banknote,
     Images,
+    Check,
+    X,
+    Building2,
+    CirclePlus,
+    CircleHelp,
 } from "lucide-react";
+import ProFeatureGate from "./ProFeatureGate";
 import EditPropertyModal from "./EditPropertyModal";
 
-function PropertyDetail({ property, onBack, onPropertyUpdated }) {
-    const [activeTab, setActiveTab] = useState("analysis");
+function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans, onAddProperty, onMobileNavigate, initialTab="analysis" }) {
+    const isPro=user?.plan==="pro";
+    const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width:600px)').matches);
+    useEffect(() => {
+        const media = window.matchMedia('(max-width:600px)');
+        const update = () => setIsMobile(media.matches);
+        media.addEventListener('change', update);
+        return () => media.removeEventListener('change', update);
+    }, []);
+    // Reset after the property view mounts; do not retain the dashboard's scroll.
+    useLayoutEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }, [property?.property_id]);
+
+    const [activeTab, setActiveTab] = useState(initialTab);
+    const [advancedMetric, setAdvancedMetric] = useState(null);
+    const receiveAnalysis = useCallback(data => {
+        setAdvancedMetric({ propertyId: property.property_id, value: data?.results?.gross_yield ?? null });
+    }, [property.property_id]);
+    useEffect(() => {
+        if (!isPro) return;
+        const controller = new AbortController();
+        fetch(`http://localhost:8000/properties/${property.property_id}/advanced-analysis`, { credentials: "include", signal: controller.signal })
+            .then(async response => {
+                if (response.ok) receiveAnalysis(await response.json());
+            }).catch(error => { if (error.name !== "AbortError") console.error("Yield load error", error); });
+        return () => controller.abort();
+    }, [property.property_id, isPro, activeTab, receiveAnalysis]);
     const [activeDiarySection, setActiveDiarySection] = useState("calendar");
     const [showDiarySections, setShowDiarySections] = useState(false);
     const [editingProperty, setEditingProperty] = useState(null);
@@ -37,7 +70,120 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
 
+    const tabsRef = useRef(null);
+    useEffect(() => {
+        if (!window.matchMedia('(max-width:600px)').matches) return;
+        const tabs = tabsRef.current;
+        const active = tabs?.querySelector('button.active');
+        if (tabs && active) {
+            const left = active.offsetLeft - tabs.offsetLeft;
+            if (left < tabs.scrollLeft || left + active.offsetWidth > tabs.scrollLeft + tabs.clientWidth)
+                tabs.scrollTo({left:Math.max(0,left - (tabs.clientWidth-active.offsetWidth)/2),behavior:'instant'});
+        }
+    }, [activeTab, activeDiarySection, showDiarySections]);
+    const [propertyAddDialog, setPropertyAddDialog] = useState(null);
+    const propertyAddDialogRef = useRef(null);
+    useEffect(() => {
+        if (!propertyAddDialog) return;
+        const previousFocus = document.activeElement;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const dialog = propertyAddDialogRef.current;
+        dialog.showModal();
+        return () => { dialog.close(); document.body.style.overflow = previousOverflow; previousFocus?.focus(); };
+    }, [propertyAddDialog]);
+    async function openPropertyAdd() {
+        setPropertyAddDialog('loading');
+        try {
+            if (isPro) { setPropertyAddDialog('funding'); return; }
+            const response = await fetch('http://localhost:8000/properties', {credentials:'include'});
+            if (!response.ok) throw new Error('Property load failed');
+            const properties = await response.json();
+            setPropertyAddDialog(properties.length >= 3 ? 'limit' : 'funding');
+        } catch { setPropertyAddDialog('error'); }
+    }
+    const [diaryPickerOpen, setDiaryPickerOpen] = useState(false);
+    const [diaryPickerHidden, setDiaryPickerHidden] = useState(false);
+    useEffect(() => {
+        setDiaryPickerHidden(false);
+        if (!isMobile || activeTab !== 'diary' || activeDiarySection === 'calendar') return;
+        let distance = 0;
+        let touchY = null;
+        const reactToGesture = (delta, target) => {
+            if (!(target instanceof Element) || !target.closest('.property-detail') ||
+                target.closest('.diary-section-picker, [role="dialog"], [role="alertdialog"], .diary-modal-overlay, .gallery-overlay')) return;
+            if (Math.sign(distance) !== Math.sign(delta)) distance = 0;
+            distance += delta;
+            if (Math.abs(distance) < 24) return;
+            const hidden = distance > 0;
+            distance = 0;
+            setDiaryPickerHidden(hidden);
+            if (hidden) setDiaryPickerOpen(false);
+        };
+        const onWheel = event => reactToGesture(event.deltaY, event.target);
+        const onTouchStart = event => { touchY = event.touches[0]?.clientY ?? null; distance = 0; };
+        const onTouchMove = event => {
+            const y = event.touches[0]?.clientY;
+            if (touchY !== null && y !== undefined) reactToGesture(touchY - y, event.target);
+            touchY = y ?? null;
+        };
+        const onKey = event => {
+            if (event.target instanceof Element && event.target.closest('input, textarea, select, [role="menu"]')) return;
+            if (['ArrowUp','PageUp','Home'].includes(event.key)) { setDiaryPickerHidden(false); distance = 0; }
+            if (['ArrowDown','PageDown','End'].includes(event.key)) { setDiaryPickerHidden(true); setDiaryPickerOpen(false); }
+        };
+        document.addEventListener('wheel', onWheel, {passive:true});
+        document.addEventListener('touchstart', onTouchStart, {passive:true});
+        document.addEventListener('touchmove', onTouchMove, {passive:true});
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('wheel', onWheel);
+            document.removeEventListener('touchstart', onTouchStart);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('keydown', onKey);
+        };
+    }, [isMobile, activeTab, activeDiarySection]);
+    const diaryPickerRef = useRef(null);
+    const diaryPickerTriggerRef = useRef(null);
+    const diarySections = [
+        {id:'calendar',label:'Kalendārs',Icon:CalendarDays},
+        {id:'expenses',label:'Izmaksas',Icon:Receipt},
+        ...(property.financing_type === 'mortgage' ? [{id:'loan',label:'Kredīta maksājumi',Icon:Landmark}] : []),
+        {id:'utilities',label:'Komunālie maksājumi',Icon:HousePlug},
+        {id:'work',label:'Darba dienas',Icon:Hammer},
+        {id:'rent',label:'Saņemtā īre',Icon:Banknote},
+        {id:'gallery',label:'Galerija',Icon:Images},
+    ];
+    const selectedDiarySection = diarySections.find(item => item.id === activeDiarySection) || diarySections[0];
+    const DiarySectionIcon = selectedDiarySection.Icon;
+    useEffect(() => {
+        if (!diaryPickerOpen) return;
+        const closeOutside = event => { if (!diaryPickerRef.current?.contains(event.target)) setDiaryPickerOpen(false); };
+        diaryPickerRef.current?.querySelector('[aria-checked="true"]')?.focus();
+        document.addEventListener('pointerdown', closeOutside);
+        return () => document.removeEventListener('pointerdown', closeOutside);
+    }, [diaryPickerOpen]);
+    useEffect(() => { setDiaryPickerOpen(false); }, [activeTab, isMobile]);
     const moreMenuRef = useRef(null);
+    const statusMenuRef = useRef(null);
+
+    useEffect(() => {
+        if (!showStatusMenu) return;
+        function closeOutside(event) {
+            if (statusMenuRef.current && !statusMenuRef.current.contains(event.target)) {
+                setShowStatusMenu(false);
+            }
+        }
+        function closeOnEscape(event) {
+            if (event.key === "Escape") setShowStatusMenu(false);
+        }
+        document.addEventListener("pointerdown", closeOutside);
+        document.addEventListener("keydown", closeOnEscape);
+        return () => {
+            document.removeEventListener("pointerdown", closeOutside);
+            document.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [showStatusMenu]);
 
     useEffect(() => {
         if (!showMoreMenu) return;
@@ -301,37 +447,32 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
 
     const purchasePrice = Number(property.purchase_price || 0);
     const area = Number(property.area || 0);
-    const renovationPerM2 = Number(property.renovation_cost_per_m2 || 0);
-    const renovationTotal = area * renovationPerM2;
-
-    const hasRentalData =
-        property.monthly_rent !== null &&
-        property.monthly_rent !== undefined &&
-        property.occupancy !== null &&
-        property.occupancy !== undefined;
-
-    const monthlyRent = hasRentalData
-        ? Number(property.monthly_rent)
-        : null;
-
-    const occupancy = hasRentalData
-        ? Number(property.occupancy)
-        : null;
-
-    const annualRent = hasRentalData
-        ? monthlyRent * 12 * (occupancy / 100)
-        : null;
-
-    const totalInvestment = purchasePrice + renovationTotal;
-
-    const grossYield =
-        hasRentalData && totalInvestment > 0
-            ? (annualRent / totalInvestment) * 100
-            : null;
+    const grossYield = propertyGrossYield({ ...property, advanced_gross_yield:
+        advancedMetric?.propertyId === property.property_id ? advancedMetric.value : property.advanced_gross_yield,
+    }, isPro);
 
     return (
         <div className="property-detail">
+            <nav className="property-bottom-nav" aria-label="Mobilā navigācija">
+                <button type="button" onClick={() => onMobileNavigate('home')}><House size={21}/><span>Sākums</span></button>
+                <button type="button" aria-current="page" onClick={() => onMobileNavigate('properties')}><Building2 size={21}/><span>Īpašumi</span></button>
+                <button type="button" onClick={openPropertyAdd}><CirclePlus size={21}/><span>Pievienot</span></button>
+                <button type="button" onClick={() => onMobileNavigate('faq')}><CircleHelp size={21}/><span>FAQ</span></button>
+            </nav>
 
+            {propertyAddDialog && <dialog ref={propertyAddDialogRef} className="add-property-modal"
+                style={{position:'fixed',inset:'auto 0 0',margin:'0 auto',border:'1px solid #dce7e1',maxWidth:'100%',width:'100%',boxSizing:'border-box',boxShadow:'0 0 0 100vmax rgb(0 0 0 / 42%)'}}
+                aria-labelledby="property-add-title" onCancel={() => setPropertyAddDialog(null)}>
+                <h2 id="property-add-title">{propertyAddDialog === 'limit' ? 'Tu izmanto bezmaksas plānu' : 'Pievienot īpašumu'}</h2>
+                {propertyAddDialog === 'loading' && <p>Ielādē...</p>}
+                {propertyAddDialog === 'error' && <p role="alert">Neizdevās ielādēt īpašumus. Lūdzu, mēģini vēlreiz.</p>}
+                {propertyAddDialog === 'limit' && <><p>Sasniegts 3 īpašumu limits. Lai pievienotu vairāk īpašumu, apskati PRO plānu.</p><button type="button" className="property-expenses-add" onClick={() => {setPropertyAddDialog(null);onOpenPlans('diary');}}>Apskatīt PRO plānu</button></>}
+                {propertyAddDialog === 'funding' && <><p>Kā plāno finansēt šo investīciju?</p><div className="add-property-options">
+                    <button type="button" className="add-property-option" onClick={() => {setPropertyAddDialog(null);onAddProperty('cash');}}><span className="add-property-option-icon"><Wallet size={24}/></span><div className="add-property-option-copy"><strong>Par saviem līdzekļiem</strong><span>Īpašums tiek iegādāts bez hipotekārā kredīta.</span></div></button>
+                    <button type="button" className="add-property-option" onClick={() => {setPropertyAddDialog(null);onAddProperty('mortgage');}}><span className="add-property-option-icon"><Landmark size={24}/></span><div className="add-property-option-copy"><strong>Ar hipotēku</strong><span>Daļa no pirkuma tiek finansēta ar bankas kredītu.</span></div></button>
+                </div></>}
+                <button type="button" className="add-property-cancel-button" aria-label="Aizvērt pievienošanas izvēli" onClick={() => setPropertyAddDialog(null)}><X className="add-property-close-icon" size={20}/><span className="add-property-cancel-label">Atcelt</span></button>
+            </dialog>}
             {/* Īpašuma galvene */}
             <div
                 className={`property-detail-header ${activeTab === "diary" &&
@@ -348,7 +489,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                         className="property-detail-back"
                         onClick={onBack}
                     >
-                        <span>←</span> Atpakaļ uz maniem īpašumiem
+                        <span>←</span><span className="property-back-label-desktop">Atpakaļ uz maniem īpašumiem</span><span className="property-back-label-mobile">Atpakaļ</span>
                     </button>
 
                     <div className="property-detail-actions">
@@ -357,6 +498,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                         <button
                             type="button"
                             className="property-detail-edit"
+                            aria-label="Rediģēt īpašumu"
                             onClick={() => setEditingProperty({ ...property })}
                         >
                             <Pencil size={16} strokeWidth={1.8} />
@@ -396,6 +538,9 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
 
                         {showMoreMenu && (
                             <div className="property-detail-dropdown">
+                                <button type="button" className="property-mobile-menu-edit" onClick={()=>{setShowMoreMenu(false);setEditingProperty({...property});}}>
+                                    <Pencil size={17}/><span>Rediģēt īpašumu</span>
+                                </button>
 
                                 <button
                                     type="button"
@@ -483,7 +628,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                                 <strong>
                                     {grossYield === null
                                         ? "—"
-                                        : `${grossYield.toFixed(2)}%`}
+                                        : `${grossYield.toFixed(1)}%`}
                                 </strong>
                             </div>
 
@@ -493,7 +638,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
 
                     <div className="property-detail-badges">
 
-                        <div className="property-detail-status">
+                        <div className="property-detail-status" ref={statusMenuRef}>
                             <button
                                 type="button"
                                 className="property-detail-status-button"
@@ -581,9 +726,9 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                 </div>
 
                 {/* Galvenā navigācija */}
-                <div className="property-detail-tabs">
+                <div className="property-detail-tabs" ref={tabsRef}>
 
-                    {!(activeTab === "diary" && showDiarySections) && (
+                    {!(isPro && activeTab === "diary" && showDiarySections && !isMobile) && (
                         <button
                             type="button"
                             className={activeTab === "analysis" ? "active" : ""}
@@ -598,12 +743,16 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                         type="button"
                         className={
                             activeTab === "diary" &&
-                                activeDiarySection === "calendar"
+                                (isMobile || activeDiarySection === "calendar")
                                 ? "active"
                                 : ""}
                         onClick={() => {
                             const currentScrollY = window.scrollY;
+                            if (isMobile) { setActiveTab("diary"); return; }
 
+                            if (!isPro) {
+                                setActiveTab("diary");setShowDiarySections(false);return;
+                            }
                             if (activeTab !== "diary") {
                                 setActiveTab("diary");
                                 setActiveDiarySection("calendar");
@@ -623,11 +772,10 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     >
                         <CalendarDays size={17} strokeWidth={2} />
                         <span>Dienasgrāmata</span>
-                        <LockKeyhole size={14} className="property-tab-lock" />
-                        <span className="pro-badge">PRO</span>
+                        {!isPro && <span className="property-tab-premium"><LockKeyhole size={14} className="property-tab-lock" /><span className="pro-badge">PRO</span></span>}
                     </button>
 
-                    {activeTab === "diary" && showDiarySections && (
+                    {isPro && activeTab === "diary" && showDiarySections && !isMobile && (
                         <>
                             <button
                                 type="button"
@@ -689,7 +837,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                         </>
                     )}
 
-                    {!(activeTab === "diary" && showDiarySections) && (
+                    {!(isPro && activeTab === "diary" && showDiarySections && !isMobile) && (
                         <button
                             type="button"
                             className={activeTab === "advanced" ? "active" : ""}
@@ -697,17 +845,48 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                         >
                             <ChartNoAxesCombined size={17} strokeWidth={2} />
                             <span>Padziļinātā analīze</span>
-                            <LockKeyhole size={14} className="property-tab-lock" />
-                            <span className="pro-badge">PRO</span>
+                            {!isPro && <span className="property-tab-premium"><LockKeyhole size={14} className="property-tab-lock" /><span className="pro-badge">PRO</span></span>}
                         </button>
                     )}
                 </div>
             </div>
 
+            {isMobile && isPro && activeTab === "diary" && (
+                <div className={`diary-section-picker ${diaryPickerHidden ? "is-scroll-hidden" : ""}`} ref={diaryPickerRef}>
+                    <span id="mobile-diary-section-label">Sadaļa</span>
+                    <div className="diary-section-picker-control">
+                        <button type="button" ref={diaryPickerTriggerRef} className="diary-section-trigger"
+                            aria-haspopup="menu" aria-expanded={diaryPickerOpen} aria-controls={diaryPickerOpen ? 'mobile-diary-section-menu' : undefined}
+                            aria-labelledby="mobile-diary-section-label mobile-diary-section-value"
+                            onClick={() => setDiaryPickerOpen(open => !open)}
+                            onKeyDown={event => { if (['ArrowDown','ArrowUp'].includes(event.key)) { event.preventDefault(); setDiaryPickerOpen(true); } }}>
+                            <DiarySectionIcon size={17} aria-hidden="true"/><span id="mobile-diary-section-value">{selectedDiarySection.label}</span>
+                            <ChevronDown size={16} className={diaryPickerOpen ? 'is-open' : ''} aria-hidden="true"/>
+                        </button>
+                        {diaryPickerOpen && <div id="mobile-diary-section-menu" className="diary-section-options" role="menu" aria-labelledby="mobile-diary-section-label"
+                            onKeyDown={event => {
+                                const items = [...event.currentTarget.querySelectorAll('[role="menuitemradio"]')];
+                                const index = items.indexOf(document.activeElement);
+                                if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setDiaryPickerOpen(false); diaryPickerTriggerRef.current?.focus(); }
+                                if (event.key === 'Tab') setDiaryPickerOpen(false);
+                                if (['ArrowDown','ArrowUp','Home','End'].includes(event.key)) {
+                                    event.preventDefault();
+                                    const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length-1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+                                    items[next]?.focus();
+                                }
+                            }}>
+                            {diarySections.map(({id,label,Icon}) => <button key={id} type="button" role="menuitemradio" aria-checked={activeDiarySection === id}
+                                onClick={() => { handleDiarySectionChange(id); setDiaryPickerOpen(false); diaryPickerTriggerRef.current?.focus(); }}>
+                                <Icon size={17} aria-hidden="true"/><span>{label}</span>{activeDiarySection === id && <Check size={16} aria-hidden="true"/>}
+                            </button>)}
+                        </div>}
+                    </div>
+                </div>
+            )}
             {/*Sadaļu saturs */}
 
             <div
-                className={`property-detail-content ${activeTab === "diary"
+                className={`property-detail-content ${activeTab === "diary" || (activeTab === "advanced" && !isPro)
                     ? "property-detail-content-diary"
                     : ""
                     } ${activeTab === "diary" &&
@@ -721,7 +900,8 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     <FreeAnalysisOverview property={property} />
                 )}
 
-                {activeTab === "diary" && (
+                {activeTab === "diary" && !isPro && <ProFeatureGate feature="diary" onOpenPlans={onOpenPlans}/>}
+                {activeTab === "diary" && isPro && (
                     <PropertyDiary
                         property={property}
                         activeSection={activeDiarySection}
@@ -729,11 +909,17 @@ function PropertyDetail({ property, onBack, onPropertyUpdated }) {
                     />
                 )}
 
-                {activeTab === "advanced" && (
-                    <AdvancedAnalysis key={property.property_id} property={property} />
+                {activeTab === "advanced" && !isPro && <ProFeatureGate feature="advanced" onOpenPlans={onOpenPlans}/>}
+                {activeTab === "advanced" && isPro && (
+                    <AdvancedAnalysis key={property.property_id} property={property} onAnalysisChanged={receiveAnalysis} />
                 )}
 
             </div>
+
+            {activeTab === "analysis" && <div className="property-mobile-actions">
+                <button type="button" onClick={()=>setEditingProperty({...property})}><Pencil size={18}/>Rediģēt</button>
+                <button type="button" onClick={()=>{setDeleteError("");setShowDeleteModal(true);}}><Trash2 size={18}/>Dzēst</button>
+            </div>}
 
             <EditPropertyModal
                 editingProperty={editingProperty}

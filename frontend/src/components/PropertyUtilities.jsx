@@ -230,7 +230,7 @@ function PropertyUtilities({ property }) {
                                             ).toFixed(2)}
                                         </td>
 
-                                        <td className="expense-notes">
+                                        <td className="expense-notes" data-label="Piezīmes" data-empty={!utility.notes || undefined}>
                                             {utility.notes || "—"}
                                         </td>
 
@@ -279,7 +279,7 @@ function PropertyUtilities({ property }) {
 
                     <div className="property-expenses-total">
                         <strong>
-                            Kopā samaksāts (komunālie)
+                            Kopējās izmaksas
                         </strong>
 
                         <strong>

@@ -16,7 +16,8 @@ class UserRegister(BaseModel):
         max_length=100
     )
 
-    username: str = Field(
+    username: str | None = Field(
+        default=None,
         min_length=3,
         max_length=50
     )

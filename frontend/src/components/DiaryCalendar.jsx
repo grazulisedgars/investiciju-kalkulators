@@ -9,10 +9,13 @@ import {
     HousePlug,
     Hammer,
     Banknote,
+    ImagePlus,
     MoreVertical,
     Plus,
     Pencil,
+    CalendarDays,
     Trash2,
+    X,
 } from "lucide-react";
 import "./DiaryCalendar.css";
 import ExpenseModal from "./ExpenseModal";
@@ -20,8 +23,9 @@ import LoanModal from "./LoanModal";
 import UtilityModal from "./UtilityModal";
 import WorkModal from "./WorkModal";
 import RentModal from "./RentModal";
+import { PhotoForm, PhotoPreview } from "./PropertyGallery";
 
-function DiaryCalendar({ property }) {
+function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
     const today = new Date();
 
     const todayKey = [
@@ -32,6 +36,13 @@ function DiaryCalendar({ property }) {
 
     const [currentDate, setCurrentDate] = useState(today);
     const [showEntryMenu, setShowEntryMenu] = useState(false);
+    const [mobileDayOpen, setMobileDayOpen] = useState(false);
+    useEffect(() => {
+        if (!addEntryRequest) return;
+        setMobileDayOpen(true);
+        setShowEntryMenu(true);
+        onAddEntryHandled?.();
+    }, [addEntryRequest, onAddEntryHandled]);
     const entryMenuRef = useRef(null);
     const [showExpenseModal, setShowExpenseModal] = useState(false);
     const [editingExpense, setEditingExpense] = useState(null);
@@ -52,6 +63,49 @@ function DiaryCalendar({ property }) {
     const [isDeletingEntry, setIsDeletingEntry] = useState(false);
 
     const [diaryEntries, setDiaryEntries] = useState([]);
+    const [photos, setPhotos] = useState([]);
+    const [photoForm, setPhotoForm] = useState(null);
+    const [selectedPhotoId, setSelectedPhotoId] = useState(null);
+    const [photoError, setPhotoError] = useState("");
+    const [deletingPhoto, setDeletingPhoto] = useState(false);
+    const selectedPhoto = photos.find(photo => photo.id === selectedPhotoId);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        setPhotos([]);
+        setPhotoError("");
+        fetch(`http://localhost:8000/properties/${property.property_id}/gallery`, {
+            credentials: "include", signal: controller.signal,
+        }).then(async response => {
+            if (!response.ok) throw new Error("Neizdevās ielādēt foto.");
+            setPhotos(await response.json());
+        }).catch(error => { if (error.name !== "AbortError") setPhotoError(error.message); });
+        return () => controller.abort();
+    }, [property.property_id]);
+
+    useEffect(() => {
+        if (!photoForm && !selectedPhotoId) return;
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => { document.body.style.overflow = previous; };
+    }, [photoForm, selectedPhotoId]);
+
+    function savePhotos(items) {
+        const ids = new Set(items.map(photo => photo.id));
+        setPhotos(current => [...current.filter(photo => !ids.has(photo.id)), ...items]);
+    }
+
+    async function deletePhoto() {
+        if (!selectedPhoto || deletingPhoto) return;
+        setDeletingPhoto(true); setPhotoError("");
+        try {
+            const response = await fetch(`http://localhost:8000/properties/${property.property_id}/gallery/${selectedPhoto.id}`, { method: "DELETE", credentials: "include" });
+            if (!response.ok) throw new Error("Neizdevās dzēst foto.");
+            setPhotos(current => current.filter(photo => photo.id !== selectedPhoto.id));
+            setSelectedPhotoId(null);
+        } catch (error) { setPhotoError(error.message); }
+        finally { setDeletingPhoto(false); }
+    }
 
     const [selectedDate, setSelectedDate] = useState(() => {
         const year = today.getFullYear();
@@ -166,9 +220,18 @@ function DiaryCalendar({ property }) {
             return;
         }
 
+        const mobile = window.matchMedia('(max-width: 600px)').matches;
+        const previousFocus = document.activeElement;
+        const previousOverflow = document.body.style.overflow;
+        const menu = entryMenuRef.current?.querySelector('.diary-entry-menu');
+        if (mobile) { document.body.style.overflow = 'hidden'; menu?.querySelector('button')?.focus(); }
         function handleKeyDown(event) {
-            if (event.key === "Escape") {
-                setShowEntryMenu(false);
+            if (event.key === "Escape") setShowEntryMenu(false);
+            if (mobile && event.key === 'Tab') {
+                const buttons = [...menu.querySelectorAll('button')].filter(button => button.getClientRects().length);
+                const first = buttons[0], last = buttons[buttons.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
             }
         }
 
@@ -187,6 +250,7 @@ function DiaryCalendar({ property }) {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
             document.removeEventListener("mousedown", handleClickOutside);
+            if (mobile) { document.body.style.overflow = previousOverflow; previousFocus?.focus(); }
         };
     }, [showEntryMenu]);
 
@@ -202,6 +266,7 @@ function DiaryCalendar({ property }) {
         ].join("-");
 
         setSelectedDate(formattedDate);
+        setMobileDayOpen(true);
     }
 
     const monthNames = [
@@ -230,7 +295,11 @@ function DiaryCalendar({ property }) {
                 ${selectedYear}`;
     }
 
-    const selectedDateEntries = diaryEntries.filter(
+    const photoLabel = photo => photo.description || ({ initial: "Sākotnējais stāvoklis", renovation: "Remonts", finished: "Pabeigts" }[photo.category]) || "Īpašuma foto";
+    const calendarEntries = [...diaryEntries, ...photos.map(photo => ({
+        ...photo, id: `photo-${photo.id}`, photoId: photo.id, entry_type: "photo", entry_date: photo.photo_date,
+    }))];
+    const selectedDateEntries = calendarEntries.filter(
         (entry) => entry.entry_date === selectedDate
     );
 
@@ -271,7 +340,7 @@ function DiaryCalendar({ property }) {
     }
 
     return (
-        <div className="diary-calendar-layout">
+        <div className={`diary-calendar-layout ${mobileDayOpen ? "mobile-day-open" : "mobile-calendar-open"}`}>
 
             <div className="diary-calendar-sidebar">
 
@@ -315,7 +384,7 @@ function DiaryCalendar({ property }) {
                         const dayEntryTypes = dateKey
                             ? [
                                 ...new Set(
-                                    diaryEntries
+                                    calendarEntries
                                         .filter((entry) => entry.entry_date === dateKey)
                                         .map((entry) => entry.entry_type)
                                 ),
@@ -382,6 +451,10 @@ function DiaryCalendar({ property }) {
                         <span className="diary-legend-dot rent"></span>
                         <span>Saņemtā īre</span>
                     </div>
+                    <div className="diary-calendar-legend-item">
+                        <span className="diary-legend-dot photo" />
+                        <span>Foto</span>
+                    </div>
                 </div>
 
             </div>
@@ -393,6 +466,7 @@ function DiaryCalendar({ property }) {
                         <div className="diary-selected-date-header">
                             <h3>
                                 {selectedDateLabel}
+                                <button type="button" className="diary-mobile-calendar-back" aria-label="Atgriezties kalendārā" onClick={() => setMobileDayOpen(false)}><CalendarDays size={20}/></button>
                             </h3>
 
                             <div
@@ -412,7 +486,8 @@ function DiaryCalendar({ property }) {
 
                                 {showEntryMenu && (
                                     <div className="diary-entry-menu"
-                                        role="menu">
+                                        role="menu" aria-label="Pievienot ierakstu">
+                                        <div className="diary-mobile-menu-heading"><h3>Pievienot ierakstu</h3><button type="button" aria-label="Aizvērt ierakstu izvēlni" onClick={() => setShowEntryMenu(false)}><X size={20}/></button></div>
 
                                         <button
                                             type="button"
@@ -483,6 +558,13 @@ function DiaryCalendar({ property }) {
                                             </span>
                                             <span>Saņemtā īre</span>
                                         </button>
+                                        <button type="button" onClick={() => {
+                                            setShowEntryMenu(false); setPhotoError(""); setPhotoForm({ photo: null });
+                                        }}>
+                                            <span className="diary-entry-menu-icon photo"><ImagePlus size={14} /></span>
+                                            <span>Foto</span>
+                                        </button>
+                                        <button type="button" className="diary-mobile-menu-cancel" onClick={() => setShowEntryMenu(false)}>Atcelt</button>
                                     </div>
                                 )}
                             </div>
@@ -491,7 +573,16 @@ function DiaryCalendar({ property }) {
 
                         {selectedDateEntries.length > 0 ? (
                             <div className="diary-day-entries">
-                                {selectedDateEntries.map((entry) => (
+                                {selectedDateEntries.map((entry) => entry.entry_type === "photo" ? (
+                                    <button type="button" key={entry.id} className="diary-photo-entry"
+                                        onClick={() => { setPhotoError(""); setSelectedPhotoId(entry.photoId); }}
+                                        aria-label={`Atvērt foto: ${photoLabel(entry)}`}>
+                                        <span className="diary-entry-icon photo"><ImagePlus size={17} /></span>
+                                        <span className="diary-entry-description"><span className="diary-entry-type photo">Foto</span>
+                                            <span className="diary-entry-title">{photoLabel(entry)}</span></span>
+                                        <img src={`http://localhost:8000${entry.image_url}`} alt={photoLabel(entry)} loading="lazy" />
+                                    </button>
+                                ) : (
                                     <div
                                         key={entry.id}
                                         className={`diary-entry-card ${entry.entry_type}`}
@@ -612,6 +703,17 @@ function DiaryCalendar({ property }) {
                 )}
 
             </div>
+
+            {photoError && !selectedPhoto && <p role="alert" className="diary-photo-error">{photoError}</p>}
+            {selectedPhoto && !photoForm && <PhotoPreview key={selectedPhoto.id} photo={selectedPhoto}
+                index={photos.findIndex(photo => photo.id === selectedPhotoId)} count={photos.length}
+                busy={deletingPhoto} error={photoError} onClose={() => setSelectedPhotoId(null)}
+                onNavigate={direction => {
+                    const index = photos.findIndex(photo => photo.id === selectedPhotoId);
+                    setSelectedPhotoId(photos[(index + direction + photos.length) % photos.length].id);
+                }} onEdit={() => setPhotoForm({ photo: selectedPhoto })} onDelete={deletePhoto} />}
+            {photoForm && <PhotoForm propertyId={property.property_id} photo={photoForm.photo}
+                initialDate={selectedDate} onClose={() => setPhotoForm(null)} onSaved={savePhotos} />}
 
             {entryMenu &&
                 createPortal(

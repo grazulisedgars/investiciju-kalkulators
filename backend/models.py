@@ -32,6 +32,8 @@ class User(Base):
         nullable=False
     )
 
+    plan: Mapped[str] = mapped_column(String(10), nullable=False, default="basic", server_default="basic")
+
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     email_verification_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, unique=True)
     email_verification_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

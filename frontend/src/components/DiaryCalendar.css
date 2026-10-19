@@ -68,7 +68,7 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     column-gap: 4px;
-    row-gap: 9px;
+    row-gap: 13px;
 }
 
 .diary-calendar-weekday {
@@ -123,7 +123,7 @@
 .diary-calendar-entry-dots {
     position: absolute;
     left: 50%;
-    bottom: -6.5px;
+    bottom: -8px;
 
     display: flex;
     align-items: center;
@@ -1265,4 +1265,23 @@
     .diary-calendar-header { flex-wrap:wrap; height:auto; min-height:58px; padding-top:10px; padding-bottom:10px; }
     .diary-calendar-header .calendar-month-picker { flex-basis:100%; }
     .diary-calendar-controls { margin-left:auto; }
+}
+
+/* Gallery photos share their existing dates with the diary calendar. */
+.diary-calendar-entry-dot.photo,.diary-legend-dot.photo { background:#8b5cf6; }
+.diary-entry-menu-icon.photo,.diary-entry-icon.photo { color:#8b5cf6; background:#f2ecff; }
+.diary-entry-type.photo { color:#8b5cf6; }
+.diary-calendar-entry-dots { flex-wrap:wrap; max-width:30px; justify-content:center; }
+.diary-photo-entry { display:flex; align-items:center; gap:16px; width:100%; padding:18px 16px; border:0; border-bottom:1px solid #e5ece8; background:white; text-align:left; cursor:pointer; color:inherit; font:inherit; }
+.diary-photo-entry:hover { background:#faf8ff; }
+.diary-photo-entry:focus-visible { outline:2px solid #8b5cf6; outline-offset:-2px; }
+.diary-photo-entry .diary-entry-description { flex:1; min-width:0; }
+.diary-photo-entry .diary-entry-title { overflow-wrap:anywhere; }
+.diary-photo-entry>img { width:72px; height:56px; object-fit:cover; border-radius:7px; flex-shrink:0; }
+.diary-photo-error { color:#b42318; }
+
+/* Center the complete group for one, two or three date markers. */
+.diary-calendar-entry-dots {
+ width:max-content; max-width:none; flex-wrap:nowrap;
+ left:50%; transform:translateX(-50%); gap:2px;
 }

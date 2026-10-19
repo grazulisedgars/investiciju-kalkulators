@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import "./PropertyDiary.css";
 import DiaryCalendar from "./DiaryCalendar";
 import PropertyExpenses from "./PropertyExpenses";
@@ -7,6 +8,7 @@ import PropertyWork from "./PropertyWork";
 import PropertyRent from "./PropertyRent";
 import PropertyGallery from "./PropertyGallery";
 import PropertyTotals from "./PropertyTotals";
+import "./DiaryMobile.css";
 
 // Ieslēgt, ja vēlāk nepieciešams atjaunot kopsavilkuma skatu.
 const showDiaryTotals = false;
@@ -14,7 +16,40 @@ const showDiaryTotals = false;
 function PropertyDiary({
     property,
     activeSection,
+    addEntryRequest,
+    onAddEntryHandled,
 }) {
+
+    const diaryRef = useRef(null);
+    useLayoutEffect(() => {
+        const root = diaryRef.current;
+        const measure = () => {
+            const list = root.querySelector('.property-expenses-table-wrapper');
+            if (list) {
+                root.style.setProperty('--diary-list-top', `${Math.round(list.getBoundingClientRect().top + window.scrollY)}px`);
+                const nav = document.querySelector('.property-bottom-nav');
+                const total = root.querySelector('.property-expenses-total, .property-loan-summary');
+                if (window.matchMedia('(max-width:600px)').matches && nav) {
+                    const bottom = nav.getBoundingClientRect().top;
+                    const reserve = total?.getClientRects().length ? total.getBoundingClientRect().height + 12 : 0;
+                    const available = Math.max(80, Math.floor(bottom - list.getBoundingClientRect().top - reserve - 12));
+                    root.style.setProperty('--diary-list-available', `${available}px`);
+                }
+            }
+            const dayContent = root.querySelector('.diary-calendar-content');
+            if (dayContent && dayContent.getClientRects().length) root.style.setProperty('--diary-day-content-top', `${Math.round(dayContent.getBoundingClientRect().top + window.scrollY)}px`);
+            const dayList = root.querySelector('.diary-day-entries');
+            if (dayList && dayList.getClientRects().length) root.style.setProperty('--diary-day-top', `${Math.round(dayList.getBoundingClientRect().top + window.scrollY)}px`);
+        };
+        const observer = new ResizeObserver(measure);
+        observer.observe(root);
+        const picker = document.querySelector('.diary-section-picker');
+        if (picker) observer.observe(picker);
+        measure();
+        window.addEventListener('resize', measure);
+        window.addEventListener('scroll', measure, {passive:true});
+        return () => { observer.disconnect(); window.removeEventListener('resize', measure); window.removeEventListener('scroll', measure); };
+    }, [activeSection, property.property_id]);
 
     const sections = [
         { id: "calendar", label: "Dienasgrāmata" },
@@ -36,12 +71,12 @@ function PropertyDiary({
     );
 
     return (
-        <div className="property-diary">
+        <div className="property-diary" ref={diaryRef}>
 
             <div className="property-diary-body">
 
                 {activeSection === "calendar" && (
-                    <DiaryCalendar property={property} />
+                    <DiaryCalendar property={property} addEntryRequest={addEntryRequest} onAddEntryHandled={onAddEntryHandled} />
                 )}
 
                 {activeSection === "expenses" && (

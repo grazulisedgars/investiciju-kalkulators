@@ -90,11 +90,11 @@ function GalleryCategorySelect({ value, onChange }) {
     </div>;
 }
 
-function PhotoForm({ propertyId, photo, initialCategory, onClose, onSaved }) {
+export function PhotoForm({ propertyId, photo, initialCategory, initialDate, onClose, onSaved }) {
     const dialogRef = useRef(null);
     const fileInputRef = useRef(null);
     useDialogFocus(dialogRef);
-    const [form, setForm] = useState(() => ({ photo_date: photo?.photo_date || today(), category: photo?.category || initialCategory || "initial", description: photo?.description || "" }));
+    const [form, setForm] = useState(() => ({ photo_date: photo?.photo_date || initialDate || today(), category: photo?.category || initialCategory || "initial", description: photo?.description || "" }));
     const [files, setFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
     const previewUrlsRef = useRef([]);
@@ -206,7 +206,7 @@ function PhotoDeleteDialog({ photo, busy, error, onCancel, onDelete }) {
     </div>;
 }
 
-function PhotoPreview({ photo, index, count, busy, error, onClose, onNavigate, onEdit, onDelete }) {
+export function PhotoPreview({ photo, index, count, busy, error, onClose, onNavigate, onEdit, onDelete }) {
     const dialogRef = useRef(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
     useDialogFocus(dialogRef, !confirmDelete);

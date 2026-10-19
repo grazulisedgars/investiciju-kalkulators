@@ -661,3 +661,150 @@
         margin-top: 16px;
     }
 }
+
+/* Keep tab height stable while widths follow visible text and plan badges. */
+.property-detail-tabs button { min-height:46px; line-height:18px; justify-content:flex-start; flex-shrink:0; }
+.property-tab-premium { display:inline-flex; align-items:center; gap:8px; height:18px; flex-shrink:0; }
+
+
+.property-back-label-mobile { display:none; }
+.property-detail-back .property-back-label-desktop { color:inherit; font-size:inherit; font-weight:inherit; }
+@media(max-width:768px) {
+ .app.app-dashboard:has(.property-detail) { padding:0; }
+ .property-detail { padding:16px 16px 24px; }
+ .property-detail-header { min-width:0; padding:16px; border-radius:13px; }
+ .property-detail-header-top { display:grid; grid-template-columns:minmax(0,1fr) 44px 44px; gap:8px; margin-bottom:16px; }
+ .property-detail-back { min-height:44px; font-size:13px; text-align:left; }
+ .property-detail-back .property-back-label-desktop { display:none; }
+ .property-detail-back .property-back-label-mobile { display:inline; color:inherit; font-size:13px; font-weight:400; }
+ .property-detail-edit { width:44px; height:44px; padding:0; justify-content:center; gap:0; font-size:0; }
+ .property-detail-edit svg { width:18px; height:18px; flex-shrink:0; }
+ .property-detail-more { width:44px; height:44px; }
+ .property-detail-more-wrapper { min-width:0; }
+ .property-detail-dropdown { max-width:calc(100vw - 64px); }
+ .property-detail-dropdown button { min-height:44px; }
+ .property-detail-header-main { display:flex; flex-direction:column; align-items:stretch; gap:18px; }
+ .property-detail-image { width:100%; height:auto; aspect-ratio:1.65; border-radius:9px; }
+ .property-detail-heading h1 { font-size:25px; line-height:1.25; overflow-wrap:anywhere; margin-bottom:8px; }
+ .property-detail-heading p { font-size:13px; line-height:1.5; margin-bottom:18px; overflow-wrap:anywhere; }
+ .property-detail-info { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; align-items:start; }
+ .property-detail-info>div { padding:0 12px; border-left:1px solid #e0e9e3; gap:5px; min-width:0; }
+ .property-detail-info>div:first-child { padding-left:0; border-left:0; }
+ .property-detail-info>div:last-child { padding-right:0; }
+ .property-detail-info span { font-size:10px; line-height:1.4; }
+ .property-detail-info strong { font-size:16px; line-height:1.4; overflow-wrap:anywhere; }
+ .property-detail-badges { width:100%; margin:0; align-self:stretch; display:flex; flex-wrap:wrap; gap:10px; }
+ .property-detail-status { flex:1; min-width:130px; }
+ .property-detail-status-button { width:100%; min-width:0; min-height:44px; }
+ .property-detail-status-dropdown { left:0; right:auto; max-width:calc(100vw - 64px); }
+ .property-detail-status-dropdown button { min-height:44px; }
+ .property-detail-financing { margin:0; min-height:44px; white-space:normal; font-size:12px; line-height:1.4; flex:1; min-width:130px; justify-content:center; }
+ .property-detail-financing svg { flex-shrink:0; }
+ .property-detail-tabs { max-width:calc(100% + 32px); margin:20px -16px -16px; padding:0 16px; gap:4px; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; }
+ .property-detail-tabs button { min-height:48px; padding:13px 12px; font-size:13px; }
+ .property-detail-content { margin-top:18px; padding:18px 16px; border-radius:12px; min-width:0; }
+ .property-detail-content.property-detail-content-diary { padding:0; }
+ .property-delete-modal { width:calc(100% - 32px); max-height:90dvh; overflow-y:auto; padding:22px; }
+ .property-delete-actions { flex-wrap:wrap; }
+ .property-delete-actions button { min-height:44px; }
+}
+@media(max-width:359px) {
+ .property-detail { padding-inline:12px; }
+ .property-detail-header { padding:14px; }
+ .property-detail-heading h1 { font-size:23px; }
+ .property-detail-info>div { padding-inline:8px; }
+ .property-detail-info strong { font-size:15px; }
+ .property-detail-tabs { margin-inline:-14px; margin-bottom:-14px; padding-inline:14px; max-width:calc(100% + 28px); }
+}
+
+@media(min-width:601px) and (max-width:768px) { .property-detail-image { max-height:320px; } }
+
+.property-mobile-actions,.property-detail-dropdown .property-mobile-menu-edit { display:none; }
+/* Mobile detail is a white page, rather than desktop cards inside a colored shell. */
+@media(max-width:600px) {
+ body:has(.property-detail) { background:white; }
+ .app.app-dashboard:has(.property-detail) { background:white; gap:0; min-height:100dvh; }
+ .app-dashboard:has(.property-detail)>.account-footer { display:none; }
+ .property-detail { padding:0 16px calc(24px + env(safe-area-inset-bottom)); background:white; }
+ .property-detail-header { padding:0; border:0; border-radius:0; background:white; }
+ .property-detail-header-top { grid-template-columns:minmax(0,1fr) 44px; margin:0 0 8px; padding-top:4px; }
+ .property-detail-actions { display:none; }
+ .property-detail-more { border:0; border-radius:0; background:transparent; }
+ .property-detail-more>svg { transform:rotate(90deg); }
+ .property-detail-dropdown .property-mobile-menu-edit { display:flex; }
+ .property-detail-header-main { gap:18px; }
+ .property-detail-image { border-radius:9px; aspect-ratio:1.72; }
+ .property-detail-heading h1 { font-size:26px; }
+ .property-detail-info>div { padding-inline:10px; }
+ .property-detail-info>div:first-child { padding-left:0; }
+ .property-detail-info>div:last-child { padding-right:0; }
+ .property-detail-badges { gap:8px; }
+ .property-detail-status-button,.property-detail-financing { min-height:40px; }
+ .property-detail-tabs { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(84px,1fr); align-items:stretch; gap:0; margin:20px 0 0; padding:0; max-width:100%; border-bottom:1px solid #e6ece8; }
+ .property-detail-tabs button { display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:0; min-height:64px; padding:9px 5px; gap:5px; font-size:12px; line-height:1.35; white-space:normal; border-radius:0; }
+ .property-detail-tabs button>svg { display:none; }
+ .property-detail-tabs button.active { background:white; }
+ .property-tab-premium { gap:4px; height:14px; }
+ .property-tab-lock { margin-left:0; width:11px; height:11px; }
+ .property-detail-tabs .pro-badge { font-size:9px; padding:2px 5px; }
+ .property-detail-content { padding:20px 0 0; margin:0; border:0; border-radius:0; background:white; }
+ .property-detail-content.property-detail-content-diary { padding-top:20px; }
+ .property-mobile-actions { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
+ .property-mobile-actions button { min-height:46px; display:flex; align-items:center; justify-content:center; gap:9px; border:1px solid #126a4e; border-radius:8px; background:white; color:#126a4e; font:inherit; font-size:14px; font-weight:500; }
+ .property-mobile-actions button:last-child { background:#0f5138; color:white; border-color:#0f5138; }
+}
+
+@media(max-width:600px) {
+ /* Give every tab the same label row and a separate badge row. */
+ .property-detail-tabs button { display:grid; grid-template-rows:32px 14px; align-content:center; justify-items:center; gap:4px; }
+ .property-detail-tabs button>span:not(.property-tab-premium) { display:flex; align-items:center; justify-content:center; align-self:stretch; text-align:center; line-height:16px; }
+ .property-detail-tabs .property-tab-premium { grid-row:2; }
+ .property-delete-modal { font-family:inherit; border-radius:12px; padding:22px; }
+ .property-delete-modal h2 { font-size:21px; line-height:1.35; font-weight:600; }
+ .property-delete-modal p { font-size:14px; line-height:1.6; }
+ .property-delete-actions { display:flex; flex-wrap:nowrap; gap:12px; }
+ .property-delete-actions button { min-height:46px; padding:11px 16px; border-radius:8px; font-family:inherit; font-size:14px; line-height:20px; font-weight:500; }
+ .property-delete-cancel { flex:1; }
+ .property-delete-confirm { flex:1.5; }
+}
+
+/* Shared property-action typography on desktop and mobile. */
+.property-detail-edit,.property-delete-actions button,.property-mobile-actions button {
+ font-family:inherit; font-size:14px; font-weight:500;
+}
+@media(max-width:600px) {
+ .property-detail-tabs { grid-auto-columns:minmax(84px,1fr); }
+ .property-detail-tabs button { display:flex; flex-direction:row; align-items:center; justify-content:center; gap:5px; min-height:48px; padding:10px 3px; font-size:11px; line-height:16px; }
+ .property-detail-tabs button>span:not(.property-tab-premium) { display:inline; align-self:auto; line-height:16px; }
+ .property-detail-tabs .property-tab-premium { display:inline-flex; align-items:center; height:auto; gap:0; }
+ .property-detail-tabs .property-tab-premium .pro-badge { display:none; }
+ .property-detail-tabs .property-tab-lock { width:11px; height:11px; margin:0; }
+}
+
+@media(max-width:600px) {
+ .property-detail-tabs:has(>button:nth-child(3):last-child) { grid-template-columns:minmax(0,.62fr) minmax(0,1.06fr) minmax(0,1.42fr); grid-auto-columns:auto; }
+ .property-detail-tabs:has(>button:nth-child(3):last-child) button>span:not(.property-tab-premium) { white-space:nowrap; }
+}
+
+@media(max-width:600px) {
+ .property-detail-tabs:has(>button:nth-child(3):last-child) { grid-template-columns:minmax(0,.58fr) minmax(0,1.1fr) minmax(0,1.42fr); }
+ .property-detail-tabs button { font-size:12px; gap:6px; }
+ .property-detail-tabs .property-tab-lock { width:13px; height:13px; }
+}
+@media(max-width:359px) { .property-detail-tabs button { font-size:11px; gap:4px; } }
+
+@media(max-width:600px) {
+ .property-detail-tabs:has(>button:nth-child(3):last-child):not(:has(.property-tab-premium)) {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+ }
+ .property-detail-tabs:has(>button:nth-child(3):last-child):not(:has(.property-tab-premium)) button { font-size:clamp(10px,2.85vw,12px); }
+}
+
+@media(max-width:600px) {
+ .property-detail-tabs:has(>button:nth-child(3):last-child) { grid-template-columns:repeat(3,minmax(0,1fr)); }
+ .property-detail-tabs:has(>button:nth-child(3):last-child) button { font-size:clamp(10px,2.8vw,12px); gap:4px; padding-inline:2px; }
+ .property-detail-tabs:has(>button:nth-child(3):last-child) button>span:not(.property-tab-premium) { white-space:normal; text-align:center; }
+ .property-detail-tabs:has(>button:nth-child(3):last-child) .property-tab-premium { flex-shrink:0; }
+}
+
+@media(max-width:600px) { .property-detail-tabs:has(>button:nth-child(3):last-child) button { gap:7px; } }

@@ -12,6 +12,8 @@ from PIL import Image,ImageOps,UnidentifiedImageError
 from database import get_db
 from models import User,Property,DiaryEntry,ExpenseEntry,LoanEntry,UtilityEntry,WorkEntry,RentEntry,AdvancedAnalysis,GalleryPhoto
 from security import decode_access_token,hash_password,verify_password
+from entitlements import plan_info,can_test_plans
+from typing import Literal
 router=APIRouter(prefix="/account/profile",tags=["Mans profils"])
 PHOTO_DIR=Path(__file__).resolve().parent/"private_uploads"/"profile"
 MAX_SIZE=4*1024*1024
@@ -19,7 +21,7 @@ class ProfileUpdate(BaseModel):
     model_config=ConfigDict(extra="forbid",str_strip_whitespace=True)
     first_name:str=Field(min_length=1,max_length=100)
     last_name:str=Field(min_length=1,max_length=100)
-    username:str=Field(min_length=3,max_length=50,pattern=r"^[\w.-]+$")
+    username:str|None=Field(default=None,min_length=3,max_length=50,pattern=r"^[\w.-]+$")
 def require_user(token,db):
     payload=decode_access_token(token) if token else None
     try: user_id=int(payload["sub"]) if payload else None
@@ -31,16 +33,17 @@ def serialize(user,db):
     count=db.query(func.count(Property.property_id)).filter(Property.user_id==user.id).scalar()
     return dict(id=user.id,first_name=user.first_name,last_name=user.last_name,username=user.username,email=user.email,
                 created_at=user.created_at,avatar_url=f"/account/profile/photo?v={user.avatar_filename}" if user.avatar_filename else None,
-                email_verified=bool(user.email_verified_at),status="active" if user.email_verified_at else "email_unverified",plan="free",property_count=count,property_limit=3)
+                email_verified=bool(user.email_verified_at),status="active" if user.email_verified_at else "email_unverified",property_count=count,**plan_info(user))
 @router.get("")
 def get_profile(access_token:str|None=Cookie(default=None),db:Session=Depends(get_db)):
     return serialize(require_user(access_token,db),db)
 @router.patch("")
 def update_profile(data:ProfileUpdate,access_token:str|None=Cookie(default=None),db:Session=Depends(get_db)):
     user=require_user(access_token,db)
-    if db.query(User).filter(func.lower(User.username)==data.username.lower(),User.id!=user.id).first():
+    if data.username is not None and db.query(User).filter(func.lower(User.username)==data.username.lower(),User.id!=user.id).first():
         raise HTTPException(409,"Šis lietotājvārds jau tiek izmantots.")
-    user.first_name=data.first_name;user.last_name=data.last_name;user.username=data.username
+    user.first_name=data.first_name;user.last_name=data.last_name
+    if data.username is not None: user.username=data.username
     try: db.commit()
     except IntegrityError:
         db.rollback();raise HTTPException(409,"Šis lietotājvārds jau tiek izmantots.")
@@ -168,3 +171,16 @@ def delete_account(data:AccountDeletion,response:Response,access_token:str|None=
         except OSError:logging.getLogger(__name__).exception("Unable to remove staged account file")
     response.delete_cookie("access_token",path="/")
     return {"message":"Profils un ar to saistītie dati ir izdzēsti."}
+
+class TestPlanChange(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    plan:Literal["basic","pro"]
+
+@router.patch("/test-plan")
+def change_test_plan(data:TestPlanChange,access_token:str|None=Cookie(default=None),db:Session=Depends(get_db)):
+    user=require_user(access_token,db)
+    if not can_test_plans(user):raise HTTPException(404,"Šī darbība nav pieejama.")
+    user=db.query(User).filter(User.id==user.id).with_for_update().populate_existing().one()
+    user.plan=data.plan
+    db.commit();db.refresh(user)
+    return serialize(user,db)

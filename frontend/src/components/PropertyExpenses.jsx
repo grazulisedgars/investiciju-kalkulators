@@ -237,7 +237,7 @@ function PropertyExpenses({ property }) {
                                             ).toFixed(2)}
                                         </td>
 
-                                        <td>
+                                        <td data-empty={!expense.supplier && !expense.room || undefined}>
                                             <div className="expense-place">
                                                 <span>
                                                     {expense.supplier || "—"}
@@ -251,7 +251,7 @@ function PropertyExpenses({ property }) {
                                             </div>
                                         </td>
 
-                                        <td className="expense-notes">
+                                        <td className="expense-notes" data-label="Piezīmes" data-empty={!expense.notes || undefined}>
                                             {expense.notes || "—"}
                                         </td>
 

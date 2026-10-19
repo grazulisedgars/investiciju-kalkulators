@@ -1,3 +1,4 @@
+from uuid import uuid4
 import os
 import shutil
 from fastapi import (
@@ -51,11 +52,13 @@ from security import (
 from email_verification import router as email_router,send_verification
 from account_profile import router as profile_router
 from gallery import router as gallery_router, photo_path
-from advanced_analysis import router as analysis_router
+from advanced_analysis import router as analysis_router, serialize as serialize_analysis
 from models import GalleryPhoto, AdvancedAnalysis
 from datetime import datetime, timezone
 
-app = FastAPI()
+from entitlements import plan_info,is_pro,enforce_feature_access
+
+app = FastAPI(dependencies=[Depends(enforce_feature_access)])
 # Galerijas endpointi atrodas atsevišķā modulī.
 app.include_router(gallery_router)
 app.include_router(analysis_router)
@@ -141,9 +144,10 @@ def register_user(
     db: Session = Depends(get_db)
 ):
 
+    username = user_data.username or f"user_{uuid4().hex}"
     existing_username = (
         db.query(User)
-        .filter(User.username == user_data.username)
+        .filter(User.username == username)
         .first()
     )
 
@@ -168,7 +172,7 @@ def register_user(
     new_user = User(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
-        username=user_data.username,
+        username=username,
         email=user_data.email,
         password_hash=hash_password(user_data.password)
     )
@@ -199,7 +203,8 @@ def register_user(
         "email": new_user.email,
         "email_verified": False,
         "verification_delivery": "local",
-        "verification_send_failed": delivery_error
+        "verification_send_failed": delivery_error,
+        **plan_info(new_user)
     }
 
 # --------------------------------------------------------------------------
@@ -251,6 +256,7 @@ def login_user(
             "username": user.username,
             "email": user.email,
         "email_verified": bool(user.email_verified_at),
+        **plan_info(user),
             "created_at": user.created_at,
             "avatar_url": f"/account/profile/photo?v={user.avatar_filename}" if user.avatar_filename else None
         }
@@ -303,6 +309,7 @@ def get_current_user(
         "username": user.username,
         "email": user.email,
         "email_verified": bool(user.email_verified_at),
+        **plan_info(user),
             "created_at": user.created_at,
             "avatar_url": f"/account/profile/photo?v={user.avatar_filename}" if user.avatar_filename else None
     }
@@ -366,13 +373,15 @@ def create_property(
     if not user.email_verified_at:
         raise HTTPException(403,"Lai pievienotu īpašumu, vispirms apstiprini e-pasta adresi.")
 
+    # Serialize property creation per account to enforce Basic limits concurrently.
+    user=db.query(User).filter(User.id==user.id).with_for_update().populate_existing().one()
     property_count = (
         db.query(Property)
         .filter(Property.user_id == user.id)
         .count()
     )
 
-    if property_count >= 3:
+    if not is_pro(user) and property_count >= 3:
         raise HTTPException(
             status_code=403,
             detail="Bezmaksas profilā vari saglabāt ne vairāk kā 3 īpašumus."
@@ -463,6 +472,24 @@ def get_properties(
             if timestamp is not None and (item.updated_at is None or utc(timestamp) > utc(item.updated_at)):
                 # Atbildes attēlojums; GET neveic rakstīšanu datubāzē.
                 set_committed_value(item, "updated_at", timestamp)
+    # Reuse the saved advanced analysis, including current diary cost sources.
+    # BASIC responses never expose the locked analysis metric.
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    analyses = {}
+    if user and is_pro(user) and property_ids:
+        analyses = {row.property_id: row for row in db.query(AdvancedAnalysis).filter(AdvancedAnalysis.property_id.in_(property_ids)).all()}
+    for item in properties:
+        item.advanced_gross_yield = None
+        item.advanced_monthly_rent = None
+        row = analyses.get(item.property_id)
+        if row is not None:
+            try:
+                analysis = serialize_analysis(row, db)
+                item.advanced_gross_yield = analysis["results"]["gross_yield"]
+                item.advanced_monthly_rent = analysis["inputs"]["monthly_rent"]
+            except (ValueError, ArithmeticError, HTTPException):
+                # Older invalid scenarios fall back to the basic property data.
+                pass
     return properties
 # --------------------------------------------------------------------------
 

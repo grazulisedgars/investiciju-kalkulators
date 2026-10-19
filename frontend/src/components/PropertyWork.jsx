@@ -247,7 +247,7 @@ function PropertyWork({ property }) {
                                             {formatHours(work.hours)} h
                                         </td>
 
-                                        <td className="expense-notes">
+                                        <td className="expense-notes" data-label="Piezīmes" data-empty={!work.notes || undefined}>
                                             {work.notes || "—"}
                                         </td>
 

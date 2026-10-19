@@ -26,11 +26,11 @@ function initialInputs(property) {
     return { purchase_price: property.purchase_price ?? "", area: property.area ?? "", renovation_cost_per_m2: property.renovation_cost_per_m2 ?? 0, office_fee: "", valuation: "", monthly_rent: property.monthly_rent ?? "", rented_months: 12, renovation_years: 0, renovation_months: 0, repair_source: "manual", utilities_source: "manual", renovation_start_date: null, renovation_end_date: null, repair_entry_ids: null, tax_rate: 10, summer_cost: "", winter_cost: "", insurance: "", cadastral_value: "", future_price_per_m2: property.market_value && property.area ? Math.round(property.market_value/property.area*100)/100 : "" };
 }
 
-export default function AdvancedAnalysis({ property }) {
-    return property.financing_type === "mortgage" ? <MortgageAnalysis property={property} /> : <CashAnalysis property={property} />;
+export default function AdvancedAnalysis({ property, onAnalysisChanged }) {
+    return property.financing_type === "mortgage" ? <MortgageAnalysis property={property} onAnalysisChanged={onAnalysisChanged} /> : <CashAnalysis property={property} onAnalysisChanged={onAnalysisChanged} />;
 }
 
-function CashAnalysis({ property }) {
+function CashAnalysis({ property, onAnalysisChanged }) {
     const sectionRef = useRef(null);
     const scrollRequested = useRef(false);
     const [draft, setDraft] = useState(() => initialInputs(property));
@@ -99,14 +99,14 @@ function CashAnalysis({ property }) {
                 const response = await fetch(url, { credentials: "include", signal: controller.signal });
                 if (!response.ok) throw new Error("Neizdevās ielādēt analīzi. Pārbaudi, vai backend darbojas.");
                 const data = await response.json();
-                if (!controller.signal.aborted && data) { setSaved(data); setDraft(data.inputs); setEditing(false); }
+                if (!controller.signal.aborted && data) { setSaved(data); onAnalysisChanged?.(data); setDraft(data.inputs); setEditing(false); }
                 if (!controller.signal.aborted) { setError(""); setLoadFailed(false); }
             } catch (err) { if (!controller.signal.aborted) { setError(err.message); setLoadFailed(true); } }
             finally { if (!controller.signal.aborted) setLoading(false); }
         }
         load();
         return () => controller.abort();
-    }, [url, property.financing_type, retry]);
+    }, [url, property.financing_type, retry, onAnalysisChanged]);
 
     if (property.financing_type !== "cash") return <section className="advanced-analysis"><h2>Padziļinātā analīze</h2><p>Hipotēkas kalkulatoru pievienosim nākamajā posmā.</p></section>;
     if (loading) return <div className="advanced-analysis" role="status">Ielādē analīzi...</div>;
@@ -155,7 +155,7 @@ function CashAnalysis({ property }) {
         try {
             const response = await fetch(url, { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(numeric) });
             if (!response.ok) throw new Error("Neizdevās saglabāt analīzi. Pārbaudi ievadi un mēģini vēlreiz.");
-            const data = await response.json(); scrollRequested.current = true; setSaved(data); setDraft(data.inputs); setEditing(false);
+            const data = await response.json(); scrollRequested.current = true; setSaved(data); onAnalysisChanged?.(data); setDraft(data.inputs); setEditing(false);
         } catch (err) { setError(err.message); }
         finally { setSaving(false); }
     }
@@ -164,7 +164,7 @@ function CashAnalysis({ property }) {
         try {
             const response = await fetch(url, { method: "DELETE", credentials: "include" });
             if (!response.ok) throw new Error("Neizdevās dzēst analīzi. Mēģini vēlreiz.");
-            setSaved(null); setDraft(initialInputs(property)); setStep(0); setErrors({}); setError(""); setEditing(true); setShowDelete(false);
+            setSaved(null); onAnalysisChanged?.(null); setDraft(initialInputs(property)); setStep(0); setErrors({}); setError(""); setEditing(true); setShowDelete(false);
         } catch (err) { setDeleteError(err.message); }
         finally { setDeleting(false); }
     }

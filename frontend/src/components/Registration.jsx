@@ -5,7 +5,6 @@ import {passwordRules} from "./passwordRules";
 function Registration({ onBack, onRegistered }) {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
-    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,9 +30,7 @@ function Registration({ onBack, onRegistered }) {
             return false;
         }
 
-        if (!username.trim()) {
-            newErrors.username = "Ievadi lietotājvārdu.";
-        }
+
 
         if (!email.trim()) {
             newErrors.email = "Ievadi e-pasta adresi.";
@@ -77,7 +74,6 @@ function Registration({ onBack, onRegistered }) {
                     body: JSON.stringify({
                         first_name: firstName.trim(),
                         last_name: lastName.trim(),
-                        username: username.trim(),
                         email: email.trim(),
                         password,
                     }),
@@ -153,19 +149,7 @@ function Registration({ onBack, onRegistered }) {
                         />
                     </div>
 
-                    <div className="input-group">
-                        <label htmlFor="username">Lietotājvārds</label>
-                        <input
-                            id="username"
-                            type="text"
-                            value={username}
-                            onChange={(event) => setUsername(event.target.value)}
-                        />
 
-                        {errors.username && (
-                            <p className="form-error">{errors.username}</p>
-                        )}
-                    </div>
 
                     <div className="input-group">
                         <label htmlFor="email">E-pasts</label>

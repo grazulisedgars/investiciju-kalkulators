@@ -247,7 +247,7 @@ function PropertyRent({ property }) {
                                             €{formatAmount(rent.amount)}
                                         </td>
 
-                                        <td className="expense-notes">
+                                        <td className="expense-notes" data-label="Piezīmes" data-empty={!rent.notes || undefined}>
                                             {rent.notes || "—"}
                                         </td>
 

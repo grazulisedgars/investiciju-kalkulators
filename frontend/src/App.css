@@ -2276,4 +2276,8 @@
   .preview-kpis {
     grid-template-columns: 1fr 1fr;
   }
-}
+}/* Keep authenticated pages at least viewport-height without fixing the footer. */
+.app-dashboard { display:flex; flex-direction:column; min-height:100vh; min-height:100dvh; gap:16px; }
+.app-dashboard > .my-profile-shell { flex:1 0 auto; }
+.app-dashboard > .dashboard-shell { flex:1 0 auto; min-height:0; }
+.app-dashboard > .account-footer { flex-shrink:0; margin-top:auto; }

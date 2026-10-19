@@ -11,6 +11,7 @@ import EmailVerification from "./components/EmailVerification";
 import Registration from "./components/Registration";
 import MyProfile from "./components/MyProfile";
 import Plans from "./components/Plans";
+import TestPlanSwitch from "./components/TestPlanSwitch";
 import Dashboard from "./components/Dashboard";
 import Help from "./components/Help";
 import {helpFaq,helpSteps} from "./components/helpContent";
@@ -40,7 +41,11 @@ function App() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [dashboardEntry, setDashboardEntry] = useState(null);
   const [showHelp,setShowHelp]=useState(false);
+  const [planReturnProperty,setPlanReturnProperty]=useState(null);
+  const [planReturnProfile,setPlanReturnProfile]=useState(null);
+  const [propertyInitialTab,setPropertyInitialTab]=useState("analysis");
   const [showPlans,setShowPlans]=useState(false);
   const [showProfile,setShowProfile] = useState(false);
   const [profileSection,setProfileSection] = useState("profile");
@@ -266,6 +271,7 @@ function App() {
   }
 
   function goToDashboard(){
+    setPlanReturnProfile(null);setPlanReturnProperty(null);setPropertyInitialTab("analysis");
     setShowPlans(false);setShowHelp(false);setShowProfile(false);
     setSelectedProperty(null);setShowDashboard(true);
     setShowLogin(false);setShowRegistration(false);setFinancing(null);setPropertyFlow(null);
@@ -282,7 +288,7 @@ function App() {
   }
   if(verificationToken || (currentUser && currentUser.email_verified===false && !showProfile))return <EmailVerification token={verificationToken} user={currentUser} onContinue={finishVerification} onProfile={()=>{setShowProfile(true);setShowDashboard(true);}} onLogout={async()=>{const response=await fetch('http://localhost:8000/logout',{method:'POST',credentials:'include'});if(response.ok){setCurrentUser(null);setShowDashboard(false);setShowLogin(true);}}}/>;
 
-  if(showPlans && currentUser)return <Plans user={currentUser} onBack={goToDashboard}/>;
+  if(showPlans && currentUser)return <Plans user={currentUser} backLabel={planReturnProfile?"Atpakaļ uz manu profilu":planReturnProperty?(planReturnProperty.tab==="advanced"?"Atpakaļ uz padziļināto analīzi":"Atpakaļ uz dienasgrāmatu"):"Atpakaļ uz īpašumiem"} onBack={()=>{if(planReturnProfile){setProfileSection(planReturnProfile);setPlanReturnProfile(null);setShowPlans(false);setShowProfile(true);window.scrollTo({top:0});}else if(planReturnProperty && selectedProperty?.property_id===planReturnProperty.propertyId){setPropertyInitialTab(planReturnProperty.tab);setPlanReturnProperty(null);setShowPlans(false);window.scrollTo({top:0});}else goToDashboard();}}/>;
 
   if(showHelp && currentUser)return <Help onBack={goToDashboard} onPlans={()=>{setShowPlans(true);window.scrollTo({top:0});}}/>;
 
@@ -291,6 +297,7 @@ function App() {
       className={`app ${showDashboard || selectedProperty ? "app-dashboard" : ""}`}
     >
 
+      {currentUser && <TestPlanSwitch user={currentUser} onUserUpdated={setCurrentUser}/>}
       {/* Header */}
 
       {financing === null &&
@@ -666,6 +673,8 @@ function App() {
 
       {showDashboard && !showProfile && (
         <Dashboard
+          initialAction={dashboardEntry}
+          onActionConsumed={() => setDashboardEntry(null)}
           user={currentUser}
           onOpenPlans={()=>{setShowPlans(true);window.scrollTo({top:0});}}
           onOpenProfile={()=>{setProfileSection("profile");setShowProfile(true);setSelectedProperty(null);window.scrollTo({top:0});}}
@@ -700,15 +709,23 @@ function App() {
           }
           }
           onOpenProperty={(property) => {
+            setPropertyInitialTab("analysis");
             setSelectedProperty(property);
             setShowDashboard(false);
           }}
         />
       )}
 
-      {showProfile && currentUser && <MyProfile onOpenPlans={()=>{setProfileSection("subscription");setShowPlans(true);window.scrollTo({top:0});}} onDeleted={()=>{setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);setShowLogin(false);setShowRegistration(false);setVerificationToken(null);setFinancing(null);setPropertyFlow(null);resetCalculator();window.history.replaceState({},"",window.location.pathname);window.scrollTo({top:0});}} key={profileSection} initialSection={profileSection} user={currentUser} onUserUpdated={setCurrentUser} onBack={goToDashboard} onLogout={async()=>{const response=await fetch("http://localhost:8000/logout",{method:"POST",credentials:"include"});if(response.ok){setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);}}}/>}
+      {showProfile && currentUser && <MyProfile onOpenPlans={section=>{setPlanReturnProfile(section);setPlanReturnProperty(null);setProfileSection(section);setShowPlans(true);window.scrollTo({top:0});}} onDeleted={()=>{setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);setShowLogin(false);setShowRegistration(false);setVerificationToken(null);setFinancing(null);setPropertyFlow(null);resetCalculator();window.history.replaceState({},"",window.location.pathname);window.scrollTo({top:0});}} key={profileSection} initialSection={profileSection} user={currentUser} onUserUpdated={setCurrentUser} onBack={goToDashboard} onLogout={async()=>{const response=await fetch("http://localhost:8000/logout",{method:"POST",credentials:"include"});if(response.ok){setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);}}}/>}
       {selectedProperty && !showDashboard && (
-        <PropertyDetail
+        <PropertyDetail onAddProperty={financingType => {
+          resetCalculator(); setPropertyFlow('dashboard'); setFinancing(financingType);
+          setSelectedProperty(null); setShowDashboard(false); setShowRegistration(false); setShowLogin(false);
+          window.scrollTo({top:0});
+        }} onMobileNavigate={destination => {
+          goToDashboard();
+          setDashboardEntry(destination === 'home' ? null : destination);
+        }} initialTab={propertyInitialTab} user={currentUser} onOpenPlans={feature=>{setPlanReturnProfile(null);setPlanReturnProperty(['diary','advanced'].includes(feature)?{propertyId:selectedProperty.property_id,tab:feature}:null);setShowPlans(true);window.scrollTo({top:0});}}
           property={selectedProperty}
           onPropertyUpdated={(updatedProperty) => {
             setSelectedProperty(updatedProperty);

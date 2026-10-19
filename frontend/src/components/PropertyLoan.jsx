@@ -295,7 +295,7 @@ function PropertyLoan({ property }) {
                                                         : "Cits"}
                                         </td>
 
-                                        <td className="expense-notes">
+                                        <td className="expense-notes" data-label="Piezīmes" data-empty={!loan.notes || undefined}>
                                             {loan.notes || "—"}
                                         </td>
 
@@ -337,6 +337,34 @@ function PropertyLoan({ property }) {
                                 ))}
                             </tbody>
                         </table>
+                        <div className="property-loan-summary-breakdown loan-summary-mobile-end">
+                            <div className="property-loan-summary-item">
+                                <span>Pamatsummas atmaksa</span>
+                                <strong>
+                                    €{totalPrincipal.toFixed(2)}
+                                </strong>
+                            </div>
+
+                            <div className="property-loan-summary-item">
+                                <span>Samaksātie procenti</span>
+                                <strong>
+                                    €{totalInterest.toFixed(2)}
+                                </strong>
+                            </div>
+
+                            <div className="property-loan-summary-item">
+                                <span>Apdrošināšana</span>
+                                <strong>
+                                    €{totalInsurance.toFixed(2)}
+                                </strong>
+                            </div>
+                            <div className="property-loan-summary-item">
+                                <span>Citi maksājumi</span>
+                                <strong>
+                                    €{totalOther.toFixed(2)}
+                                </strong>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="property-loan-summary">

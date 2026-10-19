@@ -230,3 +230,23 @@
         flex-wrap: wrap;
     }
 }
+@media(max-width:600px) {
+ .edit-property-actions { display:flex; flex-direction:row; gap:12px; align-items:stretch; }
+ .edit-property-actions button { min-height:46px; padding:11px 16px; border-radius:8px; font-family:inherit; font-size:14px; line-height:20px; font-weight:500; margin:0; }
+ .edit-property-actions button:first-child { flex:1; }
+ .edit-property-actions button:last-child { flex:1.5; }
+}
+
+@media(max-width:600px) {
+ .edit-property-modal { width:calc(100% - 32px); padding:20px; box-sizing:border-box; }
+ .edit-property-actions { flex-wrap:nowrap; }
+ .edit-property-actions button { height:46px; min-height:46px; white-space:nowrap; padding-inline:12px; }
+ .edit-property-actions button:first-child { flex:0 0 auto; min-width:72px; }
+ .edit-property-actions button:last-child { flex:1; min-width:0; }
+}
+
+/* Match property actions and confirmation buttons at every viewport. */
+.edit-property-actions button {
+ font-family:inherit; font-size:14px; font-weight:500;
+}
+@media(max-width:600px) { .edit-property-actions button { padding-inline:12px; } }

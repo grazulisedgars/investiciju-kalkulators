@@ -1,3 +1,4 @@
+import { propertyGrossYield, propertyMonthlyRent } from "./propertyYield";
 import { useEffect, useRef, useState } from "react";
 import {
     ImagePlus,
@@ -5,6 +6,14 @@ import {
     Pencil,
     Trash2,
     House,
+    Building2,
+    CirclePlus,
+    CircleHelp,
+    ChevronRight,
+    Wallet,
+    Landmark,
+    Crown,
+    X,
 } from "lucide-react";
 import propfolioLogo from "../assets/icons/propfolio-logo.svg";
 import "./Dashboard.css"
@@ -23,8 +32,12 @@ function Dashboard({
     onOpenProperty,
     onOpenProfile,
     onOpenPlans,
+    initialAction,
+    onActionConsumed,
 }) {
+    const isPro=user?.plan==="pro";
     const [properties, setProperties] = useState([]);
+    const [propertiesLoaded, setPropertiesLoaded] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [openPropertyMenu, setOpenPropertyMenu] = useState(null);
 
@@ -83,7 +96,80 @@ function Dashboard({
 
     const [propertyToDelete, setPropertyToDelete] = useState(null);
     const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
+    const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 600px)').matches);
+    const [showLimitDialog, setShowLimitDialog] = useState(false);
+    const limitDialogRef = useRef(null);
+    const limitReached = !isPro && properties.length >= 3;
+    useEffect(() => {
+        const media = window.matchMedia('(max-width: 600px)');
+        const update = () => { setIsMobile(media.matches); if (!media.matches) setShowLimitDialog(false); };
+        media.addEventListener('change', update);
+        return () => media.removeEventListener('change', update);
+    }, []);
+    useEffect(() => {
+        if (!showLimitDialog) return;
+        const dialog = limitDialogRef.current;
+        const overflow = document.body.style.overflow;
+        dialog.showModal();
+        document.body.style.overflow = 'hidden';
+        return () => { dialog.close(); document.body.style.overflow = overflow; };
+    }, [showLimitDialog]);
+    function handleAddProperty() {
+        if (limitReached) {
+            if (isMobile) setShowLimitDialog(true);
+            return;
+        }
+        setShowAddPropertyModal(true);
+    }
+
+    useEffect(() => {
+        if (!showAddPropertyModal) return;
+        const previousFocus = document.activeElement;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        const modal = document.querySelector('.add-property-modal');
+        const controls = [...modal.querySelectorAll('button:not(:disabled)')];
+        controls[0]?.focus();
+        function onKey(event) {
+            if (event.key === 'Escape') setShowAddPropertyModal(false);
+            if (event.key !== 'Tab') return;
+            const first = controls[0], last = controls[controls.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+        }
+        document.addEventListener('keydown', onKey);
+        return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', onKey); previousFocus?.focus(); };
+    }, [showAddPropertyModal]);
     const [showFaq, setShowFaq] = useState(false);
+    const [mobileSection, setMobileSection] = useState('home');
+    useEffect(() => {
+        let frame = null;
+        function updateSection() {
+            frame = null;
+            const marker = Math.min(window.innerHeight * .3, 180);
+            const propertiesHeading = document.getElementById('dashboard-properties');
+            const faq = document.getElementById('dashboard-faq');
+            const next = faq && faq.getBoundingClientRect().top <= marker ? 'faq'
+                : propertiesHeading && propertiesHeading.getBoundingClientRect().top <= marker ? 'properties' : 'home';
+            setMobileSection(next);
+        }
+        function scheduleUpdate() {
+            if (frame === null) frame = requestAnimationFrame(updateSection);
+        }
+        const observer = new ResizeObserver(scheduleUpdate);
+        const page = document.querySelector('.dashboard-page');
+        if (page) observer.observe(page);
+        window.addEventListener('scroll', scheduleUpdate, { passive: true });
+        window.addEventListener('resize', scheduleUpdate);
+        updateSection();
+        return () => {
+            window.removeEventListener('scroll', scheduleUpdate);
+            window.removeEventListener('resize', scheduleUpdate);
+            observer.disconnect();
+            if (frame !== null) cancelAnimationFrame(frame);
+        };
+    }, [showFaq, properties.length]);
+
     const [openFaq, setOpenFaq] = useState(null);
 
     useEffect(() => {
@@ -103,13 +189,28 @@ function Dashboard({
                 const data = await response.json();
 
                 setProperties(data);
+                setPropertiesLoaded(true);
             } catch (error) {
                 console.error(error);
             }
         }
 
         loadProperties();
-    }, []);
+    }, [user?.plan]);
+
+    useEffect(() => {
+        if (!initialAction || !propertiesLoaded) return;
+        if (initialAction === 'add') {
+            if (!isPro && properties.length >= 3) setShowLimitDialog(true);
+            else setShowAddPropertyModal(true);
+        } else if (initialAction === 'faq') {
+            setShowFaq(true);
+            requestAnimationFrame(() => document.getElementById('dashboard-faq')?.scrollIntoView({block:'start'}));
+        } else if (initialAction === 'properties') {
+            requestAnimationFrame(() => document.getElementById('dashboard-properties')?.scrollIntoView({block:'start'}));
+        }
+        onActionConsumed?.();
+    }, [initialAction, propertiesLoaded, properties.length, isPro, onActionConsumed]);
 
     async function handleImageUpload(propertyId, file) {
         if (!file) {
@@ -293,41 +394,11 @@ function Dashboard({
         0
     );
 
-    const propertiesWithRentalData = properties.filter(
-        (property) =>
-            property.monthly_rent !== null &&
-            property.monthly_rent !== undefined &&
-            property.occupancy !== null &&
-            property.occupancy !== undefined
-    );
+    const monthlyRentValues = properties.map(property => propertyMonthlyRent(property, isPro)).filter(value => value !== null);
+    const totalMonthlyRent = monthlyRentValues.reduce((sum, value) => sum + value, 0);
 
-    const totalMonthlyRent = propertiesWithRentalData.reduce(
-        (total, property) =>
-            total + Number(property.monthly_rent),
-        0
-    );
-
-    const averageGrossYield =
-        propertiesWithRentalData.length > 0
-            ? propertiesWithRentalData.reduce((total, property) => {
-                const totalInvestment =
-                    Number(property.purchase_price || 0) +
-                    Number(property.area || 0) *
-                    Number(property.renovation_cost_per_m2 || 0);
-
-                const annualGrossRent =
-                    Number(property.monthly_rent) *
-                    12 *
-                    (Number(property.occupancy) / 100);
-
-                const grossYield =
-                    totalInvestment > 0
-                        ? (annualGrossRent / totalInvestment) * 100
-                        : 0;
-
-                return total + grossYield;
-            }, 0) / propertiesWithRentalData.length
-            : null;
+    const yieldValues = properties.map(property => propertyGrossYield(property, isPro)).filter(value => value !== null);
+    const averageGrossYield = yieldValues.length ? yieldValues.reduce((sum, value) => sum + value, 0) / yieldValues.length : null;
 
     const propertiesWithMarketValue = properties.filter(
         (property) =>
@@ -377,6 +448,7 @@ function Dashboard({
                             className="profile-toggle"
                             aria-label="Atvērt profila izvēlni"
                             onClick={() => {
+                                if(window.matchMedia('(max-width:600px)').matches){setShowProfileMenu(false);onOpenProfile();return;}
                                 setShowProfileMenu((previous) => !previous);
                                 setOpenPropertyMenu(null);
                             }}
@@ -385,6 +457,7 @@ function Dashboard({
                                 {user?.avatar_url ? <img className="dashboard-profile-photo" src={`http://localhost:8000${user.avatar_url}`} alt=""/> : <>{user?.first_name?.charAt(0).toUpperCase()}{user?.last_name?.charAt(0).toUpperCase()}</>}
                             </span>
 
+                            
                             {showProfileMenu && (
                                 <img
                                     src={chevronDown}
@@ -422,8 +495,14 @@ function Dashboard({
                 </div>
             </div>
 
+            <nav className="dashboard-mobile-nav" aria-label="Mobilā navigācija">
+                <button type="button" aria-current={mobileSection==='home'?'location':undefined} onClick={()=>window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}><House size={21}/><span>Sākums</span></button>
+                <button type="button" aria-current={mobileSection==='properties'?'location':undefined} onClick={()=>{document.getElementById('dashboard-properties')?.scrollIntoView({block:'start'});}}><Building2 size={21}/><span>Īpašumi</span></button>
+                <button type="button" disabled={limitReached && !isMobile} data-limit-reached={limitReached || undefined} onClick={handleAddProperty}><CirclePlus size={21}/><span>Pievienot</span></button>
+                <button type="button" aria-current={mobileSection==='faq'?'location':undefined} onClick={()=>{setShowFaq(true);requestAnimationFrame(()=>document.getElementById('dashboard-faq')?.scrollIntoView({block:'start'}));}}><CircleHelp size={21}/><span>FAQ</span></button>
+            </nav>
             <main className="dashboard-page">
-                <section className="dashboard-welcome">
+                <section className="dashboard-welcome" id="dashboard-home">
                     <div>
                         <h1>Sveiki, {user?.first_name}!</h1>
                         <p>
@@ -435,8 +514,9 @@ function Dashboard({
                         type="button"
                         className={`add-property-button ${showProfileMenu ? "add-property-button-shifted" : ""
                             }`}
-                        onClick={() => setShowAddPropertyModal(true)}
-                        disabled={properties.length >= 3}
+                        onClick={handleAddProperty}
+                        data-limit-reached={limitReached || undefined}
+                        disabled={limitReached && !isMobile}
                     >
                         <span>+</span>
                         Pievienot īpašumu
@@ -444,13 +524,14 @@ function Dashboard({
                 </section>
 
                 <section className="properties-section">
-                    <div className="properties-section-header">
-                        <h2>Tavi īpašumi ({properties.length})</h2>
+                    <div className={`properties-section-header ${isPro?"properties-section-header-pro":""}`}>
+                        <div className="properties-section-title" id="dashboard-properties"><h2>Tavi īpašumi ({properties.length})</h2>{isPro && <span className="property-plan-badge">PRO</span>}</div>
 
-                        <div className="property-limit">
+
+                        {!isPro && <div className="property-limit">
                             <div className="property-limit-usage">
                                 <span>
-                                    Izmantoti {properties.length} no 3 īpašumiem
+                                    {properties.length>3?`Saglabāti ${properties.length} īpašumi · Basic limits: 3`:`Izmantoti ${properties.length} no 3 īpašumiem`}
                                 </span>
 
                                 <div className="property-limit-bar">
@@ -467,12 +548,12 @@ function Dashboard({
                             </div>
 
                             <span className="property-limit-pro">
-                                Ja vēlies pievienot vairāk,{" "}
+                                {properties.length>3?'Vēlies pievienot vairāk? ':'Ja vēlies pievienot vairāk, '}
                                 <a href="#plans" onClick={event=>{event.preventDefault();onOpenPlans();}}>
-                                    apskati Pro plānu →
+                                    {properties.length>3?'Atjauno PRO →':'apskati Pro plānu →'}
                                 </a>
                             </span>
-                        </div>
+                        </div>}
                     </div>
 
                     {properties.length === 0 ? (
@@ -485,30 +566,7 @@ function Dashboard({
                     ) : (
                         <div className="property-list">
                             {properties.map((property) => {
-                                const renovationCosts =
-                                    Number(property.area || 0) *
-                                    Number(property.renovation_cost_per_m2 || 0);
-
-                                const totalInvestment =
-                                    Number(property.purchase_price || 0) +
-                                    renovationCosts;
-
-                                const hasRentalData =
-                                    property.monthly_rent !== null &&
-                                    property.monthly_rent !== undefined &&
-                                    property.occupancy !== null &&
-                                    property.occupancy !== undefined;
-
-                                const annualGrossRent = hasRentalData
-                                    ? Number(property.monthly_rent) *
-                                    12 *
-                                    (Number(property.occupancy) / 100)
-                                    : null;
-
-                                const grossYield =
-                                    hasRentalData && totalInvestment > 0
-                                        ? (annualGrossRent / totalInvestment) * 100
-                                        : null;
+                                const grossYield = propertyGrossYield(property, isPro);
 
                                 return (
                                     <article
@@ -690,7 +748,8 @@ function Dashboard({
                                                     onClick={() => onOpenProperty(property)}
                                                     aria-label={`Atvērt īpašumu ${property.property_name}`}
                                                 >
-                                                    →
+                                                    <span className="property-card-arrow-desktop">→</span>
+                                                    <ChevronRight className="property-card-arrow-mobile" size={22} strokeWidth={1.8}/>
                                                 </button>
                                             </div>
                                         </div>
@@ -781,22 +840,22 @@ function Dashboard({
                                     <span>Kopējā mēneša īre</span>
 
                                     <strong>
-                                        {propertiesWithRentalData.length > 0
+                                        {monthlyRentValues.length > 0
                                             ? `€${totalMonthlyRent.toLocaleString("lv-LV")}`
                                             : "—"}
                                     </strong>
 
-                                    {propertiesWithRentalData.length > 0 &&
-                                        propertiesWithRentalData.length < properties.length && (
+                                    {monthlyRentValues.length > 0 &&
+                                        monthlyRentValues.length < properties.length && (
                                             <small className="portfolio-summary-note">
                                                 Īres dati norādīti{" "}
-                                                {propertiesWithRentalData.length} no{" "}
+                                                {monthlyRentValues.length} no{" "}
                                                 {properties.length} īpašumiem
                                             </small>
                                         )}
 
                                     {properties.length > 0 &&
-                                        propertiesWithRentalData.length === 0 && (
+                                        monthlyRentValues.length === 0 && (
                                             <small className="portfolio-summary-note">
                                                 Pievieno īres datus īpašuma datos
                                             </small>
@@ -821,17 +880,17 @@ function Dashboard({
                                             : `${averageGrossYield.toFixed(1)}%`}
                                     </strong>
 
-                                    {propertiesWithRentalData.length > 0 &&
-                                        propertiesWithRentalData.length < properties.length && (
+                                    {yieldValues.length > 0 &&
+                                        yieldValues.length < properties.length && (
                                             <small className="portfolio-summary-note">
                                                 Aprēķināts {" "}
-                                                {propertiesWithRentalData.length} no{" "}
+                                                {yieldValues.length} no{" "}
                                                 {properties.length} īpašumiem
                                             </small>
                                         )}
 
                                     {properties.length > 0 &&
-                                        propertiesWithRentalData.length === 0 && (
+                                        yieldValues.length === 0 && (
                                             <small className="portfolio-summary-note">
                                                 Pievieno īres datus īpašuma datos
                                             </small>
@@ -1365,8 +1424,8 @@ function Dashboard({
             {
                 showAddPropertyModal && (
                     <div className="add-property-overlay">
-                        <div className="add-property-modal">
-                            <h2>Pievienot īpašumu</h2>
+                        <div className="add-property-modal" role="dialog" aria-modal="true" aria-labelledby="add-property-title">
+                            <h2 id="add-property-title">Pievienot īpašumu</h2>
 
                             <p>
                                 Kā plāno finansēt šo investīciju?
@@ -1381,10 +1440,10 @@ function Dashboard({
                                         onAddProperty("cash");
                                     }}
                                 >
-                                    <strong>Par saviem līdzekļiem</strong>
+                                    <span className="add-property-option-icon"><Wallet size={24}/></span><div className="add-property-option-copy"><strong>Par saviem līdzekļiem</strong>
                                     <span>
                                         Īpašums tiek iegādāts bez hipotekārā kredīta.
-                                    </span>
+                                    </span></div>
                                 </button>
 
                                 <button
@@ -1395,23 +1454,36 @@ function Dashboard({
                                         onAddProperty("mortgage");
                                     }}
                                 >
-                                    <strong>Ar hipotēku</strong>
+                                    <span className="add-property-option-icon"><Landmark size={24}/></span><div className="add-property-option-copy"><strong>Ar hipotēku</strong>
                                     <span>
                                         Daļa no pirkuma tiek finansēta ar bankas kredītu.
-                                    </span>
+                                    </span></div>
                                 </button>
                             </div>
                             <button
                                 type="button"
                                 className="add-property-cancel-button"
+                                aria-label="Aizvērt pievienošanas izvēli"
                                 onClick={() => setShowAddPropertyModal(false)}
                             >
-                                Atcelt
+                                <X className="add-property-close-icon" size={20}/><span className="add-property-cancel-label">Atcelt</span>
                             </button>
                         </div>
                     </div>
                 )
             }
+            {showLimitDialog && (
+                <dialog ref={limitDialogRef} className="mobile-property-limit-dialog" aria-labelledby="property-limit-title"
+                    onCancel={() => setShowLimitDialog(false)}
+                    onClick={event => { if (event.target === event.currentTarget) setShowLimitDialog(false); }}>
+                    <div className="property-limit-crown"><Crown size={28} aria-hidden="true"/></div>
+                    <h2 id="property-limit-title">Tu izmanto bezmaksas plānu</h2>
+                    <p>Esi saglabājis <strong>{properties.length} no 3 īpašumiem.</strong></p>
+                    <p>Lai pievienotu vairāk īpašumu,<br/>apskati PRO plānu.</p>
+                    <button type="button" className="property-limit-upgrade" onClick={() => { setShowLimitDialog(false); onOpenPlans(); }}>Apskatīt PRO plānu</button>
+                    <button type="button" className="property-limit-later" onClick={() => setShowLimitDialog(false)}>Vēlāk</button>
+                </dialog>
+            )}
         </div >
     );
 }
