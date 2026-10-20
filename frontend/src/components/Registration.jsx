@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./Registration.css";
 import AuthField from "./AuthField";
 import "./AuthMobile.css";
 import {passwordRules} from "./passwordRules";
 
 function Registration({ onBack, onRegistered, onLogin }) {
+    const [busy,setBusy]=useState(false);
+    const submitting=useRef(false);
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -58,12 +60,14 @@ function Registration({ onBack, onRegistered, onLogin }) {
     }
 
     async function handleSubmit() {
+        if(submitting.current)return;
         const isValid = validateForm();
 
         if (!isValid) {
             return;
         }
 
+        submitting.current=true;setBusy(true);
         try {
             const response = await fetch(
                 "http://localhost:8000/register",
@@ -99,7 +103,7 @@ function Registration({ onBack, onRegistered, onLogin }) {
             setErrors({
                 general: "Neizdevās savienoties ar serveri.",
             });
-        }
+        } finally {submitting.current=false;setBusy(false);}
     }
 
     return (
@@ -203,7 +207,7 @@ function Registration({ onBack, onRegistered, onLogin }) {
 
                     <button
                         type="submit"
-                        className="registration-submit"
+                        className="registration-submit" disabled={busy}
                     >
                         Izveidot profilu
                     </button>

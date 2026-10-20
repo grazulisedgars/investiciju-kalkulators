@@ -14,6 +14,7 @@ function RentModal({
     onClose,
     onSaved,
 }) {
+    const saveInFlight=useRef(false);
     const rentDatePickerRef = useRef(null);
 
     // Eso?a ieraksta v?rt?bas iel?d?jam, atverot redi???anas formu.
@@ -93,6 +94,7 @@ function RentModal({
 
     // Saglabājam jaunu ierakstu ar POST vai esoša ieraksta izmaiņas ar PATCH.
     async function handleRentSave() {
+        if(saveInFlight.current)return;
         const amount = Number(rentForm.amount);
 
         if (
@@ -127,6 +129,7 @@ function RentModal({
         }
 
         try {
+            saveInFlight.current=true;
             setIsSavingRent(true);
             setRentError("");
 
@@ -176,6 +179,7 @@ function RentModal({
                 "Neizdevās saglabāt īres maksājumu."
             );
         } finally {
+            saveInFlight.current=false;
             setIsSavingRent(false);
         }
     }

@@ -1,5 +1,6 @@
+import {requestJson} from "./requestJson";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
     MoreVertical,
@@ -14,6 +15,8 @@ import "./PropertyExpenses.css";
 function PropertyUtilities({ property }) {
     const [utilities, setUtilities] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError,setLoadError]=useState("");
+    const [deleteError,setDeleteError]=useState("");
 
     const [showUtilityModal, setShowUtilityModal] =
         useState(false);
@@ -81,48 +84,22 @@ function PropertyUtilities({ property }) {
         };
     }, [utilityMenu]);
 
-    async function fetchUtilities() {
+    const fetchUtilities = useCallback(async (signal) => {
         try {
-            setIsLoading(true);
-
-            const response = await fetch(
-                `http://localhost:8000/properties/${property.property_id}/diary`,
-                {
-                    credentials: "include",
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    "Neizdevās ielādēt komunālos maksājumus."
-                );
-            }
-
-            const data = await response.json();
-
-            const utilityEntries = data.filter(
-                (entry) => entry.entry_type === "utility"
-            );
-
-            setUtilities(utilityEntries);
-        } catch (error) {
-            console.error("Utility GET error:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        if (property?.property_id) {
-            fetchUtilities();
-        }
-    }, [property?.property_id]);
+            const data=await requestJson(`http://localhost:8000/properties/${property.property_id}/diary`,{signal});
+            if(!signal?.aborted) {setUtilities(data.filter(entry=>entry.entry_type==="utility"));setLoadError("");}
+        } catch(error) {if(!signal?.aborted)setLoadError(error.message);}
+        finally {if(!signal?.aborted)setIsLoading(false);}
+    },[property.property_id]);
+    useEffect(()=>{const controller=new AbortController();Promise.resolve().then(()=>{if(!controller.signal.aborted)return fetchUtilities(controller.signal);});return()=>controller.abort();},[fetchUtilities]);
 
     async function handleDeleteUtility() {
         if (!utilityToDelete) {
             return;
         }
 
+        if(isDeletingUtility)return;
+        setDeleteError("");
         try {
             setIsDeletingUtility(true);
 
@@ -146,7 +123,7 @@ function PropertyUtilities({ property }) {
             setUtilityToDelete(null);
             await fetchUtilities();
         } catch (error) {
-            console.error("Utility DELETE error:", error);
+            setDeleteError(error.message);
         } finally {
             setIsDeletingUtility(false);
         }
@@ -193,7 +170,7 @@ function PropertyUtilities({ property }) {
                 </button>
             </div>
 
-            {isLoading ? (
+            {loadError ? <div className="app-status app-status-error" role="alert">{loadError} <button type="button" onClick={()=>{setIsLoading(true);fetchUtilities();}}>Mēģināt vēlreiz</button></div> : isLoading ? (
                 <div className="property-expenses-empty">
                     Ielādē komunālos maksājumus...
                 </div>
@@ -381,6 +358,7 @@ function PropertyUtilities({ property }) {
                             ? Šo darbību nevarēs atsaukt.
                         </p>
 
+                        {deleteError && <p role="alert" className="app-status app-status-error">{deleteError}</p>}
                         <div className="diary-delete-actions">
                             <button
                                 type="button"

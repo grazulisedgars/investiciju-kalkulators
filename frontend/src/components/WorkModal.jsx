@@ -14,6 +14,7 @@ function WorkModal({
     onClose,
     onSaved,
 }) {
+    const saveInFlight=useRef(false);
     const workDatePickerRef = useRef(null);
 
     // Eso?a ieraksta v?rt?bas iel?d?jam, atverot redi???anas formu.
@@ -93,6 +94,7 @@ function WorkModal({
 
     // Saglabājam jaunu ierakstu ar POST vai esoša ieraksta izmaiņas ar PATCH.
     async function handleWorkSave() {
+        if(saveInFlight.current)return;
         const hours = Number(workForm.hours);
 
         if (
@@ -127,6 +129,7 @@ function WorkModal({
         }
 
         try {
+            saveInFlight.current=true;
             setIsSavingWork(true);
             setWorkError("");
 
@@ -176,6 +179,7 @@ function WorkModal({
                 "Neizdevās saglabāt darba ierakstu."
             );
         } finally {
+            saveInFlight.current=false;
             setIsSavingWork(false);
         }
     }

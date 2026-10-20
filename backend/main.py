@@ -1,6 +1,6 @@
 from uuid import uuid4
+from auth_limits import limit_auth
 import os
-import shutil
 from fastapi import (
     FastAPI,
     Depends,
@@ -11,7 +11,8 @@ from fastapi import (
     File,
     Query,
 )
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from image_storage import property_path, save_property_image, remove_image
 from fastapi.middleware.cors import CORSMiddleware
 from calculations import (
     calculate_price_per_m2,
@@ -50,6 +51,7 @@ from security import (
     decode_access_token,
 )
 from email_verification import router as email_router,send_verification
+from password_recovery import router as recovery_router
 from account_profile import router as profile_router
 from gallery import router as gallery_router, photo_path
 from advanced_analysis import router as analysis_router, serialize as serialize_analysis
@@ -64,16 +66,7 @@ app.include_router(gallery_router)
 app.include_router(analysis_router)
 app.include_router(profile_router)
 app.include_router(email_router)
-
-app.mount(
-    "/uploads",
-    StaticFiles(directory="uploads"),
-    name="uploads",
-)
-
-UPLOAD_DIR = "uploads/properties"
-
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.include_router(recovery_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -137,7 +130,7 @@ def free_analysis(
 # --------------------------------------------------------------------------
 
 
-@app.post("/register")
+@app.post("/register", dependencies=[Depends(limit_auth)])
 def register_user(
     user_data: UserRegister,
     response: Response,
@@ -210,7 +203,7 @@ def register_user(
 # --------------------------------------------------------------------------
 
 
-@app.post("/login")
+@app.post("/login", dependencies=[Depends(limit_auth)])
 def login_user(
     login_data: UserLogin,
     response: Response,
@@ -237,7 +230,7 @@ def login_user(
             detail="Nepareizs e-pasts un/vai parole."
         )
 
-    access_token = create_access_token(user.id)
+    access_token = create_access_token(user.id, user.session_version)
 
     response.set_cookie(
         key="access_token",
@@ -375,6 +368,10 @@ def create_property(
 
     # Serialize property creation per account to enforce Basic limits concurrently.
     user=db.query(User).filter(User.id==user.id).with_for_update().populate_existing().one()
+    if property_data.client_request_id:
+        existing = db.query(Property).filter(Property.user_id == user.id, Property.client_request_id == property_data.client_request_id).first()
+        if existing is not None:
+            return {"property_id": existing.property_id, "message": "Īpašums jau ir saglabāts."}
     property_count = (
         db.query(Property)
         .filter(Property.user_id == user.id)
@@ -389,8 +386,9 @@ def create_property(
 
     new_property = Property(
         user_id=user.id,
+        client_request_id=property_data.client_request_id,
         property_name=f"Īpašums #{property_count + 1}",
-        image_url=property_data.image_url,
+        image_url=None,
         financing_type=property_data.financing_type,
         status=property_data.status,
         purchase_price=property_data.purchase_price,
@@ -529,6 +527,7 @@ def upload_property_image(
             Property.property_id == property_id,
             Property.user_id == int(user_id),
         )
+        .with_for_update()
         .first()
     )
 
@@ -538,26 +537,17 @@ def upload_property_image(
             detail="Īpašums nav atrasts."
         )
 
-    if property.image_url:
-        old_image_path = property.image_url.lstrip("/")
-
-        if os.path.exists(old_image_path):
-            os.remove(old_image_path)
-
-    file_path = os.path.join(
-        UPLOAD_DIR,
-        f"property_{property_id}_{image.filename}"
-    )
-
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(image.file, buffer)
-
-    image_url = f"/uploads/properties/property_{property.property_id}_{image.filename}"
-
+    old_path = property_path(property.image_url, property_id)
+    new_path, image_url = save_property_image(image, property_id)
     property.image_url = image_url
-
-    db.commit()
-    db.refresh(property)
+    try:
+        db.commit()
+        db.refresh(property)
+    except Exception:
+        db.rollback()
+        remove_image(new_path)
+        raise HTTPException(500, "Neizdevās saglabāt attēlu. Iepriekšējais foto saglabāts.")
+    remove_image(old_path)
 
     return {
         "message": "Attēls veiksmīgi saglabāts.",
@@ -665,6 +655,7 @@ def delete_property(
             Property.property_id == property_id,
             Property.user_id == int(user_id),
         )
+        .with_for_update()
         .first()
     )
 
@@ -674,19 +665,16 @@ def delete_property(
             detail="Īpašums nav atrasts."
         )
 
-    if property.image_url:
-        image_path = property.image_url.lstrip("/")
-
-        if os.path.exists(image_path):
-            os.remove(image_path)
+    image_path = property_path(property.image_url, property_id)
 
     # Īpašuma dzēšanas gadījumā savācam arī tā galerijas failus.
     gallery_files = [photo_path(photo.storage_name) for photo in
                      db.query(GalleryPhoto).filter(GalleryPhoto.property_id == property_id).all()]
     db.delete(property)
     db.commit()
+    remove_image(image_path)
     for path in gallery_files:
-        path.unlink(missing_ok=True)
+        remove_image(path)
 
     return {
         "message": "Īpašums veiksmīgi izdzēsts.",
@@ -723,6 +711,7 @@ def delete_property_image(
             Property.property_id == property_id,
             Property.user_id == int(user_id),
         )
+        .with_for_update()
         .first()
     )
 
@@ -732,16 +721,13 @@ def delete_property_image(
             detail="Īpašums nav atrasts."
         )
 
-    if property.image_url:
-        image_path = property.image_url.lstrip("/")
-
-        if os.path.exists(image_path):
-            os.remove(image_path)
+    image_path = property_path(property.image_url, property_id)
 
     property.image_url = None
 
     db.commit()
     db.refresh(property)
+    remove_image(image_path)
 
     return property
 # --------------------------------------------------------------------------
@@ -1952,3 +1938,29 @@ def update_rent_entry(
         "amount": rent_entry.amount,
     }
 
+
+
+@app.get("/uploads/properties/{filename}")
+def protected_property_image(filename: str, access_token: str | None = Cookie(default=None), db: Session = Depends(get_db)):
+    from entitlements import session_user
+    user = session_user(access_token, db)
+    row = db.query(Property).filter(Property.user_id == user.id, Property.image_url == "/uploads/properties/" + filename).first()
+    path = property_path(row.image_url, row.property_id) if row else None
+    if path is None or not path.is_file():
+        raise HTTPException(404, "Attēls nav atrasts.")
+    return FileResponse(path, headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
+
+
+@app.get("/uploads/gallery/{filename}")
+def protected_legacy_gallery_image(filename: str, access_token: str | None = Cookie(default=None), db: Session = Depends(get_db)):
+    from entitlements import session_user
+    user = session_user(access_token, db)
+    if not is_pro(user):
+        raise HTTPException(403, "Šī iespēja pieejama tikai ar PRO plānu.")
+    photo = db.query(GalleryPhoto).join(Property).filter(Property.user_id == user.id, GalleryPhoto.storage_name == filename).first()
+    if not photo:
+        raise HTTPException(404, "Attēls nav atrasts.")
+    path = photo_path(photo.storage_name)
+    if not path.is_file():
+        raise HTTPException(404, "Attēls nav atrasts.")
+    return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})

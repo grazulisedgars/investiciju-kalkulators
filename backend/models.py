@@ -1,5 +1,5 @@
 from datetime import date, datetime, timezone
-from sqlalchemy import DateTime, String, ForeignKey, Float, Date, Numeric, JSON, event, update
+from sqlalchemy import UniqueConstraint, DateTime, String, ForeignKey, Float, Date, Numeric, JSON, event, update
 from sqlalchemy.orm import Mapped, mapped_column, Session
 from database import Base
 from decimal import Decimal
@@ -41,6 +41,8 @@ class User(Base):
 
     avatar_filename: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
+    session_version: Mapped[int] = mapped_column(nullable=False, default=0, server_default="0")
+
     password_hash: Mapped[str] = mapped_column(
         String(255),
         nullable=False
@@ -55,6 +57,8 @@ class User(Base):
 
 class Property(Base):
     __tablename__ = "properties"
+    __table_args__ = (UniqueConstraint("user_id", "client_request_id", name="uq_property_client_request"),)
+    client_request_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
 
     property_id: Mapped[int] = mapped_column(
         primary_key=True

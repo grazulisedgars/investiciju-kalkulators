@@ -22,14 +22,16 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return password_hash.verify(password, hashed_password)
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: int, session_version: int = 0) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=JWT_EXPIRE_MINUTES
     )
 
     payload = {
         "sub": str(user_id),
-        "exp": expire
+        "exp": expire,
+        "purpose": "access",
+        "ver": session_version
     }
 
     token = jwt.encode(
@@ -49,10 +51,18 @@ def decode_access_token(token: str):
             algorithms=[JWT_ALGORITHM]
         )
 
+        if payload.get("purpose", "access") != "access":
+            return None
+        from database import SessionLocal
+        from models import User
+        with SessionLocal() as db:
+            user = db.get(User, int(payload["sub"]))
+            if user is None or payload.get("ver", 0) != user.session_version:
+                return None
         return payload
 
     except jwt.ExpiredSignatureError:
         return None
 
-    except jwt.InvalidTokenError:
+    except (jwt.InvalidTokenError, ValueError, TypeError, KeyError):
         return None

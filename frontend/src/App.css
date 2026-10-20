@@ -2649,3 +2649,6 @@
  .calculator-page--mobile-form :is(.calculation-result,.mortgage-result,.renovation-result,.summary-result) p { font-size:13px; }
  .calculator-page--mobile-form :is(.calculation-result,.mortgage-result,.renovation-result,.summary-result) strong { font-size:15px; }
 }
+
+.app-status{padding:12px 16px;border:1px solid #dce8e0;border-radius:9px;background:#edf6f1;color:#12573e;font:14px/1.5 Arial,sans-serif;margin:12px 0;}
+.app-status-error{background:#fff4f2;border-color:#edc9c2;color:#942f22;}

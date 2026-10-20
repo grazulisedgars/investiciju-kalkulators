@@ -17,7 +17,7 @@ from schemas import GalleryPhotoUpdate
 from security import decode_access_token
 
 router = APIRouter(prefix="/properties/{property_id}/gallery", tags=["Galerija"])
-GALLERY_DIR = Path(__file__).resolve().parent / "uploads" / "gallery"
+from image_storage import GALLERY_DIR, LEGACY_GALLERY_DIR, stored_path, remove_image
 MAX_FILE_SIZE = 10 * 1024 * 1024
 MAX_BATCH_SIZE = 50 * 1024 * 1024
 MAX_FILES = 20
@@ -51,11 +51,7 @@ def require_photo(property_id: int, photo_id: int, db: Session):
 
 
 def photo_path(storage_name: str):
-    # Datubāzē glabājam servera ģenerētu faila nosaukumu, nevis lietotāja ceļu.
-    path = (GALLERY_DIR / storage_name).resolve()
-    if path.parent != GALLERY_DIR.resolve():
-        raise HTTPException(404, "Foto fails nav atrasts.")
-    return path
+    return stored_path(storage_name, GALLERY_DIR, LEGACY_GALLERY_DIR)
 
 
 def serialize_photo(photo):
@@ -145,7 +141,7 @@ def get_gallery_image(property_id: int, photo_id: int,
     path = photo_path(photo.storage_name)
     if not path.is_file():
         raise HTTPException(404, "Foto fails nav atrasts.")
-    return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "private, max-age=3600"})
+    return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "private, no-store"})
 
 
 @router.patch("/{photo_id}")
@@ -172,5 +168,5 @@ def delete_gallery_photo(property_id: int, photo_id: int,
     path = photo_path(photo.storage_name)
     db.delete(photo)
     db.commit()
-    path.unlink(missing_ok=True)
+    remove_image(path)
     return {"message": "Foto izdzēsts.", "id": photo_id}

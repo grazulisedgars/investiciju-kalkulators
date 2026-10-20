@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import {requestJson} from "./requestJson";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
     MoreVertical,
@@ -12,6 +13,8 @@ import "./PropertyExpenses.css";
 function PropertyLoan({ property }) {
     const [loans, setLoans] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError,setLoadError]=useState("");
+    const [deleteError,setDeleteError]=useState("");
 
     const [showLoanModal, setShowLoanModal] =
         useState(false);
@@ -79,53 +82,22 @@ function PropertyLoan({ property }) {
         };
     }, [loanMenu]);
 
-    async function fetchLoans() {
+    const fetchLoans = useCallback(async (signal) => {
         try {
-            setIsLoading(true);
-
-            const response = await fetch(
-                `http://localhost:8000/properties/${property.property_id}/diary`,
-                {
-                    credentials: "include",
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    "Neizdevās ielādēt kredīta maksājumus."
-                );
-            }
-
-            const data = await response.json();
-
-            const loanEntries = data.filter(
-                (entry) => entry.entry_type === "loan"
-            );
-
-            setLoans(loanEntries);
-
-        } catch (error) {
-            console.error(
-                "Loan GET error:",
-                error
-            );
-
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        if (property?.property_id) {
-            fetchLoans();
-        }
-    }, [property?.property_id]);
+            const data=await requestJson(`http://localhost:8000/properties/${property.property_id}/diary`,{signal});
+            if(!signal?.aborted) {setLoans(data.filter(entry=>entry.entry_type==="loan"));setLoadError("");}
+        } catch(error) {if(!signal?.aborted)setLoadError(error.message);}
+        finally {if(!signal?.aborted)setIsLoading(false);}
+    },[property.property_id]);
+    useEffect(()=>{const controller=new AbortController();Promise.resolve().then(()=>{if(!controller.signal.aborted)return fetchLoans(controller.signal);});return()=>controller.abort();},[fetchLoans]);
 
     async function handleDeleteLoan() {
         if (!loanToDelete) {
             return;
         }
 
+        if(isDeletingLoan)return;
+        setDeleteError("");
         try {
             setIsDeletingLoan(true);
 
@@ -151,11 +123,7 @@ function PropertyLoan({ property }) {
             await fetchLoans();
 
         } catch (error) {
-            console.error(
-                "Loan DELETE error:",
-                error
-            );
-
+            setDeleteError(error.message);
         } finally {
             setIsDeletingLoan(false);
         }
@@ -247,7 +215,7 @@ function PropertyLoan({ property }) {
                 </button>
             </div>
 
-            {isLoading ? (
+            {loadError ? <div className="app-status app-status-error" role="alert">{loadError} <button type="button" onClick={()=>{setIsLoading(true);fetchLoans();}}>Mēģināt vēlreiz</button></div> : isLoading ? (
                 <div className="property-expenses-empty">
                     Ielādē kredīta maksājumus...
                 </div>
@@ -499,6 +467,7 @@ function PropertyLoan({ property }) {
                             ? Šo darbību nevarēs atsaukt.
                         </p>
 
+                        {deleteError && <p role="alert" className="app-status app-status-error">{deleteError}</p>}
                         <div className="diary-delete-actions">
                             <button
                                 type="button"

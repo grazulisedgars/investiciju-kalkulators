@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import {requestJson} from "./requestJson";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
     MoreVertical,
@@ -12,6 +13,8 @@ import "./PropertyExpenses.css";
 function PropertyExpenses({ property }) {
     const [expenses, setExpenses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError,setLoadError]=useState("");
+    const [deleteError,setDeleteError]=useState("");
     const [showExpenseModal, setShowExpenseModal] =
         useState(false);
 
@@ -78,52 +81,22 @@ function PropertyExpenses({ property }) {
         };
     }, [expenseMenu]);
 
-    async function fetchExpenses() {
+    const fetchExpenses = useCallback(async (signal) => {
         try {
-            setIsLoading(true);
-
-            const response = await fetch(
-                `http://localhost:8000/properties/${property.property_id}/diary`,
-                {
-                    credentials: "include",
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    "Neizdevās ielādēt izmaksas."
-                );
-            }
-
-            const data = await response.json();
-
-            const expenseEntries = data.filter(
-                (entry) => entry.entry_type === "expense"
-            );
-
-            setExpenses(expenseEntries);
-
-        } catch (error) {
-            console.error(
-                "Expense GET error:",
-                error
-            );
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        if (property?.property_id) {
-            fetchExpenses();
-        }
-    }, [property?.property_id]);
+            const data=await requestJson(`http://localhost:8000/properties/${property.property_id}/diary`,{signal});
+            if(!signal?.aborted) {setExpenses(data.filter(entry=>entry.entry_type==="expense"));setLoadError("");}
+        } catch(error) {if(!signal?.aborted)setLoadError(error.message);}
+        finally {if(!signal?.aborted)setIsLoading(false);}
+    },[property.property_id]);
+    useEffect(()=>{const controller=new AbortController();Promise.resolve().then(()=>{if(!controller.signal.aborted)return fetchExpenses(controller.signal);});return()=>controller.abort();},[fetchExpenses]);
 
     async function handleDeleteExpense() {
         if (!expenseToDelete) {
             return;
         }
 
+        if(isDeletingExpense)return;
+        setDeleteError("");
         try {
             setIsDeletingExpense(true);
 
@@ -149,10 +122,7 @@ function PropertyExpenses({ property }) {
             await fetchExpenses();
 
         } catch (error) {
-            console.error(
-                "Expense DELETE error:",
-                error
-            );
+            setDeleteError(error.message);
         } finally {
             setIsDeletingExpense(false);
         }
@@ -199,7 +169,7 @@ function PropertyExpenses({ property }) {
                 </button>
             </div>
 
-            {isLoading ? (
+            {loadError ? <div className="app-status app-status-error" role="alert">{loadError} <button type="button" onClick={()=>{setIsLoading(true);fetchExpenses();}}>Mēģināt vēlreiz</button></div> : isLoading ? (
                 <div className="property-expenses-empty">
                     Ielādē izmaksas...
                 </div>
@@ -391,6 +361,7 @@ function PropertyExpenses({ property }) {
                             ? Šo darbību nevarēs atsaukt.
                         </p>
 
+                        {deleteError && <p role="alert" className="app-status app-status-error">{deleteError}</p>}
                         <div className="diary-delete-actions">
                             <button
                                 type="button"

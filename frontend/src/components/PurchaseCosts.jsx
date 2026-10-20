@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./PurchaseCosts.css"
 
 function PurchaseCosts({ purchasePrice }) {
@@ -6,26 +6,9 @@ function PurchaseCosts({ purchasePrice }) {
     const [officeFee, setOfficeFee] = useState("");
     // Īpašuma vērtējums
     const [valuation, setValuation] = useState("");
-    const [purchaseCosts, setPurchaseCosts] = useState(null);
-
-    useEffect(() => {
-        if (!purchasePrice || Number(purchasePrice) <= 0) {
-            setPurchaseCosts(null);
-            return;
-        }
-
-        async function calculatePurchaseCosts() {
-            const response = await fetch(
-                `http://127.0.0.1:8000/calculate/purchase-costs?purchase_price=${purchasePrice}&office_fee=${officeFee || 0}&valuation=${valuation || 0}`
-            );
-
-            const data = await response.json();
-
-            setPurchaseCosts(data);
-        }
-
-        calculatePurchaseCosts();
-    }, [purchasePrice, officeFee, valuation]);
+    const price = Number(purchasePrice);
+    const notary = Math.max(price * 0.005, 140);
+    const purchaseCosts = price > 0 ? {notary, notary_vat:notary*0.21, state_fee:price*0.015, total_additional_costs:notary*1.21+price*0.015+Number(officeFee||0)+Number(valuation||0), total_purchase_cost:price+notary*1.21+price*0.015+Number(officeFee||0)+Number(valuation||0)} : null;
 
     return (
         <section className="purchase-costs">
@@ -50,21 +33,21 @@ function PurchaseCosts({ purchasePrice }) {
             </div>
 
             <div className="cost-input">
-                <label>Kancelejas nodeva (€)</label>
+                <label htmlFor="purchase-office-fee">Kancelejas nodeva (€)</label>
                 <input
                     type="number"
                     min="0"
-                    value={officeFee}
+                    id="purchase-office-fee" value={officeFee}
                     onChange={(event) => setOfficeFee(event.target.value)}
                 />
             </div>
 
             <div className="cost-input">
-                <label>Īpašuma vērtējums (€)</label>
+                <label htmlFor="purchase-valuation">Īpašuma vērtējums (€)</label>
                 <input
                     type="number"
                     min="0"
-                    value={valuation}
+                    id="purchase-valuation" value={valuation}
                     onChange={(event) => setValuation(event.target.value)}
                 />
             </div>

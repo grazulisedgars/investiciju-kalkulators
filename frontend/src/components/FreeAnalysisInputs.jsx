@@ -14,11 +14,11 @@ function FreeAnalysisInputs({
         <section className="free-analysis-inputs">
             <h2>Investīcijas pieņēmumi</h2>
             <div className="input-group">
-                <label>Plānotās remonta izmaksas par m² (€)</label>
+                <label htmlFor="basic-repair">Plānotās remonta izmaksas par m² (€)</label>
                 <input
                     type="number"
                     min="0"
-                    value={renovationCostPerM2}
+                    id="basic-repair" value={renovationCostPerM2}
                     onChange={(event) =>
                         setRenovationCostPerM2(event.target.value)}
                 />
@@ -33,13 +33,13 @@ function FreeAnalysisInputs({
             </div>
 
             <div className="input-group">
-                <label>
+                <label htmlFor="basic-rent">
                     Īres maksa mēnesī (€)
                 </label>
                 <input
                     type="number"
                     min="0"
-                    value={monthlyRent}
+                    id="basic-rent" value={monthlyRent}
                     onKeyDown={(event) => {
                         if (["-", "+", "e", "E"].includes(event.key)) {
                             event.preventDefault();
@@ -63,14 +63,14 @@ function FreeAnalysisInputs({
             </div>
 
             <div className="input-group">
-                <label>
+                <label htmlFor="basic-occupancy">
                     Plānotais aizpildījums (%)
                 </label>
                 <input
                     type="number"
                     min="0"
                     max="100"
-                    value={occupancy}
+                    aria-describedby="basic-occupancy-hint" id="basic-occupancy" value={occupancy}
                     onKeyDown={(event) => {
                         if (["-", "+", "e", "E"].includes(event.key)) {
                             event.preventDefault();
@@ -91,7 +91,7 @@ function FreeAnalysisInputs({
                         }
                     }}
                 />
-                <p className="input-hint">
+                <p className="input-hint" id="basic-occupancy-hint">
                     * 100% = izīrēts 12 mēnešus gadā, 50% = 6 mēnešus.
                 </p>
             </div>

@@ -1,5 +1,6 @@
+import {requestJson} from "./requestJson";
 import CalendarMonthPicker from "./CalendarMonthPicker";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
     ChevronLeft,
@@ -39,9 +40,8 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
     const [mobileDayOpen, setMobileDayOpen] = useState(false);
     useEffect(() => {
         if (!addEntryRequest) return;
-        setMobileDayOpen(true);
-        setShowEntryMenu(true);
-        onAddEntryHandled?.();
+        const frame=requestAnimationFrame(()=>{setMobileDayOpen(true);setShowEntryMenu(true);onAddEntryHandled?.();});
+        return()=>cancelAnimationFrame(frame);
     }, [addEntryRequest, onAddEntryHandled]);
     const entryMenuRef = useRef(null);
     const [showExpenseModal, setShowExpenseModal] = useState(false);
@@ -61,6 +61,8 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
         useState(null);
     const [entryToDelete, setEntryToDelete] = useState(null);
     const [isDeletingEntry, setIsDeletingEntry] = useState(false);
+    const [diaryError,setDiaryError]=useState("");
+    const [deleteError,setDeleteError]=useState("");
 
     const [diaryEntries, setDiaryEntries] = useState([]);
     const [photos, setPhotos] = useState([]);
@@ -72,8 +74,6 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
 
     useEffect(() => {
         const controller = new AbortController();
-        setPhotos([]);
-        setPhotoError("");
         fetch(`http://localhost:8000/properties/${property.property_id}/gallery`, {
             credentials: "include", signal: controller.signal,
         }).then(async response => {
@@ -136,27 +136,12 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
         setCurrentDate(new Date(year, month + direction, 1));
     }
 
-    async function fetchDiaryEntries() {
+    const fetchDiaryEntries=useCallback(async(signal)=>{
         try {
-            const response = await fetch(
-                `http://localhost:8000/properties/${property.property_id}/diary`,
-                {
-                    credentials: "include",
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error("Neizdevās ielādēt dienasgrāmatas ierakstus.");
-            }
-
-            const data = await response.json();
-
-            setDiaryEntries(data);
-
-        } catch (error) {
-            console.error("Diary GET error:", error);
-        }
-    }
+            const data=await requestJson(`http://localhost:8000/properties/${property.property_id}/diary`,{signal});
+            if(!signal?.aborted){setDiaryEntries(data);setDiaryError("");}
+        } catch(error){if(!signal?.aborted)setDiaryError(error.message);}
+    },[property.property_id]);
 
     useEffect(() => {
         if (!entryMenu) {
@@ -209,11 +194,7 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
         };
     }, [entryMenu]);
 
-    useEffect(() => {
-        if (property?.property_id) {
-            fetchDiaryEntries();
-        }
-    }, [property?.property_id]);
+    useEffect(()=>{const controller=new AbortController();Promise.resolve().then(()=>{if(!controller.signal.aborted)return fetchDiaryEntries(controller.signal);});return()=>controller.abort();},[fetchDiaryEntries]);
 
     useEffect(() => {
         if (!showEntryMenu) {
@@ -304,12 +285,12 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
     );
 
     async function handleDeleteEntry() {
-        if (!entryToDelete) {
+        if (!entryToDelete || isDeletingEntry) {
             return;
         }
 
         try {
-            setIsDeletingEntry(true);
+            setIsDeletingEntry(true);setDeleteError("");
 
             const response = await fetch(
                 `http://localhost:8000/properties/${property.property_id}/diary/${entryToDelete.id}`,
@@ -333,7 +314,7 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
             await fetchDiaryEntries();
 
         } catch (error) {
-            console.error("Diary DELETE error:", error);
+            setDeleteError(error.message);
         } finally {
             setIsDeletingEntry(false);
         }
@@ -342,6 +323,7 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
     return (
         <div className={`diary-calendar-layout ${mobileDayOpen ? "mobile-day-open" : "mobile-calendar-open"}`}>
 
+            {diaryError && <div role="alert" className="app-status app-status-error">{diaryError} <button type="button" onClick={()=>fetchDiaryEntries()}>Mēģināt vēlreiz</button></div>}
             <div className="diary-calendar-sidebar">
 
                 <div className="diary-calendar-header">
@@ -811,6 +793,7 @@ function DiaryCalendar({ property, addEntryRequest, onAddEntryHandled }) {
                             {" "}Šo darbību nevarēs atsaukt.
                         </p>
 
+                        {deleteError && <p className="app-status app-status-error" role="alert">{deleteError}</p>}
                         <div className="diary-delete-actions">
                             <button
                                 type="button"

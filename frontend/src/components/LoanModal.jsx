@@ -15,19 +15,14 @@ function LoanModal({
     onClose,
     onSaved,
 }) {
+    const saveInFlight=useRef(false);
     const loanDatePickerRef = useRef(null);
     const loanPaymentTypeRef = useRef(null);
 
     const [showPaymentTypeMenu, setShowPaymentTypeMenu] =
         useState(false);
 
-    const [loanForm, setLoanForm] = useState({
-        entry_date: initialDate || "",
-        title: "",
-        amount: "",
-        payment_type: "principal",
-        notes: "",
-    });
+    const [loanForm, setLoanForm] = useState(() => ({entry_date: loan?.entry_date || initialDate || "",title: loan?.title ?? "",amount: loan?.amount ?? "",payment_type: loan?.payment_type ?? "principal",notes: loan?.notes ?? ""}));
 
     const [isSavingLoan, setIsSavingLoan] =
         useState(false);
@@ -44,30 +39,13 @@ function LoanModal({
         loanCalendarDate,
         setLoanCalendarDate,
     ] = useState(() => {
-        if (initialDate) {
-            return new Date(`${initialDate}T12:00:00`);
+        const date = loan?.entry_date || initialDate;
+        if (date) {
+            return new Date(`${date}T12:00:00`);
         }
 
         return new Date();
     });
-
-    useEffect(() => {
-        if (!loan) {
-            return;
-        }
-
-        setLoanForm({
-            entry_date: loan.entry_date,
-            title: loan.title || "",
-            amount: loan.amount ?? "",
-            payment_type: loan.payment_type || "principal",
-            notes: loan.notes || "",
-        });
-
-        setLoanCalendarDate(
-            new Date(`${loan.entry_date}T12:00:00`)
-        );
-    }, [loan]);
 
     useEffect(() => {
         function handleKeyDown(event) {
@@ -138,6 +116,7 @@ function LoanModal({
     }, [showPaymentTypeMenu]);
 
     async function handleLoanSave() {
+        if(saveInFlight.current)return;
         if (
             !loanForm.entry_date ||
             !loanForm.title.trim() ||
@@ -152,6 +131,7 @@ function LoanModal({
         }
 
         try {
+            saveInFlight.current=true;
             setIsSavingLoan(true);
             setLoanError("");
 
@@ -210,6 +190,7 @@ function LoanModal({
             );
 
         } finally {
+            saveInFlight.current=false;
             setIsSavingLoan(false);
         }
     }

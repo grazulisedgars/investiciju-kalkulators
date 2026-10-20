@@ -29,3 +29,6 @@
  .app:has(.login-page) { background-color:#f5f9f6; background-image:url('../assets/login-neighborhood-v1.webp'); background-repeat:no-repeat; background-position:center bottom; background-size:100% auto; }
  .app .login-page { padding-bottom:200px; }
 }
+
+.auth-forgot{align-self:flex-end;background:none;border:0;padding:2px 0 8px;color:#126a4e;font:13px Arial,sans-serif;text-decoration:underline;cursor:pointer;}
+.auth-recovery-help{font:12px/1.5 Arial,sans-serif;color:#52665a;margin-top:18px;}

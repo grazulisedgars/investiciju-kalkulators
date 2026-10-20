@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {UserRound,LockKeyhole,CreditCard,Trash2,Check,Mail,ArrowLeft,HelpCircle,ChevronDown,ChevronRight,LogOut} from 'lucide-react';
-import logo from '../assets/icons/propfolio-logo.svg';
+import logo from '../assets/icons/propfolio-logo-optimized.svg';
 import './MyProfile.css';
 import Subscription from './Subscription';
 import ChangePassword from './ChangePassword';
@@ -8,11 +8,12 @@ import DeleteProfile from './DeleteProfile';
 const API='http://localhost:8000';
 const initialForm=user=>({first_name:user?.first_name || '',last_name:user?.last_name || ''});
 
-export default function MyProfile({user,onUserUpdated,onBack,onDeleted,onOpenPlans,onLogout,initialSection='profile'}) {
+export default function MyProfile({user,onUserUpdated,onBack,onDeleted,onOpenPlans,onLogout,initialSection='profile',onSectionChange}) {
     const [profile,setProfile]=useState(null),[form,setForm]=useState(()=>initialForm(user));
     const [loading,setLoading]=useState(true),[failed,setFailed]=useState(false),[retry,setRetry]=useState(0);
     const [busy,setBusy]=useState(false),[photoBusy,setPhotoBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[fields,setFields]=useState({});
     const [section,setSection]=useState(initialSection);
+    useEffect(()=>{onSectionChange?.(section);},[section,onSectionChange]);
     const [mobileMenu,setMobileMenu]=useState(initialSection==='profile');
     function openMobileSection(key){setSection(key);setMobileMenu(false);setError('');setNotice('');window.scrollTo({top:0,behavior:'instant'});}
 

@@ -1,9 +1,12 @@
+const PasswordRecovery = lazy(() => import("./components/PasswordRecovery"));
+import {calculateBasic, validateBasic, readCalculatorDraft, writeCalculatorDraft, clearCalculatorDraft} from "./components/basicAnalysis";
+import {requestJson} from "./components/requestJson";
 import mobileHeroBackground from "./assets/hero-mobile-v1.webp";
-import aboutPropfolioImage from "./assets/about-propfolio.png";
+import aboutPropfolioImage from "./assets/about-propfolio.webp";
 import { Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback, lazy } from "react";
 import "./App.css";
-import propfolioLogo from "./assets/icons/propfolio-logo.svg";
+import propfolioLogo from "./assets/icons/propfolio-logo-optimized.svg";
 import FinancingChoice from "./components/FinancingChoice";
 import PropertyInfo from "./components/PropertyInfo";
 import FreeAnalysisInputs from "./components/FreeAnalysisInputs";
@@ -12,24 +15,31 @@ import MortgageInputs from "./components/MortgageInputs";
 import MortgageSummary from "./components/MortgageSummary";
 import EmailVerification from "./components/EmailVerification";
 import Registration from "./components/Registration";
-import MyProfile from "./components/MyProfile";
-import Plans from "./components/Plans";
+const MyProfile = lazy(() => import("./components/MyProfile"));
+const Plans = lazy(() => import("./components/Plans"));
 import TestPlanSwitch from "./components/TestPlanSwitch";
-import Dashboard from "./components/Dashboard";
-import Help from "./components/Help";
+const Dashboard = lazy(() => import("./components/Dashboard"));
+const Help = lazy(() => import("./components/Help"));
 import {helpFaq,helpSteps} from "./components/helpContent";
 import AccountFooter from "./components/AccountFooter";
 import Login from "./components/Login";
-import propfolioBackground from "./assets/propfolio-background11.png";
+import propfolioBackground from "./assets/propfolio-background11.webp";
 import propfolioFooterLogo from "./assets/propfolio-footer-logo-traced.svg";
 import propertyDataIcon from "./assets/icons/propfolio-step-01-property-data.svg";
 import calculatorIcon from "./assets/icons/propfolio-step-02-calculator.svg";
 import investmentIcon from "./assets/icons/propfolio-step-03-investment.svg";
-import PropertyDetail from "./components/PropertyDetail";
+const PropertyDetail = lazy(() => import("./components/PropertyDetail"));
 
 function App() {
+  const [resetToken,setResetToken]=useState(()=>new URLSearchParams(window.location.search).get("reset_password"));
+  const [showRecovery,setShowRecovery]=useState(false);
+  const sessionReturn=useRef(null);
   const [verificationToken,setVerificationToken]=useState(()=>new URLSearchParams(window.location.search).get("verify_email"));
   const [financing, setFinancing] = useState(null);
+  const [calculatorError,setCalculatorError] = useState("");
+  const [calculatorNotice,setCalculatorNotice] = useState("");
+  const [savingProperty,setSavingProperty] = useState(false);
+  const savingPropertyRef = useRef(false);
 
   const [purchasePrice, setPurchasePrice] = useState("");
   const [area, setArea] = useState("");
@@ -38,7 +48,7 @@ function App() {
   const [monthlyRent, setMonthlyRent] = useState("");
   const [occupancy, setOccupancy] = useState("");
 
-  const [freeAnalysisResults, setFreeAnalysisResults] = useState(null);
+
   const [downPaymentPercent, setDownPaymentPercent] = useState("");
 
   const [showRegistration, setShowRegistration] = useState(false);
@@ -49,15 +59,33 @@ function App() {
   const [planReturnProperty,setPlanReturnProperty]=useState(null);
   const [planReturnProfile,setPlanReturnProfile]=useState(null);
   const [propertyInitialTab,setPropertyInitialTab]=useState("analysis");
+  const [propertyInitialDiarySection,setPropertyInitialDiarySection]=useState("calendar");
   const [showPlans,setShowPlans]=useState(false);
   const [showProfile,setShowProfile] = useState(false);
   const [profileSection,setProfileSection] = useState("profile");
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [propertyLocationReady, setPropertyLocationReady] = useState(false);
+  const [navigationRevision,setNavigationRevision]=useState(0);
+  useEffect(()=>{const restore=()=>{setPropertyLocationReady(false);setNavigationRevision(value=>value+1);};window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[]);
 
   const [showLogin, setShowLogin] = useState(false);
   const [mobileHeroMenu, setMobileHeroMenu] = useState(false);
   const [propertyFlow, setPropertyFlow] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
+
+  const restoreDraft=useCallback(draft=>{
+    setPurchasePrice(draft.purchasePrice??"");setArea(draft.area??"");setRenovationCostPerM2(draft.renovationCostPerM2??"");setMonthlyRent(draft.monthlyRent??"");setOccupancy(draft.occupancy??"");setDownPaymentPercent(draft.downPaymentPercent??"");setFinancing(draft.financing);
+  },[]);
+
+  useEffect(()=>{
+    const expired=()=>{
+      if(!currentUser)return;
+      sessionReturn.current=window.location.pathname+window.location.search;
+      setCurrentUser(null);setSelectedProperty(null);setShowDashboard(false);setShowProfile(false);setShowPlans(false);setShowHelp(false);setFinancing(null);setShowRegistration(false);setShowLogin(true);
+    };
+    window.addEventListener("propfolio-session-expired",expired);
+    return()=>window.removeEventListener("propfolio-session-expired",expired);
+  },[currentUser]);
 
   useEffect(() => { if (financing) window.scrollTo({top:0,behavior:"instant"}); }, [financing]);
 
@@ -79,72 +107,94 @@ function App() {
   const initialCapitalNeeded =
     downPaymentAmount + totalRenovationCosts;
 
+  const calculatorValues = {financing,purchasePrice,area,renovationCostPerM2,monthlyRent,occupancy,downPaymentPercent};
+  const calculatorValidation = validateBasic(calculatorValues);
+  const calculatorValid = Object.keys(calculatorValidation).length === 0;
+  const freeAnalysisResults = calculateBasic(calculatorValues);
   useEffect(() => {
-    if (!purchasePrice || Number(purchasePrice) <= 0) {
-      setFreeAnalysisResults(null);
-      return;
-    }
-
-    async function fetchFreeAnalysis() {
-      const params = new URLSearchParams({
-        purchase_price: purchasePrice,
-        renovation_costs: totalRenovationCosts,
-      });
-
-      if (monthlyRent !== "") {
-        params.append("monthly_rent", monthlyRent);
-      }
-
-      if (occupancy !== "") {
-        params.append("occupancy", occupancy);
-      }
-
-      const response = await fetch(
-        `http://127.0.0.1:8000/calculate/free-analysis?${params.toString()}`
-      );
-
-      const data = await response.json();
-
-      setFreeAnalysisResults(data);
-    }
-
-    fetchFreeAnalysis();
-  }, [
-    purchasePrice,
-    area,
-    renovationCostPerM2,
-    monthlyRent,
-    occupancy
-  ]);
+    if (!financing || !purchasePrice) return;
+    const previous = readCalculatorDraft();
+    writeCalculatorDraft({financing,purchasePrice,area,renovationCostPerM2,monthlyRent,occupancy,downPaymentPercent,ownerId:currentUser?.id ?? previous?.ownerId ?? null,pending:previous?.pending ?? false,requestId:previous?.requestId,fingerprint:previous?.fingerprint});
+  },[financing,purchasePrice,area,renovationCostPerM2,monthlyRent,occupancy,downPaymentPercent,currentUser?.id]);
 
   useEffect(() => {
+    const controller=new AbortController();
     async function checkCurrentUser() {
       try {
         const response = await fetch(
           "http://localhost:8000/me",
           {
-            credentials: "include",
+            credentials: "include",signal:controller.signal,
           }
         );
 
         if (!response.ok) {
+          if(controller.signal.aborted)return;
+          const draft = readCalculatorDraft();
+          const screen=new URLSearchParams(window.location.search).get("screen");
+          setCurrentUser(null);setShowDashboard(false);setSelectedProperty(null);setShowProfile(false);setShowPlans(false);setShowHelp(false);
+          setShowLogin(screen==="login");setShowRegistration(screen==="register");
+          if(screen==="calculator" && draft && !draft.ownerId)restoreDraft(draft);else setFinancing(null);
           return;
         }
 
         const user = await response.json();
 
+        const location = new URL(window.location.href);
+        const propertyId = location.searchParams.get("property");
+        let restoredProperty = null;
+        if (propertyId) {
+          try {
+            const propertiesResponse = await fetch("http://localhost:8000/properties", {credentials:"include",signal:controller.signal});
+            if (propertiesResponse.ok) {
+              const properties = await propertiesResponse.json();
+              restoredProperty = properties.find(property => String(property.property_id) === propertyId) || null;
+            }
+          } catch (error) { console.error("Neizdevās atjaunot īpašuma skatu.", error); }
+        }
+        if(controller.signal.aborted)return;
+        const screen=location.searchParams.get("screen");
+        setShowPlans(screen==="plans");setShowHelp(screen==="help");setShowProfile(screen==="profile");
+        const section=location.searchParams.get("section");
+        setProfileSection(["profile","password","subscription"].includes(section)?section:"profile");
+        const tab = location.searchParams.get("tab");
+        setPropertyInitialTab(["analysis", "diary", "advanced"].includes(tab) ? tab : "analysis");
+        const diarySection=location.searchParams.get("diary");
+        setPropertyInitialDiarySection(["calendar","expenses","loan","utilities","work","rent","gallery","totals"].includes(diarySection)?diarySection:"calendar");
+        setSelectedProperty(restoredProperty);
         setCurrentUser(user);
-        setShowDashboard(true);
+        const draft = readCalculatorDraft();
+        const canResume = !restoredProperty && screen==="calculator" && draft && (!draft.ownerId || draft.ownerId === user.id);
+        setShowDashboard(!restoredProperty && !canResume);
         setShowLogin(false);
         setShowRegistration(false);
-        setFinancing(null);
+        if (canResume) {
+          restoreDraft(draft); setPropertyFlow("dashboard");
+          setCalculatorNotice("Iepriekš ievadītā analīze ir atjaunota. Pārbaudi datus un saglabā īpašumu.");
+        } else setFinancing(null);
       } catch (error) {
         console.error(error);
+      } finally {
+        if(!controller.signal.aborted)setPropertyLocationReady(true);
       }
     }
 
     checkCurrentUser();
-  }, []);
+    return()=>controller.abort();
+  }, [navigationRevision,restoreDraft]);
+
+  useEffect(() => {
+    if (!propertyLocationReady) return;
+    const location = new URL(window.location.href);
+    const screen=showPlans?"plans":showHelp?"help":showProfile?"profile":showRegistration?"register":showLogin?"login":financing?"calculator":null;
+    if(screen)location.searchParams.set("screen",screen);else location.searchParams.delete("screen");
+    if(screen==="profile" && profileSection!=="profile")location.searchParams.set("section",profileSection);else location.searchParams.delete("section");
+    if (currentUser && selectedProperty && !showDashboard && !showProfile && !financing && !showPlans && !showHelp) {
+      location.searchParams.set("property", String(selectedProperty.property_id));location.searchParams.set("tab", propertyInitialTab);
+      if(propertyInitialTab==="diary" && propertyInitialDiarySection!=="calendar")location.searchParams.set("diary",propertyInitialDiarySection);else location.searchParams.delete("diary");
+    } else {location.searchParams.delete("property");location.searchParams.delete("tab");location.searchParams.delete("diary");}
+    if (location.href !== window.location.href) window.history.pushState({propfolio:true}, "", location);
+  }, [propertyLocationReady,currentUser,selectedProperty,showDashboard,showProfile,financing,propertyInitialTab,showPlans,showHelp,profileSection,showLogin,showRegistration,propertyInitialDiarySection]);
 
   function resetCalculator() {
     setPurchasePrice("");
@@ -152,47 +202,10 @@ function App() {
     setRenovationCostPerM2("");
     setMonthlyRent("");
     setOccupancy("");
-    setFreeAnalysisResults(null);
+    clearCalculatorDraft();
+    setCalculatorError("");
+    setCalculatorNotice("");
     setDownPaymentPercent("");
-  }
-
-  async function saveCurrentProperty() {
-    if (!freeAnalysisResults || !financing) {
-      return;
-    }
-
-    const propertyData = {
-      financing_type: financing,
-      purchase_price: Number(purchasePrice || 0),
-      area: Number(area || 0),
-      renovation_cost_per_m2: Number(renovationCostPerM2 || 0),
-      monthly_rent:
-        monthlyRent === "" ? null : Number(monthlyRent),
-      occupancy:
-        occupancy === "" ? null : Number(occupancy),
-      down_payment_percent:
-        financing === "mortgage"
-          ? Number(downPaymentPercent || 0)
-          : null,
-    };
-
-    const response = await fetch(
-      "http://localhost:8000/properties",
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(propertyData),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Neizdevās saglabāt īpašumu.");
-    }
-
-    return await response.json();
   }
 
   function goToHowItWorks(event) {
@@ -218,12 +231,6 @@ function App() {
       ?.scrollIntoView({ behaviour: "smooth" });
   }
 
-  function goBackToHome() {
-    resetCalculator();
-    setFinancing(null);
-    setDownPaymentPercent("");
-  }
-
   function goBackFromCalculator() {
     resetCalculator();
 
@@ -237,43 +244,18 @@ function App() {
   }
 
   async function saveDashboardProperty() {
+    if (savingPropertyRef.current) return;
+    if (!calculatorValid) { setCalculatorError(Object.values(calculatorValidation)[0]); return; }
+    savingPropertyRef.current = true; setSavingProperty(true); setCalculatorError("");
     try {
-      const response = await fetch("http://localhost:8000/properties", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          financing_type: financing,
-          purchase_price: Number(purchasePrice),
-          area: Number(area),
-          renovation_cost_per_m2: Number(renovationCostPerM2 || 0),
-          monthly_rent:
-            monthlyRent === "" ? null : Number(monthlyRent),
-          occupancy:
-            occupancy === "" ? null : Number(occupancy),
-          down_payment_percent:
-            financing === "mortgage"
-              ? Number(downPaymentPercent)
-              : null,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Īpašuma saglabāšanas kļūda:", data);
-        return;
-      }
-
-      resetCalculator();
-      setFinancing(null);
-      setPropertyFlow(null);
-      setShowDashboard(true);
-    } catch (error) {
-      console.error("Īpašuma saglabāšanas kļūda:", error);
-    }
+      const body={financing_type:financing,purchase_price:Number(purchasePrice),area:Number(area),renovation_cost_per_m2:Number(renovationCostPerM2||0),monthly_rent:monthlyRent===""?null:Number(monthlyRent),occupancy:occupancy===""?null:Number(occupancy),down_payment_percent:financing==="mortgage"?Number(downPaymentPercent):null};
+      const fingerprint=JSON.stringify(body),previous=readCalculatorDraft();
+      const requestId=previous?.fingerprint===fingerprint && previous?.requestId ? previous.requestId : crypto.randomUUID();
+      writeCalculatorDraft({...calculatorValues,ownerId:currentUser?.id,requestId,fingerprint});
+      await requestJson("http://localhost:8000/properties",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...body,client_request_id:requestId})});
+      resetCalculator();setFinancing(null);setPropertyFlow(null);setShowDashboard(true);
+    } catch (error) { setCalculatorError(error.message); }
+    finally { savingPropertyRef.current=false;setSavingProperty(false); }
   }
 
   function goToDashboard(){
@@ -281,7 +263,6 @@ function App() {
     setShowPlans(false);setShowHelp(false);setShowProfile(false);
     setSelectedProperty(null);setShowDashboard(true);
     setShowLogin(false);setShowRegistration(false);setFinancing(null);setPropertyFlow(null);
-    window.history.replaceState({},'',window.location.pathname);
     window.scrollTo({top:0});
   }
 
@@ -289,10 +270,15 @@ function App() {
     window.history.replaceState({},'',window.location.pathname);
     setVerificationToken(null);
     const response=await fetch('http://localhost:8000/me',{credentials:'include'});
-    if(response.ok){setCurrentUser(await response.json());setShowDashboard(true);setShowProfile(false);}
+    if(response.ok){const account=await response.json();setCurrentUser(account);setShowProfile(false);
+      const draft=readCalculatorDraft();
+      if(draft && (!draft.ownerId || draft.ownerId===account.id)) {restoreDraft(draft);setPropertyFlow("dashboard");setShowDashboard(false);setShowRegistration(false);setShowLogin(false);setCalculatorNotice("E-pasts apstiprināts. Tava analīze ir atjaunota — vari saglabāt īpašumu.");}
+      else setShowDashboard(true);
+    }
     else{setCurrentUser(null);setShowLogin(true);setShowDashboard(false);}
   }
-  if(verificationToken || (currentUser && currentUser.email_verified===false && !showProfile))return <EmailVerification token={verificationToken} user={currentUser} onContinue={finishVerification} onProfile={()=>{setShowProfile(true);setShowDashboard(true);}} onLogout={async()=>{const response=await fetch('http://localhost:8000/logout',{method:'POST',credentials:'include'});if(response.ok){setCurrentUser(null);setShowDashboard(false);setShowLogin(true);}}}/>;
+  if(resetToken || showRecovery)return <PasswordRecovery token={resetToken} onBack={()=>{setResetToken(null);setShowRecovery(false);setCurrentUser(null);setShowDashboard(false);setShowProfile(false);setShowLogin(true);setShowRegistration(false);window.history.replaceState({},"",window.location.pathname);}}/>;
+  if(verificationToken || (currentUser && currentUser.email_verified===false && !showProfile))return <EmailVerification token={verificationToken} user={currentUser} onContinue={finishVerification} onProfile={()=>{setShowProfile(true);setShowDashboard(true);}} onLogout={async()=>{const response=await fetch('http://localhost:8000/logout',{method:'POST',credentials:'include'});if(response.ok){setCurrentUser(null);setFinancing(null);setShowDashboard(false);setShowLogin(true);}}}/>;
 
   if(showPlans && currentUser)return <Plans user={currentUser} backLabel={planReturnProfile?"Atpakaļ uz manu profilu":planReturnProperty?(planReturnProperty.tab==="advanced"?"Atpakaļ uz padziļināto analīzi":"Atpakaļ uz dienasgrāmatu"):"Atpakaļ uz īpašumiem"} onBack={()=>{if(planReturnProfile){setProfileSection(planReturnProfile);setPlanReturnProfile(null);setShowPlans(false);setShowProfile(true);window.scrollTo({top:0});}else if(planReturnProperty && selectedProperty?.property_id===planReturnProperty.propertyId){setPropertyInitialTab(planReturnProperty.tab);setPlanReturnProperty(null);setShowPlans(false);window.scrollTo({top:0});}else goToDashboard();}}/>;
 
@@ -405,7 +391,7 @@ function App() {
                         </h2>
 
                         <FinancingChoice
-                          setFinancing={setFinancing}
+                          setFinancing={type=>{resetCalculator();setPropertyFlow(null);setFinancing(type);}}
                         />
                       </div>
 
@@ -607,7 +593,7 @@ function App() {
                   ieguldījumi rītdienai.
                 </p>
                 <img
-                  src={aboutPropfolioImage}
+                  loading="lazy" decoding="async" width="1672" height="941" src={aboutPropfolioImage}
                   alt="Nekustamā īpašuma investīcijas"
                 />
               </div>
@@ -672,7 +658,7 @@ function App() {
           onRegistered={async (user) => {
             setCurrentUser(user);
 
-            if(user.email_verified){try {await saveCurrentProperty();} catch(error){console.error(error);}}
+            if(financing && purchasePrice) writeCalculatorDraft({...calculatorValues,ownerId:user.id,pending:true});
 
             setShowRegistration(false);
             setShowDashboard(true);
@@ -680,7 +666,7 @@ function App() {
         />
       )}
 
-      {showDashboard && !showProfile && (
+      {propertyLocationReady && showDashboard && !showProfile && (
         <Dashboard
           initialAction={dashboardEntry}
           onActionConsumed={() => setDashboardEntry(null)}
@@ -718,15 +704,15 @@ function App() {
           }
           }
           onOpenProperty={(property) => {
-            setPropertyInitialTab("analysis");
+            setPropertyInitialTab("analysis");setPropertyInitialDiarySection("calendar");
             setSelectedProperty(property);
             setShowDashboard(false);
           }}
         />
       )}
 
-      {showProfile && currentUser && <MyProfile onOpenPlans={section=>{setPlanReturnProfile(section);setPlanReturnProperty(null);setProfileSection(section);setShowPlans(true);window.scrollTo({top:0});}} onDeleted={()=>{setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);setShowLogin(false);setShowRegistration(false);setVerificationToken(null);setFinancing(null);setPropertyFlow(null);resetCalculator();window.history.replaceState({},"",window.location.pathname);window.scrollTo({top:0});}} key={profileSection} initialSection={profileSection} user={currentUser} onUserUpdated={setCurrentUser} onBack={goToDashboard} onLogout={async()=>{const response=await fetch("http://localhost:8000/logout",{method:"POST",credentials:"include"});if(response.ok){setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);}}}/>}
-      {selectedProperty && !showDashboard && (
+      {showProfile && currentUser && <MyProfile onSectionChange={setProfileSection} onOpenPlans={section=>{setPlanReturnProfile(section);setPlanReturnProperty(null);setProfileSection(section);setShowPlans(true);window.scrollTo({top:0});}} onDeleted={()=>{setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);setShowLogin(false);setShowRegistration(false);setVerificationToken(null);setFinancing(null);setPropertyFlow(null);resetCalculator();window.history.replaceState({},"",window.location.pathname);window.scrollTo({top:0});}} key={profileSection} initialSection={profileSection} user={currentUser} onUserUpdated={setCurrentUser} onBack={goToDashboard} onLogout={async()=>{const response=await fetch("http://localhost:8000/logout",{method:"POST",credentials:"include"});if(response.ok){setCurrentUser(null);setShowProfile(false);setShowDashboard(false);setSelectedProperty(null);setFinancing(null);}}}/>}
+      {propertyLocationReady && selectedProperty && !showDashboard && (
         <PropertyDetail onAddProperty={financingType => {
           resetCalculator(); setPropertyFlow('dashboard'); setFinancing(financingType);
           setSelectedProperty(null); setShowDashboard(false); setShowRegistration(false); setShowLogin(false);
@@ -734,7 +720,7 @@ function App() {
         }} onMobileNavigate={destination => {
           goToDashboard();
           setDashboardEntry(destination === 'home' ? null : destination);
-        }} initialTab={propertyInitialTab} user={currentUser} onOpenPlans={feature=>{setPlanReturnProfile(null);setPlanReturnProperty(['diary','advanced'].includes(feature)?{propertyId:selectedProperty.property_id,tab:feature}:null);setShowPlans(true);window.scrollTo({top:0});}}
+        }} initialTab={propertyInitialTab} onTabChange={setPropertyInitialTab} initialDiarySection={propertyInitialDiarySection} onDiarySectionChange={setPropertyInitialDiarySection} user={currentUser} onOpenPlans={feature=>{setPlanReturnProfile(null);setPlanReturnProperty(['diary','advanced'].includes(feature)?{propertyId:selectedProperty.property_id,tab:feature}:null);setShowPlans(true);window.scrollTo({top:0});}}
           property={selectedProperty}
           onPropertyUpdated={(updatedProperty) => {
             setSelectedProperty(updatedProperty);
@@ -748,14 +734,18 @@ function App() {
 
       {showLogin && (
         <Login
+          onForgot={()=>{setShowRecovery(true);window.scrollTo({top:0});}}
           onRegister={() => {setShowLogin(false);setShowRegistration(true);}}
           onBack={() => setShowLogin(false)}
           onLogin={(user) => {
+            if(sessionReturn.current){const destination=sessionReturn.current;sessionReturn.current=null;setShowLogin(false);window.history.replaceState({},"",destination);setPropertyLocationReady(false);setNavigationRevision(value=>value+1);return;}
             setCurrentUser(user);
             setShowLogin(false);
             setShowDashboard(true);
             setShowRegistration(false);
-            setFinancing(null);
+            const draft=readCalculatorDraft();
+            if(draft && (!draft.ownerId || draft.ownerId===user.id)){restoreDraft(draft);setPropertyFlow("dashboard");setShowDashboard(false);setCalculatorNotice("Analīze atjaunota. Pārbaudi datus un saglabā īpašumu.");}
+            else setFinancing(null);
           }}
         />
       )}
@@ -763,10 +753,14 @@ function App() {
       {/* Cash calculator */}
 
       {!showRegistration &&
+        !showLogin &&
         !showDashboard &&
         financing === "cash" && (
           <section className={`calculator-page cash-calculator-page calculator-page--mobile-form ${propertyFlow === "dashboard" ? "calculator-page--property-create" : ""}`}>
 
+            {calculatorError && <p className="app-status app-status-error" role="alert">{calculatorError}</p>}
+            {calculatorNotice && <p className="app-status" role="status">{calculatorNotice}</p>}
+            {Object.entries(calculatorValidation).some(([key]) => calculatorValues[key] !== "") && <p className="app-status app-status-error" role="alert">{Object.entries(calculatorValidation).filter(([key])=>calculatorValues[key]!=="").map(([,message])=>message).join(" ")}</p>}
             <div className="calculator-page-header">
 
               <div className="calculator-page-title">
@@ -799,7 +793,7 @@ function App() {
                       !area
                     }
                   >
-                    Saglabāt īpašumu
+                    {savingProperty ? "Saglabā…" : "Saglabāt īpašumu"}
                   </button>
                 </div>
               )}
@@ -850,11 +844,11 @@ function App() {
 
             {propertyFlow === "dashboard" && <div className="calculator-mobile-actions">
               <button type="button" className="calculator-cancel-button" onClick={goBackFromCalculator}>Atcelt</button>
-              <button type="button" className="calculator-save-button" onClick={saveDashboardProperty} disabled={!purchasePrice || !area}>Saglabāt īpašumu</button>
+              <button type="button" className="calculator-save-button" onClick={saveDashboardProperty} disabled={!calculatorValid || savingProperty}>{savingProperty ? "Saglabā…" : "Saglabāt īpašumu"}</button>
             </div>}
             {propertyFlow !== "dashboard" && <div className="calculator-mobile-actions calculator-guest-actions">
               <button type="button" className="calculator-cancel-button" onClick={goBackFromCalculator}>Atpakaļ</button>
-              <button type="button" className="calculator-save-button" onClick={() => {setShowRegistration(true);window.scrollTo({top:0});}} disabled={!purchasePrice || !area || !freeAnalysisResults}>Saglabāt analīzi</button>
+              <button type="button" className="calculator-save-button" onClick={() => {setShowRegistration(true);window.scrollTo({top:0});}} disabled={!calculatorValid || savingProperty}>Saglabāt analīzi</button>
             </div>}
 
           </section>
@@ -864,10 +858,14 @@ function App() {
       {/* Mortgage calculator */}
 
       {!showRegistration &&
+        !showLogin &&
         !showDashboard &&
         financing === "mortgage" && (
           <section className={`calculator-page calculator-page--mobile-form ${propertyFlow === "dashboard" ? "calculator-page--property-create" : ""}`}>
 
+            {calculatorError && <p className="app-status app-status-error" role="alert">{calculatorError}</p>}
+            {calculatorNotice && <p className="app-status" role="status">{calculatorNotice}</p>}
+            {Object.entries(calculatorValidation).some(([key]) => calculatorValues[key] !== "") && <p className="app-status app-status-error" role="alert">{Object.entries(calculatorValidation).filter(([key])=>calculatorValues[key]!=="").map(([,message])=>message).join(" ")}</p>}
             <div className="calculator-page-header">
               <div className="calculator-page-title">
                 <h1>
@@ -900,7 +898,7 @@ function App() {
                       !downPaymentPercent
                     }
                   >
-                    Saglabāt īpašumu
+                    {savingProperty ? "Saglabā…" : "Saglabāt īpašumu"}
                   </button>
                 </div>
               )}
@@ -965,11 +963,11 @@ function App() {
             />
             {propertyFlow === "dashboard" && <div className="calculator-mobile-actions">
               <button type="button" className="calculator-cancel-button" onClick={goBackFromCalculator}>Atcelt</button>
-              <button type="button" className="calculator-save-button" onClick={saveDashboardProperty} disabled={!purchasePrice || !area || !downPaymentPercent}>Saglabāt īpašumu</button>
+              <button type="button" className="calculator-save-button" onClick={saveDashboardProperty} disabled={!calculatorValid || savingProperty}>{savingProperty ? "Saglabā…" : "Saglabāt īpašumu"}</button>
             </div>}
             {propertyFlow !== "dashboard" && <div className="calculator-mobile-actions calculator-guest-actions">
               <button type="button" className="calculator-cancel-button" onClick={goBackFromCalculator}>Atpakaļ</button>
-              <button type="button" className="calculator-save-button" onClick={() => {setShowRegistration(true);window.scrollTo({top:0});}} disabled={!purchasePrice || !area || !downPaymentPercent || !freeAnalysisResults}>Saglabāt analīzi</button>
+              <button type="button" className="calculator-save-button" onClick={() => {setShowRegistration(true);window.scrollTo({top:0});}} disabled={!calculatorValid || savingProperty}>Saglabāt analīzi</button>
             </div>}
 
           </section>

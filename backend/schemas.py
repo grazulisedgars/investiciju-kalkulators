@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import ConfigDict, BaseModel, EmailStr, Field, field_validator
 from typing import Literal
 
 
@@ -55,7 +55,9 @@ PropertyStatus = Literal[
 
 
 class PropertyCreate(BaseModel):
-    financing_type: str
+    model_config = ConfigDict(allow_inf_nan=False)
+    client_request_id: str | None = Field(default=None, pattern=r"^[0-9a-fA-F-]{36}$")
+    financing_type: Literal["cash", "mortgage"]
     status: PropertyStatus = "planned"
     purchase_price: float = Field(gt=0)
     area: float = Field(gt=0)
@@ -70,10 +72,11 @@ class PropertyCreate(BaseModel):
         le=100
     )
 
-    image_url: str | None = None
+    image_url: None = None
 
 
 class PropertyUpdate(BaseModel):
+    model_config = ConfigDict(allow_inf_nan=False)
     property_name: str
     address: str | None = None
     status: PropertyStatus = "planned"

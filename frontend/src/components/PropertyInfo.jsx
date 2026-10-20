@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import "./PropertyInfo.css";
 
 function PropertyInfo({
@@ -9,56 +9,22 @@ function PropertyInfo({
     pricePerM2AfterRenovation,
     renovationCostPerM2
 }) {
-    const [pricePerM2, setPricePerM2] = useState(null);
-
     const areaInputRef = useRef(null);
-
-    useEffect(() => {
-        if (!purchasePrice || !area || Number(area) <= 0) {
-            setPricePerM2(null);
-            return;
-        }
-
-        async function calculate() {
-            const response = await fetch(
-                `http://127.0.0.1:8000/calculate/price-per-m2?purchase_price=${purchasePrice}&area=${area}`
-            );
-
-            const data = await response.json();
-
-            setPricePerM2(data.price_per_m2);
-        }
-
-        calculate();
-    }, [purchasePrice, area]);
-
-    async function calculatePricePerM2() {
-        if (!purchasePrice || !area) {
-            return;
-        }
-
-        const response = await fetch(
-            `http://127.0.0.1:8000/calculate/price-per-m2?purchase_price=${purchasePrice}&area=${area}`
-        );
-
-        const data = await response.json();
-
-        setPricePerM2(data.price_per_m2);
-    }
+    const pricePerM2 = Number(purchasePrice) > 0 && Number(area) > 0 ? Number(purchasePrice)/Number(area) : null;
 
     return (
         <section className="property-info">
             <h2>Īpašuma pamatinformācija</h2>
 
             <div className="input-group">
-                <label>
+                <label htmlFor="property-purchase-price">
                     Īpašuma iegādes cena (€)
                     <span className="required-mark">*</span>
                 </label>
                 <input
                     type="number"
                     min="0"
-                    value={purchasePrice}
+                    id="property-purchase-price" aria-invalid={purchasePrice !== "" && Number(purchasePrice) <= 0} value={purchasePrice}
                     onChange={(event) => setPurchasePrice(event.target.value)}
                     onKeyDown={(event) => {
                         if (event.key === "Enter") {
@@ -69,14 +35,14 @@ function PropertyInfo({
             </div>
 
             <div className="input-group">
-                <label>
+                <label htmlFor="property-area">
                     Platība (m²)
                     <span className="required-mark">*</span>
                 </label>
                 <input
                     type="number"
                     min="0"
-                    value={area}
+                    id="property-area" aria-invalid={area !== "" && Number(area) <= 0} value={area}
                     onChange={(event) => setArea(event.target.value)}
                     ref={areaInputRef}
                 />

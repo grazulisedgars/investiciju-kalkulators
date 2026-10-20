@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {ArrowRight,Check,LockKeyhole,Clock3,X} from 'lucide-react';
-import building from '../assets/plans-pro-building.png';
+import building from '../assets/plans-pro-building.webp';
 import './Subscription.css';
 export default function Subscription({profile,onOpenPlans,loading,onPlanUpdated,onGoToProperties}){
  const pro=profile?.plan==='pro',limit=profile?.property_limit ?? 3,count=profile?.property_count;

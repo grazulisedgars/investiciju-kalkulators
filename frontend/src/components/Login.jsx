@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./Login.css";
 import AuthField from "./AuthField";
 import "./AuthMobile.css";
 
-function Login({ onBack, onLogin, onRegister }) {
+function Login({ onBack, onLogin, onRegister, onForgot }) {
+    const [busy,setBusy]=useState(false);
+    const submitting=useRef(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
 
     async function handleLogin() {
+        if(submitting.current)return;
         if (!email || !password) {
             setErrors({
                 general: "Ievadi e-pastu un paroli."
@@ -17,6 +20,7 @@ function Login({ onBack, onLogin, onRegister }) {
             return;
         }
 
+        submitting.current=true;setBusy(true);setErrors({});
         try {
             const response = await fetch(
                 "http://localhost:8000/login",
@@ -27,7 +31,7 @@ function Login({ onBack, onLogin, onRegister }) {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        email,
+                        email: email.trim(),
                         password,
                     }),
                 }
@@ -37,7 +41,7 @@ function Login({ onBack, onLogin, onRegister }) {
 
             if (!response.ok) {
                 setErrors({
-                    general: data.detail || "Ielogošanās neizdevās.",
+                    general: typeof data.detail === "string" ? data.detail : "Ielogošanās neizdevās.",
                 });
 
                 return;
@@ -50,7 +54,7 @@ function Login({ onBack, onLogin, onRegister }) {
             setErrors({
                 general: "Neizdevās savienoties ar serveri.",
             });
-        }
+        } finally {submitting.current=false;setBusy(false);}
     }
 
     return (
@@ -103,15 +107,16 @@ function Login({ onBack, onLogin, onRegister }) {
                         />
                     </div>
 
+                    {onForgot && <button type="button" className="auth-forgot" onClick={onForgot}>Aizmirsi paroli?</button>}
                     <button
                         type="submit"
-                        className="login-submit"
+                        className="login-submit" disabled={busy}
                     >
-                        Ieiet profilā
+                        {busy ? "Pieslēdzas…" : "Ieiet profilā"}
                     </button>
 
                     {errors.general && (
-                        <p className="form-error">
+                        <p className="form-error" role="alert">
                             {errors.general}
                         </p>
                     )}

@@ -1,3 +1,4 @@
+import {House, FileText} from "lucide-react";
 import DiaryCostChoice from './DiaryCostChoice';
 import FormDatePicker from './FormDatePicker';
 import {diaryCostSources} from './diaryCostSources';
@@ -18,7 +19,7 @@ export default function OwnerExpensesFields({draft,setDraft,diary,disabled,field
     const datesReady=!!utilStart && !!utilEnd && utilEnd>=utilStart;
     function utilityDate(key,value){setDraft(current=>({...current,utilities_start_date:current.utilities_start_date || current.renovation_start_date || null,utilities_end_date:current.utilities_end_date || current.renovation_end_date || null,[key]:value}));}
     return <div className="owner-expense-blocks">
-        <fieldset className="investment-input-block"><legend>Komunālie maksājumi</legend>
+        <fieldset className="investment-input-block"><legend><House className="advanced-input-legend-icon" size={20} aria-hidden="true"/>Komunālie maksājumi</legend>
             <p className="advanced-note">Kā vēlies aprēķināt apsaimniekošanu un komunālos renovācijas laikā?</p>
             <div className="diary-source-options owner-source-options">
                 <label><input type="radio" name="owner-utilities-source" checked={source==='manual'} disabled={disabled} onChange={()=>setDraft(current=>({...current,utilities_source:'manual'}))}/>Aprēķināt pēc sezonām</label>
@@ -38,6 +39,6 @@ export default function OwnerExpensesFields({draft,setDraft,diary,disabled,field
                 {Number(draft.rented_months)<12 && <div className="owner-future-utilities"><h4>Komunālie neizīrētajos mēnešos pēc renovācijas</h4><p className="advanced-note">Šeit norādītās summas izmanto nākotnes prognozei. Dienasgrāmatas vidējo automātiski nepārnes uz visu gadu.</p><div className="advanced-fields">{renderFields(['summer_cost','winter_cost'])}</div></div>}
             </>}
         </fieldset>
-        <fieldset className="investment-input-block owner-other-expenses"><legend>Citi īpašnieka izdevumi</legend><p className="advanced-note">Apdrošināšanu un NĪN ņem vērā arī renovācijas laikā.</p><div className="advanced-fields">{renderFields(['insurance','cadastral_value'])}{mortgage && field(['loan_insurance_monthly','Kredītmaksājuma apdrošināšana (€/mēn.) — nav obligāti'])}</div><p className="advanced-note">* Kadastrālo vērtību nepieciešams norādīt, lai varētu aprēķināt NĪN.</p></fieldset>
+        <fieldset className="investment-input-block owner-other-expenses"><legend><FileText className="advanced-input-legend-icon" size={20} aria-hidden="true"/>Citi īpašnieka izdevumi</legend><p className="advanced-note">Apdrošināšanu un NĪN ņem vērā arī renovācijas laikā.</p><div className="advanced-fields">{renderFields(['insurance','cadastral_value'])}{mortgage && field(['loan_insurance_monthly','Kredītmaksājuma apdrošināšana (€/mēn.) — nav obligāti'])}</div><p className="advanced-note">* Kadastrālo vērtību nepieciešams norādīt, lai varētu aprēķināt NĪN.</p></fieldset>
     </div>;
 }

@@ -13,16 +13,10 @@ function ExpenseModal({
     onClose,
     onSaved,
 }) {
+    const saveInFlight=useRef(false);
     const expenseDatePickerRef = useRef(null);
 
-    const [expenseForm, setExpenseForm] = useState({
-        entry_date: initialDate || "",
-        title: "",
-        amount: "",
-        supplier: "",
-        room: "",
-        notes: "",
-    });
+    const [expenseForm, setExpenseForm] = useState(() => ({entry_date: expense?.entry_date || initialDate || "",title: expense?.title ?? "",amount: expense?.amount ?? "",supplier: expense?.supplier ?? "",room: expense?.room ?? "",notes: expense?.notes ?? ""}));
 
     const [isSavingExpense, setIsSavingExpense] =
         useState(false);
@@ -39,31 +33,13 @@ function ExpenseModal({
         expenseCalendarDate,
         setExpenseCalendarDate,
     ] = useState(() => {
-        if (initialDate) {
-            return new Date(`${initialDate}T12:00:00`);
+        const date = expense?.entry_date || initialDate;
+        if (date) {
+            return new Date(`${date}T12:00:00`);
         }
 
         return new Date();
     });
-
-    useEffect(() => {
-        if (!expense) {
-            return;
-        }
-
-        setExpenseForm({
-            entry_date: expense.entry_date,
-            title: expense.title || "",
-            amount: expense.amount ?? "",
-            supplier: expense.supplier || "",
-            room: expense.room || "",
-            notes: expense.notes || "",
-        });
-
-        setExpenseCalendarDate(
-            new Date(`${expense.entry_date}T12:00:00`)
-        );
-    }, [expense]);
 
     useEffect(() => {
         function handleKeyDown(event) {
@@ -106,6 +82,7 @@ function ExpenseModal({
     }, [showExpenseDatePicker, onClose]);
 
     async function handleExpenseSave() {
+        if(saveInFlight.current)return;
         if (
             !expenseForm.entry_date ||
             !expenseForm.title.trim() ||
@@ -119,6 +96,7 @@ function ExpenseModal({
         }
 
         try {
+            saveInFlight.current=true;
             setIsSavingExpense(true);
             setExpenseError("");
 
@@ -181,6 +159,7 @@ function ExpenseModal({
             );
 
         } finally {
+            saveInFlight.current=false;
             setIsSavingExpense(false);
         }
     }

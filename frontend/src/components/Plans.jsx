@@ -1,8 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,Check,Crown,ChartColumnIncreasing,Wallet,ShieldCheck,TrendingUp,X} from 'lucide-react';
 import './Plans.css';
-import basicHouse from '../assets/plans-basic-house.png';
-import proBuilding from '../assets/plans-pro-building.png';
+import basicHouse from '../assets/plans-basic-house.webp';
+import proBuilding from '../assets/plans-pro-building.webp';
 const basic=['Personīgais investora profils','Līdz 3 saglabātiem īpašumiem','Pamata investīcijas analīze','Pirkuma, remonta un īres aprēķini','Bruto ienesīgums un tirgus vērtība','Īpašumu statusi un pārvaldība'];
 const pro=['Viss, kas iekļauts Basic','Neierobežots īpašumu skaits','Pilna īpašuma dienasgrāmata','Izdevumu, maksājumu un īres uzskaite','Renovācijas darbu un foto uzskaite','Padziļināta investīcijas analīze','Naudas plūsmas un atmaksāšanās prognozes'];
 export default function Plans({onBack,user,backLabel="Atpakaļ uz īpašumiem"}){

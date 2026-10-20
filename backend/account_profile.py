@@ -11,7 +11,9 @@ from sqlalchemy.orm import Session
 from PIL import Image,ImageOps,UnidentifiedImageError
 from database import get_db
 from models import User,Property,DiaryEntry,ExpenseEntry,LoanEntry,UtilityEntry,WorkEntry,RentEntry,AdvancedAnalysis,GalleryPhoto
-from security import decode_access_token,hash_password,verify_password
+from security import decode_access_token,hash_password,verify_password,create_access_token
+from image_storage import property_path
+from gallery import photo_path
 from entitlements import plan_info,can_test_plans
 from typing import Literal
 router=APIRouter(prefix="/account/profile",tags=["Mans profils"])
@@ -99,8 +101,9 @@ class PasswordUpdate(BaseModel):
     confirm_password:str=Field(min_length=1,max_length=128)
 
 @router.post("/password")
-def change_password(data:PasswordUpdate,access_token:str|None=Cookie(default=None),db:Session=Depends(get_db)):
+def change_password(data:PasswordUpdate,response:Response,access_token:str|None=Cookie(default=None),db:Session=Depends(get_db)):
     user=require_user(access_token,db)
+    user=db.query(User).filter(User.id==user.id).with_for_update().populate_existing().one()
     if not verify_password(data.current_password,user.password_hash):
         raise HTTPException(400,"Pašreizējā parole nav pareiza.")
     password=data.new_password
@@ -112,10 +115,12 @@ def change_password(data:PasswordUpdate,access_token:str|None=Cookie(default=Non
     if password==data.current_password:
         raise HTTPException(422,"Jaunajai parolei jāatšķiras no pašreizējās paroles.")
     user.password_hash=hash_password(password)
+    user.session_version += 1
     try:db.commit()
     except Exception:
         db.rollback();raise
-    return {"message":"Parole veiksmīgi nomainīta."}
+    response.set_cookie("access_token",create_access_token(user.id,user.session_version),httponly=True,samesite="lax",secure=False,max_age=60*60*24*7)
+    return {"message":"Parole veiksmīgi nomainīta. Citas sesijas ir izbeigtas."}
 
 class AccountDeletion(BaseModel):
     model_config=ConfigDict(extra="forbid")
@@ -140,10 +145,11 @@ def delete_account(data:AccountDeletion,response:Response,access_token:str|None=
         if path.is_file():candidates.append(path)
     if user.avatar_filename:owned_file(PHOTO_DIR,user.avatar_filename)
     for row in properties:
-        if row.image_url and row.image_url.startswith("/uploads/properties/"):
-            owned_file(root/"uploads"/"properties",row.image_url.removeprefix("/uploads/properties/"))
+        path=property_path(row.image_url,row.property_id)
+        if path and path.is_file():candidates.append(path)
     for row in db.query(GalleryPhoto).filter(GalleryPhoto.property_id.in_(property_ids)).all():
-        owned_file(root/"uploads"/"gallery",row.storage_name)
+        path=photo_path(row.storage_name)
+        if path.is_file():candidates.append(path)
     # Local confirmation messages also contain account data and a one-time token.
     mail_dir=root/"private_uploads"/"mail"
     for path in mail_dir.glob("*.html"):

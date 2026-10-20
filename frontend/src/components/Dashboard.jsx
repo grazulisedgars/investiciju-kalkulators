@@ -1,5 +1,6 @@
+import {requestJson} from "./requestJson";
 import { propertyGrossYield, propertyMonthlyRent } from "./propertyYield";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     ImagePlus,
     ImageOff,
@@ -15,7 +16,7 @@ import {
     Crown,
     X,
 } from "lucide-react";
-import propfolioLogo from "../assets/icons/propfolio-logo.svg";
+import propfolioLogo from "../assets/icons/propfolio-logo-optimized.svg";
 import "./Dashboard.css"
 import userIcon from "../assets/icons/user.svg";
 import logoutIcon from "../assets/icons/logout.svg";
@@ -38,6 +39,10 @@ function Dashboard({
     const isPro=user?.plan==="pro";
     const [properties, setProperties] = useState([]);
     const [propertiesLoaded, setPropertiesLoaded] = useState(false);
+    const [loadError,setLoadError]=useState("");
+    const [actionError,setActionError]=useState("");
+    const [actionBusy,setActionBusy]=useState(false);
+    const actionInFlight=useRef(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [openPropertyMenu, setOpenPropertyMenu] = useState(null);
 
@@ -181,34 +186,17 @@ function Dashboard({
 
     const [openFaq, setOpenFaq] = useState(null);
 
-    useEffect(() => {
-        async function loadProperties() {
-            try {
-                const response = await fetch(
-                    "http://localhost:8000/properties",
-                    {
-                        credentials: "include",
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error("Neisdevās ielādēt īpašumus.");
-                }
-
-                const data = await response.json();
-
-                setProperties(data);
-                setPropertiesLoaded(true);
-            } catch (error) {
-                console.error(error);
-            }
-        }
-
-        loadProperties();
-    }, [user?.plan]);
+    const loadProperties=useCallback(async(signal)=>{
+        try {
+            const data=await requestJson("http://localhost:8000/properties",{signal});
+            if(!signal?.aborted){setProperties(data);setPropertiesLoaded(true);setLoadError("");}
+        } catch(error){if(!signal?.aborted)setLoadError(error.message);}
+    },[]);
+    useEffect(()=>{const controller=new AbortController();Promise.resolve().then(()=>{if(!controller.signal.aborted)return loadProperties(controller.signal);});return()=>controller.abort();},[loadProperties,user?.plan]);
 
     useEffect(() => {
         if (!initialAction || !propertiesLoaded) return;
+        const frame=requestAnimationFrame(()=>{
         if (initialAction === 'add') {
             if (!isPro && properties.length >= 3) setShowLimitDialog(true);
             else setShowAddPropertyModal(true);
@@ -219,6 +207,8 @@ function Dashboard({
             requestAnimationFrame(() => document.getElementById('dashboard-properties')?.scrollIntoView({block:'start'}));
         }
         onActionConsumed?.();
+        });
+        return()=>cancelAnimationFrame(frame);
     }, [initialAction, propertiesLoaded, properties.length, isPro, onActionConsumed]);
 
     async function handleImageUpload(propertyId, file) {
@@ -229,6 +219,8 @@ function Dashboard({
         const formData = new FormData();
         formData.append("image", file);
 
+        if(actionInFlight.current)return;
+        actionInFlight.current=true;setActionBusy(true);setActionError("");
         try {
             const response = await fetch(
                 `http://localhost:8000/properties/${propertyId}/image`,
@@ -242,8 +234,7 @@ function Dashboard({
             const data = await response.json();
 
             if (!response.ok) {
-                console.error(data);
-                return;
+                throw new Error(typeof data.detail === "string" ? data.detail : "Neizdevās pabeigt darbību. Mēģini vēlreiz.");
             }
 
             setProperties((currentProperties) =>
@@ -257,11 +248,14 @@ function Dashboard({
                 )
             );
         } catch (error) {
-            console.error("Attēla augšupielādes kļūda:", error);
-        }
+            setActionError(error.message || "Neizdevās pabeigt darbību.");
+        } finally {actionInFlight.current=false;setActionBusy(false);}
+
     }
 
     async function handlePropertyUpdate() {
+        if(actionInFlight.current)return;
+        actionInFlight.current=true;setActionBusy(true);setActionError("");
         try {
             const response = await fetch(
                 `http://localhost:8000/properties/${editingProperty.property_id}`,
@@ -308,11 +302,9 @@ function Dashboard({
             );
 
             const data = await response.json();
-            console.log("Updated property:", data);
 
             if (!response.ok) {
-                console.error(data);
-                return;
+                throw new Error(typeof data.detail === "string" ? data.detail : "Neizdevās pabeigt darbību. Mēģini vēlreiz.");
             }
 
             setProperties((currentProperties) =>
@@ -325,8 +317,9 @@ function Dashboard({
 
             setEditingProperty(null);
         } catch (error) {
-            console.error("Īpašuma atjaunošanas kļūda", error);
-        }
+            setActionError(error.message || "Neizdevās pabeigt darbību.");
+        } finally {actionInFlight.current=false;setActionBusy(false);}
+
     }
 
     async function handleDeleteProperty() {
@@ -334,6 +327,8 @@ function Dashboard({
             return;
         }
 
+        if(actionInFlight.current)return;
+        actionInFlight.current=true;setActionBusy(true);setActionError("");
         try {
             const response = await fetch(
                 `http://localhost:8000/properties/${propertyToDelete.property_id}`,
@@ -346,8 +341,7 @@ function Dashboard({
             const data = await response.json();
 
             if (!response.ok) {
-                console.error(data);
-                return;
+                throw new Error(typeof data.detail === "string" ? data.detail : "Neizdevās pabeigt darbību. Mēģini vēlreiz.");
             }
 
             setProperties((currentProperties) =>
@@ -359,11 +353,14 @@ function Dashboard({
 
             setPropertyToDelete(null);
         } catch (error) {
-            console.error("Īpašuma dzēšanas kļūda", error);
-        }
+            setActionError(error.message || "Neizdevās pabeigt darbību.");
+        } finally {actionInFlight.current=false;setActionBusy(false);}
+
     }
 
     async function handleDeleteImage(propertyId) {
+        if(actionInFlight.current)return;
+        actionInFlight.current=true;setActionBusy(true);setActionError("");
         try {
             const response = await fetch(
                 `http://localhost:8000/properties/${propertyId}/image`,
@@ -376,8 +373,7 @@ function Dashboard({
             const data = await response.json();
 
             if (!response.ok) {
-                console.error("Bildes dzēšanas kļūda:", data);
-                return;
+                throw new Error(typeof data.detail === "string" ? data.detail : "Neizdevās pabeigt darbību. Mēģini vēlreiz.");
             }
 
             setProperties((currentProperties) =>
@@ -393,15 +389,10 @@ function Dashboard({
 
             setOpenPropertyMenu(null);
         } catch (error) {
-            console.error("Bildes dzēšanas kļūda:", error);
-        }
-    }
+            setActionError(error.message || "Neizdevās pabeigt darbību.");
+        } finally {actionInFlight.current=false;setActionBusy(false);}
 
-    const totalPortfolioValue = properties.reduce(
-        (total, property) =>
-            total + Number(property.purchase_price || 0),
-        0
-    );
+    }
 
     const monthlyRentValues = properties.map(property => propertyMonthlyRent(property, isPro)).filter(value => value !== null);
     const totalMonthlyRent = monthlyRentValues.reduce((sum, value) => sum + value, 0);
@@ -441,7 +432,9 @@ function Dashboard({
     }
 
     return (
-        <div className="dashboard-shell">
+        <div className="dashboard-shell" aria-busy={actionBusy}>
+            {loadError && <div className="app-status app-status-error" role="alert">{loadError} <button type="button" onClick={()=>loadProperties()}>Mēģināt vēlreiz</button></div>}
+            {actionError && <p className="app-status app-status-error" role="alert">{actionError}</p>}
 
             <div className="dashboard-topbar">
                 <div className="dashboard-topbar-inner">
@@ -565,7 +558,7 @@ function Dashboard({
                         </div>}
                     </div>
 
-                    {properties.length === 0 ? (
+                    {!propertiesLoaded ? <p role="status">{loadError ? "Īpašumu dati nav ielādēti." : "Ielādē īpašumus…"}</p> : properties.length === 0 ? (
                         <div className="dashboard-empty">
                             <h3>Šeit vēl nav saglabātu īpašumu</h3>
                             <p>
@@ -1379,7 +1372,7 @@ function Dashboard({
                             <button
                                 type="button"
                                 className="edit-property-save"
-                                onClick={handlePropertyUpdate}
+                                disabled={actionBusy} onClick={handlePropertyUpdate}
                             >
                                 Saglabāt
                             </button>
@@ -1408,6 +1401,7 @@ function Dashboard({
                                 Šo darbību nevarēs atsaukt.
                             </p>
 
+                            {actionError && <p role="alert" className="app-status app-status-error">{actionError}</p>}
                             <div className="delete-property-actions">
                                 <button
                                     type="button"
@@ -1420,7 +1414,7 @@ function Dashboard({
                                 <button
                                     type="button"
                                     className="delete-property-confirm"
-                                    onClick={handleDeleteProperty}
+                                    disabled={actionBusy} onClick={handleDeleteProperty}
                                 >
                                     Dzēst īpašumu
                                 </button>

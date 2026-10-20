@@ -1,3 +1,4 @@
+import {requestJson} from "./requestJson";
 import { helpFaq } from "./helpContent";
 import { propertyGrossYield } from "./propertyYield";
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
@@ -33,12 +34,14 @@ import {
 import ProFeatureGate from "./ProFeatureGate";
 import EditPropertyModal from "./EditPropertyModal";
 
-function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans, onAddProperty, onMobileNavigate, initialTab="analysis" }) {
+function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans, onAddProperty, onMobileNavigate, initialTab="analysis", onTabChange, initialDiarySection="calendar", onDiarySectionChange }) {
     const isPro=user?.plan==="pro";
     const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width:600px)').matches);
+    const [diaryPickerOpen, setDiaryPickerOpen] = useState(false);
+    const [diaryPickerHidden, setDiaryPickerHidden] = useState(false);
     useEffect(() => {
         const media = window.matchMedia('(max-width:600px)');
-        const update = () => setIsMobile(media.matches);
+        const update = () => {setIsMobile(media.matches);setDiaryPickerOpen(false);setDiaryPickerHidden(false);};
         media.addEventListener('change', update);
         return () => media.removeEventListener('change', update);
     }, []);
@@ -47,7 +50,11 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }, [property?.property_id]);
 
-    const [activeTab, setActiveTab] = useState(initialTab);
+    const [activeTab, updateActiveTab] = useState(initialTab);
+    const [analysisInputOpen, setAnalysisInputOpen] = useState(false);
+    const [actionError,setActionError]=useState("");
+    const actionInFlight=useRef(false);
+    useEffect(() => { onTabChange?.(activeTab); }, [activeTab, onTabChange]);
     const [advancedMetric, setAdvancedMetric] = useState(null);
     const receiveAnalysis = useCallback(data => {
         setAdvancedMetric({ propertyId: property.property_id, value: data?.results?.gross_yield ?? null });
@@ -61,8 +68,9 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
             }).catch(error => { if (error.name !== "AbortError") console.error("Yield load error", error); });
         return () => controller.abort();
     }, [property.property_id, isPro, activeTab, receiveAnalysis]);
-    const [activeDiarySection, setActiveDiarySection] = useState("calendar");
-    const [showDiarySections, setShowDiarySections] = useState(false);
+    const [activeDiarySection, updateActiveDiarySection] = useState(initialDiarySection);
+    const [showDiarySections, setShowDiarySections] = useState(initialDiarySection!=="calendar");
+    useEffect(()=>{onDiarySectionChange?.(activeDiarySection);},[activeDiarySection,onDiarySectionChange]);
     const [editingProperty, setEditingProperty] = useState(null);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [showStatusMenu, setShowStatusMenu] = useState(false);
@@ -114,10 +122,9 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
             setPropertyAddDialog(properties.length >= 3 ? 'limit' : 'funding');
         } catch { setPropertyAddDialog('error'); }
     }
-    const [diaryPickerOpen, setDiaryPickerOpen] = useState(false);
-    const [diaryPickerHidden, setDiaryPickerHidden] = useState(false);
+    const setActiveTab=useCallback(value=>{setDiaryPickerOpen(false);setDiaryPickerHidden(false);updateActiveTab(value);},[setDiaryPickerOpen,setDiaryPickerHidden,updateActiveTab]);
+    const setActiveDiarySection=useCallback(value=>{setDiaryPickerOpen(false);setDiaryPickerHidden(false);updateActiveDiarySection(value);},[setDiaryPickerOpen,setDiaryPickerHidden,updateActiveDiarySection]);
     useEffect(() => {
-        setDiaryPickerHidden(false);
         if (!isMobile || activeTab !== 'diary' || activeDiarySection === 'calendar') return;
         let distance = 0;
         let touchY = null;
@@ -175,7 +182,6 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
         document.addEventListener('pointerdown', closeOutside);
         return () => document.removeEventListener('pointerdown', closeOutside);
     }, [diaryPickerOpen]);
-    useEffect(() => { setDiaryPickerOpen(false); }, [activeTab, isMobile]);
     const moreMenuRef = useRef(null);
     const statusMenuRef = useRef(null);
 
@@ -294,7 +300,10 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
     }
 
     async function handleStatusChange(newStatus) {
-        const response = await fetch(
+        if(actionInFlight.current)return;
+        actionInFlight.current=true;setActionError("");
+        try {
+        const savedProperty = await requestJson(
             `http://localhost:8000/properties/${property.property_id}`,
             {
                 method: "PATCH",
@@ -331,13 +340,9 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
             }
         );
 
-        if (!response.ok) {
-            throw new Error("Neizdev'as mainīt īpašuma statusu.");
-        }
-
-        const savedProperty = await response.json();
-
         onPropertyUpdated(savedProperty);
+        } catch(error){setActionError(error.message);}
+        finally{actionInFlight.current=false;}
     }
 
     async function handleImageUpload(file) {
@@ -348,8 +353,10 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
 
         setShowMoreMenu(false);
 
+        if(actionInFlight.current)return;
+        actionInFlight.current=true;setActionError("");
         try {
-            const response = await fetch(
+            const data = await requestJson(
                 `http://localhost:8000/properties/${property.property_id}/image`,
                 {
                     method: "POST",
@@ -358,22 +365,13 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("Neizdevās augšupielādēt attēlu.");
-            }
-
-            const data = await response.json();
-
             onPropertyUpdated({
                 ...property,
                 image_url: data.image_url,
             });
 
-        } catch (error) {
-            console.error("Attēla augšupielādes kļūda:", error);
-            alert(error.message);
-        }
-
+        } catch(error){setActionError(error.message);}
+        finally{actionInFlight.current=false;}
     }
 
     async function handleDeleteImage() {
@@ -381,8 +379,10 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
 
         setShowMoreMenu(false);
 
+        if(actionInFlight.current)return;
+        actionInFlight.current=true;setActionError("");
         try {
-            const response = await fetch(
+            await requestJson(
                 `http://localhost:8000/properties/${property.property_id}/image`,
                 {
                     method: "DELETE",
@@ -390,19 +390,13 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("Neizdevās izdzēst īpašuma attēlu.");
-            }
-
             onPropertyUpdated({
                 ...property,
                 image_url: null,
             });
 
-        } catch (error) {
-            console.error("Attēla dzēšanas kļūda:", error);
-            alert(error.message);
-        }
+        } catch(error){setActionError(error.message);}
+        finally{actionInFlight.current=false;}
     }
 
     async function handleDeleteProperty() {
@@ -491,6 +485,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
                 </div></>}
                 <button type="button" className="add-property-cancel-button" aria-label="Aizvērt pievienošanas izvēli" onClick={() => setPropertyAddDialog(null)}><X className="add-property-close-icon" size={20}/><span className="add-property-cancel-label">Atcelt</span></button>
             </dialog>}
+            {actionError && <p className="app-status app-status-error" role="alert">{actionError}</p>}
             {/* Īpašuma galvene */}
             <div
                 className={`property-detail-header ${activeTab === "diary" &&
@@ -505,7 +500,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
                     <button
                         type="button"
                         className="property-detail-back"
-                        onClick={onBack}
+                        onClick={() => { if (activeTab === "advanced" && analysisInputOpen) { setActiveTab("analysis"); window.scrollTo({top:0}); } else onBack(); }}
                     >
                         <span>←</span><span className="property-back-label-desktop">Atpakaļ uz maniem īpašumiem</span><span className="property-back-label-mobile">Atpakaļ</span>
                     </button>
@@ -929,7 +924,7 @@ function PropertyDetail({ property, onBack, onPropertyUpdated, user, onOpenPlans
 
                 {activeTab === "advanced" && !isPro && <ProFeatureGate feature="advanced" onOpenPlans={onOpenPlans}/>}
                 {activeTab === "advanced" && isPro && (
-                    <AdvancedAnalysis key={property.property_id} property={property} onAnalysisChanged={receiveAnalysis} />
+                    <AdvancedAnalysis key={property.property_id} property={property} onAnalysisChanged={receiveAnalysis} onEditingChange={setAnalysisInputOpen} />
                 )}
 
             </div>

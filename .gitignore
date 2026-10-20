@@ -9,3 +9,8 @@ __pycache__/
 
 # Node
 node_modules/ 
+# Private user files and disposable test artifacts
+backend/uploads/
+backend/private_uploads/
+backend/tests/.tmp/
+frontend/dist/

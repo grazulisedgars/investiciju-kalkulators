@@ -11,7 +11,7 @@ function MortgageInputs({
             <h2>Finansējuma informācija</h2>
 
             <div className="input-group">
-                <label>
+                <label htmlFor="basic-down-payment">
                     Pirmā iemaksa (%)
                     <span className="required-mark"> *</span>
                 </label>
@@ -20,7 +20,7 @@ function MortgageInputs({
                     type="number"
                     min="0"
                     max="100"
-                    value={downPaymentPercent}
+                    id="basic-down-payment" value={downPaymentPercent}
                     onKeyDown={(event) => {
                         if (["-", "+", "e", "E"].includes(event.key)) {
                             event.preventDefault();

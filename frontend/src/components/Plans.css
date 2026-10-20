@@ -36,7 +36,7 @@
 
 /* Architectural photography remains decorative and keeps the compact layout. */
 .plans-shell { position:relative; isolation:isolate; }
-.plans-shell::before { content:''; position:absolute; z-index:0; inset:0 0 auto; height:300px; background-image:linear-gradient(to bottom,rgba(245,248,247,.1),rgba(245,248,247,.35) 58%,#f5f8f7 100%),url('../assets/plans-header-background.png'); background-size:cover; background-position:center 35%; pointer-events:none; }
+.plans-shell::before { content:''; position:absolute; z-index:0; inset:0 0 auto; height:300px; background-image:linear-gradient(to bottom,rgba(245,248,247,.1),rgba(245,248,247,.35) 58%,#f5f8f7 100%),url('../assets/plans-header-background.webp'); background-size:cover; background-position:center 35%; pointer-events:none; }
 .plans-content { position:relative; z-index:1; background:none; }
 .plan-art { display:flex; align-items:center; justify-content:center; width:134px; height:88px; padding:0; background:radial-gradient(ellipse at center,#dceee6 0%,#e8f4ed 65%,transparent 68%); border-radius:45% 55% 30% 50%; }
 .plan-art img { display:block; width:130px; height:100px; object-fit:contain; }

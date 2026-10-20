@@ -14,14 +14,10 @@ function UtilityModal({
     onClose,
     onSaved,
 }) {
+    const saveInFlight=useRef(false);
     const utilityDatePickerRef = useRef(null);
 
-    const [utilityForm, setUtilityForm] = useState({
-        entry_date: initialDate || "",
-        title: "",
-        amount: "",
-        notes: "",
-    });
+    const [utilityForm, setUtilityForm] = useState(() => ({entry_date: utility?.entry_date || initialDate || "",title: utility?.title ?? "",amount: utility?.amount ?? "",notes: utility?.notes ?? ""}));
 
     const [isSavingUtility, setIsSavingUtility] =
         useState(false);
@@ -37,29 +33,13 @@ function UtilityModal({
         utilityCalendarDate,
         setUtilityCalendarDate,
     ] = useState(() => {
-        if (initialDate) {
-            return new Date(`${initialDate}T12:00:00`);
+        const date = utility?.entry_date || initialDate;
+        if (date) {
+            return new Date(`${date}T12:00:00`);
         }
 
         return new Date();
     });
-
-    useEffect(() => {
-        if (!utility) {
-            return;
-        }
-
-        setUtilityForm({
-            entry_date: utility.entry_date,
-            title: utility.title || "",
-            amount: utility.amount ?? "",
-            notes: utility.notes || "",
-        });
-
-        setUtilityCalendarDate(
-            new Date(`${utility.entry_date}T12:00:00`)
-        );
-    }, [utility]);
 
     useEffect(() => {
         function handleKeyDown(event) {
@@ -107,6 +87,7 @@ function UtilityModal({
     }, [showUtilityDatePicker, isSavingUtility, onClose]);
 
     async function handleUtilitySave() {
+        if(saveInFlight.current)return;
         const amount = Number(utilityForm.amount);
 
         if (
@@ -135,6 +116,7 @@ function UtilityModal({
         }
 
         try {
+            saveInFlight.current=true;
             setIsSavingUtility(true);
             setUtilityError("");
 
@@ -184,6 +166,7 @@ function UtilityModal({
                 "Neizdevās saglabāt komunālo maksājumu."
             );
         } finally {
+            saveInFlight.current=false;
             setIsSavingUtility(false);
         }
     }

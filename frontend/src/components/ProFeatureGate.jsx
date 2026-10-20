@@ -1,6 +1,6 @@
 import {LockKeyhole,Check,House,Receipt,Hammer,Banknote,ChevronDown,ChevronLeft,ChevronRight} from 'lucide-react';
 import './ProFeatureGate.css';
-import diaryGallery from '../assets/pro-diary-gallery.png';
+import diaryGallery from '../assets/pro-diary-gallery.webp';
 const content={diary:{title:'Īpašuma dienasgrāmata',text:'Piefiksē visus darbus, izmaksas un notikumus vienuviet. Uzturi kārtību savos projektos un seko progresam.',features:['Kalendārs ar visiem ierakstiem','Izmaksas, kredīta un komunālo maksājumu uzskaite','Darba dienu reģistrēšana un nostrādātās stundas','Foto galerija un renovācijas progress','Piezīmes pie ierakstiem']},advanced:{title:'Padziļinātā analīze',text:'Iegūsti detalizētu investīcijas analīzi ar naudas plūsmu, ienesīgumu un atmaksāšanās prognozi līdz pat 10 gadiem.',features:['Naudas plūsmas grafiks un atdeves aprēķini','Renovācijas un izīrēšanas prognozes','Detalizēts izmaksu sadalījums','Bruto un neto ienesīgums, atmaksāšanās periods','Vizuāli grafiki un pārskati']}};
 function DiaryPreview(){
  const events=[{Icon:House,type:'utility',label:'KOMUNĀLIE MAKSĀJUMI',name:'Elektrība',amount:'€9.15'},{Icon:Receipt,type:'expense',label:'IZMAKSAS',name:'Sīkumi',amount:'€13.00'},{Icon:Hammer,type:'work',label:'DARBA DIENAS',name:'Krāsošana',amount:'4 h'},{Icon:Banknote,type:'rent',label:'SAŅEMTĀ ĪRE',name:'Īres maksājums',amount:'€180.00'}];

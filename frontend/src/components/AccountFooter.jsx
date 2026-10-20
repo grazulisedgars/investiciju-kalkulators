@@ -1,5 +1,5 @@
 import { useState } from "react";
-import mobileLogo from "../assets/icons/propfolio-logo.svg";
+import mobileLogo from "../assets/icons/propfolio-logo-optimized.svg";
 import { Mail, ChevronDown, LayoutGrid, UserRound, FileText } from "lucide-react";
 import logo from "../assets/propfolio-logo-white.svg";
 import "./AccountFooter.css";

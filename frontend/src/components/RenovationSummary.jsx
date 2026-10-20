@@ -1,3 +1,4 @@
+import {CalendarDays, CircleEuro, House} from "lucide-react";
 const money=n=>n.toLocaleString('lv-LV',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const displayDate=value=>value.split('-').reverse().join('.');
 
@@ -13,10 +14,10 @@ export default function RenovationSummary({inputs,results}) {
         <h3>Renovācijas un izīrēšanas prognoze</h3>
         {inputs.renovation_start_date && <p className="advanced-note renovation-summary-period">Renovācijas periods: {displayDate(inputs.renovation_start_date)}–{displayDate(end)}.</p>}
         <div className="renovation-summary-grid">
-            <div><span>Renovācijas ilgums</span><strong>{years} {years===1?'gads':'gadi'} un {remainder} {remainder===1?'mēnesis':'mēneši'}</strong></div>
-            <div><span>Plānotais īres sākums</span><strong>{rentMonth || `${forecastMonths+1}. mēnesī`}</strong>{rentMonth && <small>{forecastMonths+1}. prognozes mēnesī</small>}</div>
-            <div><span>Īpašnieka izmaksas renovācijas laikā</span><strong>{money(results.renovation_owner_costs ?? 0)}</strong></div>
-            <div><span>Plānotā bruto īre mēnesī pēc renovācijas</span><strong>{money(inputs.monthly_rent)}</strong></div>
+            <div><CalendarDays className="renovation-summary-row-icon" size={22} aria-hidden="true"/><span>Renovācijas ilgums</span><strong>{years} {years===1?'gads':'gadi'} un {remainder} {remainder===1?'mēnesis':'mēneši'}</strong></div>
+            <div><CalendarDays className="renovation-summary-row-icon" size={22} aria-hidden="true"/><span>Plānotais īres sākums</span><strong>{rentMonth || `${forecastMonths+1}. mēnesī`}</strong>{rentMonth && <small>{forecastMonths+1}. prognozes mēnesī</small>}</div>
+            <div><CircleEuro className="renovation-summary-row-icon" size={22} aria-hidden="true"/><span>Īpašnieka izmaksas renovācijas laikā</span><strong>{money(results.renovation_owner_costs ?? 0)}</strong></div>
+            <div><House className="renovation-summary-row-icon" size={22} aria-hidden="true"/><span>Plānotā bruto īre mēnesī pēc renovācijas</span><strong>{money(inputs.monthly_rent)}</strong></div>
         </div>
         <details className="renovation-summary-help"><summary>Kā lasīt šo prognozi?</summary>
             <p className="advanced-note">Renovācijas laikā īres ienākumi netiek gūti, bet remonta un īpašuma uzturēšanas izmaksas turpina uzkrāties.</p>
