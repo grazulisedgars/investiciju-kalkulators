@@ -1,3 +1,4 @@
+import terms from "../content/termsVersion.json";
 import { useState, useRef } from "react";
 import "./Registration.css";
 import AuthField from "./AuthField";
@@ -5,6 +6,7 @@ import "./AuthMobile.css";
 import {passwordRules} from "./passwordRules";
 
 function Registration({ onBack, onRegistered, onLogin }) {
+    const [termsAccepted, setTermsAccepted] = useState(false);
     const [busy,setBusy]=useState(false);
     const submitting=useRef(false);
     const [firstName, setFirstName] = useState("");
@@ -54,6 +56,8 @@ function Registration({ onBack, onRegistered, onLogin }) {
             newErrors.confirmPassword = "Paroles nesakrīt";
         }
 
+        if (!termsAccepted) newErrors.terms = "Lai izveidotu profilu, piekrīti lietošanas noteikumiem.";
+
         setErrors(newErrors);
 
         return Object.keys(newErrors).length === 0;
@@ -82,6 +86,8 @@ function Registration({ onBack, onRegistered, onLogin }) {
                         last_name: lastName.trim(),
                         email: email.trim(),
                         password,
+                        terms_accepted: termsAccepted,
+                        terms_version: terms.version,
                     }),
                 }
             );
@@ -90,7 +96,7 @@ function Registration({ onBack, onRegistered, onLogin }) {
 
             if (!response.ok) {
                 setErrors({
-                    general: typeof data.detail === "string" ? data.detail : "Pārbaudi ievadītos datus un paroles prasības.",
+                    general: typeof data.detail === "string" ? data.detail : data.detail?.some?.(item => item.loc?.includes("terms_version")) ? "Noteikumi ir atjaunināti. Pārlādē lapu un iepazīsties ar aktuālo redakciju." : "Pārbaudi ievadītos datus un paroles prasības.",
                 });
 
                 return;
@@ -203,6 +209,23 @@ function Registration({ onBack, onRegistered, onLogin }) {
                         {(errors.confirmPassword || (confirmPassword && password!==confirmPassword)) && (
                             <p className="form-error">{errors.confirmPassword || "Paroles nesakrīt."}</p>
                         )}
+                    </div>
+
+                    <div className="registration-consent">
+                        <div className="registration-consent-row">
+                            <input id="registration-terms" type="checkbox" required
+                                onInvalid={event => {
+                                    event.preventDefault();
+                                    setErrors(current => ({...current, terms: "Lai izveidotu profilu, piekrīti lietošanas noteikumiem."}));
+                                    event.currentTarget.focus();
+                                }}
+                                checked={termsAccepted} disabled={busy}
+                                aria-invalid={!!errors.terms}
+                                aria-describedby={errors.terms ? "registration-terms-error" : undefined}
+                                onChange={event => {setTermsAccepted(event.target.checked);setErrors(current => ({...current, terms: null}));}} />
+                            <label htmlFor="registration-terms">Esmu izlasījis un piekrītu <a href="/terms" target="_blank" rel="noopener noreferrer">Lietošanas noteikumiem<span className="registration-new-tab"> (atveras jaunā cilnē)</span></a>.</label>
+                        </div>
+                        {errors.terms && <p className="form-error" id="registration-terms-error" role="alert">{errors.terms}</p>}
                     </div>
 
                     <button

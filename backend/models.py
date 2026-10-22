@@ -1,5 +1,5 @@
 from datetime import date, datetime, timezone
-from sqlalchemy import UniqueConstraint, DateTime, String, ForeignKey, Float, Date, Numeric, JSON, event, update
+from sqlalchemy import Index, func, UniqueConstraint, DateTime, String, ForeignKey, Float, Date, Numeric, JSON, event, update
 from sqlalchemy.orm import Mapped, mapped_column, Session
 from database import Base
 from decimal import Decimal
@@ -32,6 +32,8 @@ class User(Base):
         nullable=False
     )
 
+    __table_args__ = (Index("uq_users_email_normalized", func.lower(func.trim(email)), unique=True),)
+
     plan: Mapped[str] = mapped_column(String(10), nullable=False, default="basic", server_default="basic")
 
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -40,6 +42,9 @@ class User(Base):
     email_verification_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     avatar_filename: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    terms_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     session_version: Mapped[int] = mapped_column(nullable=False, default=0, server_default="0")
 

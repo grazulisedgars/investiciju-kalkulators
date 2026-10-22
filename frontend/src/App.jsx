@@ -1,3 +1,8 @@
+import LoadingState from "./components/LoadingState";
+import {loadSessionLocation} from "./components/sessionLocation";
+import CookieSettingsLink from "./components/CookieSettingsLink";
+import Terms from "./components/Terms";
+import Privacy from "./components/Privacy";
 const PasswordRecovery = lazy(() => import("./components/PasswordRecovery"));
 import {calculateBasic, validateBasic, readCalculatorDraft, writeCalculatorDraft, clearCalculatorDraft} from "./components/basicAnalysis";
 import {requestJson} from "./components/requestJson";
@@ -31,8 +36,10 @@ import investmentIcon from "./assets/icons/propfolio-step-03-investment.svg";
 const PropertyDetail = lazy(() => import("./components/PropertyDetail"));
 
 function App() {
+  const legalPath = window.location.pathname.replace(/\/+$/, "");
+  const isLegalPage = legalPath === "/terms" || legalPath === "/privacy";
   const [resetToken,setResetToken]=useState(()=>new URLSearchParams(window.location.search).get("reset_password"));
-  const [showRecovery,setShowRecovery]=useState(false);
+  const [showRecovery,setShowRecovery]=useState(()=>new URLSearchParams(window.location.search).get("screen")==="recovery");
   const sessionReturn=useRef(null);
   const [verificationToken,setVerificationToken]=useState(()=>new URLSearchParams(window.location.search).get("verify_email"));
   const [financing, setFinancing] = useState(null);
@@ -64,9 +71,10 @@ function App() {
   const [showProfile,setShowProfile] = useState(false);
   const [profileSection,setProfileSection] = useState("profile");
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [locationError,setLocationError]=useState("");
   const [propertyLocationReady, setPropertyLocationReady] = useState(false);
   const [navigationRevision,setNavigationRevision]=useState(0);
-  useEffect(()=>{const restore=()=>{setPropertyLocationReady(false);setNavigationRevision(value=>value+1);};window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[]);
+  useEffect(()=>{const restore=()=>{const params=new URLSearchParams(window.location.search);setLocationError("");setShowRecovery(params.get("screen")==="recovery");setResetToken(params.get("reset_password"));setPropertyLocationReady(false);setNavigationRevision(value=>value+1);};window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[]);
 
   const [showLogin, setShowLogin] = useState(false);
   const [mobileHeroMenu, setMobileHeroMenu] = useState(false);
@@ -119,41 +127,30 @@ function App() {
 
   useEffect(() => {
     const controller=new AbortController();
+    let succeeded=false;
     async function checkCurrentUser() {
       try {
-        const response = await fetch(
-          "http://localhost:8000/me",
-          {
-            credentials: "include",signal:controller.signal,
-          }
-        );
-
-        if (!response.ok) {
-          if(controller.signal.aborted)return;
+        const {user, restoredProperty} = await loadSessionLocation(window.location.search, controller.signal);
+        if(controller.signal.aborted)return;
+        setLocationError("");
+        if (!user) {
           const draft = readCalculatorDraft();
           const screen=new URLSearchParams(window.location.search).get("screen");
           setCurrentUser(null);setShowDashboard(false);setSelectedProperty(null);setShowProfile(false);setShowPlans(false);setShowHelp(false);
-          setShowLogin(screen==="login");setShowRegistration(screen==="register");
+          const privateLocation=new URLSearchParams(window.location.search).has("property");
+          if(privateLocation)sessionReturn.current=window.location.pathname+window.location.search;
+          setShowRecovery(screen==="recovery");
+          setShowLogin(screen==="login" || privateLocation);setShowRegistration(screen==="register");
           if(screen==="calculator" && draft && !draft.ownerId)restoreDraft(draft);else setFinancing(null);
+          succeeded=true;
           return;
         }
 
-        const user = await response.json();
-
         const location = new URL(window.location.href);
-        const propertyId = location.searchParams.get("property");
-        let restoredProperty = null;
-        if (propertyId) {
-          try {
-            const propertiesResponse = await fetch("http://localhost:8000/properties", {credentials:"include",signal:controller.signal});
-            if (propertiesResponse.ok) {
-              const properties = await propertiesResponse.json();
-              restoredProperty = properties.find(property => String(property.property_id) === propertyId) || null;
-            }
-          } catch (error) { console.error("Neizdevās atjaunot īpašuma skatu.", error); }
-        }
         if(controller.signal.aborted)return;
         const screen=location.searchParams.get("screen");
+        setShowRecovery(screen==="recovery");
+        setResetToken(location.searchParams.get("reset_password"));
         setShowPlans(screen==="plans");setShowHelp(screen==="help");setShowProfile(screen==="profile");
         const section=location.searchParams.get("section");
         setProfileSection(["profile","password","subscription"].includes(section)?section:"profile");
@@ -172,10 +169,11 @@ function App() {
           restoreDraft(draft); setPropertyFlow("dashboard");
           setCalculatorNotice("Iepriekš ievadītā analīze ir atjaunota. Pārbaudi datus un saglabā īpašumu.");
         } else setFinancing(null);
+        succeeded=true;
       } catch (error) {
-        console.error(error);
+        if(!controller.signal.aborted)setLocationError(error.message || "Neizdevās savienoties ar serveri. Mēģini vēlreiz.");
       } finally {
-        if(!controller.signal.aborted)setPropertyLocationReady(true);
+        if(!controller.signal.aborted)setPropertyLocationReady(succeeded);
       }
     }
 
@@ -184,9 +182,9 @@ function App() {
   }, [navigationRevision,restoreDraft]);
 
   useEffect(() => {
-    if (!propertyLocationReady) return;
+    if (!propertyLocationReady || isLegalPage) return;
     const location = new URL(window.location.href);
-    const screen=showPlans?"plans":showHelp?"help":showProfile?"profile":showRegistration?"register":showLogin?"login":financing?"calculator":null;
+    const screen=showRecovery?"recovery":showPlans?"plans":showHelp?"help":showProfile?"profile":showRegistration?"register":showLogin?"login":financing?"calculator":null;
     if(screen)location.searchParams.set("screen",screen);else location.searchParams.delete("screen");
     if(screen==="profile" && profileSection!=="profile")location.searchParams.set("section",profileSection);else location.searchParams.delete("section");
     if (currentUser && selectedProperty && !showDashboard && !showProfile && !financing && !showPlans && !showHelp) {
@@ -194,7 +192,7 @@ function App() {
       if(propertyInitialTab==="diary" && propertyInitialDiarySection!=="calendar")location.searchParams.set("diary",propertyInitialDiarySection);else location.searchParams.delete("diary");
     } else {location.searchParams.delete("property");location.searchParams.delete("tab");location.searchParams.delete("diary");}
     if (location.href !== window.location.href) window.history.pushState({propfolio:true}, "", location);
-  }, [propertyLocationReady,currentUser,selectedProperty,showDashboard,showProfile,financing,propertyInitialTab,showPlans,showHelp,profileSection,showLogin,showRegistration,propertyInitialDiarySection]);
+  }, [isLegalPage,propertyLocationReady,currentUser,selectedProperty,showDashboard,showProfile,financing,propertyInitialTab,showPlans,showHelp,profileSection,showLogin,showRegistration,showRecovery,propertyInitialDiarySection]);
 
   function resetCalculator() {
     setPurchasePrice("");
@@ -277,6 +275,9 @@ function App() {
     }
     else{setCurrentUser(null);setShowLogin(true);setShowDashboard(false);}
   }
+  if(isLegalPage)return legalPath === "/privacy" ? <Privacy /> : <Terms />;
+  if(locationError && !resetToken)return <main className="app"><section className="app-load-error" role="alert"><h1>Neizdevās ielādēt lapu</h1><p>{locationError}</p><button type="button" onClick={()=>{setLocationError("");setPropertyLocationReady(false);setNavigationRevision(value=>value+1);}}>Mēģināt vēlreiz</button></section></main>;
+  if(!propertyLocationReady && !resetToken && !showRecovery)return <LoadingState />;
   if(resetToken || showRecovery)return <PasswordRecovery token={resetToken} onBack={()=>{setResetToken(null);setShowRecovery(false);setCurrentUser(null);setShowDashboard(false);setShowProfile(false);setShowLogin(true);setShowRegistration(false);window.history.replaceState({},"",window.location.pathname);}}/>;
   if(verificationToken || (currentUser && currentUser.email_verified===false && !showProfile))return <EmailVerification token={verificationToken} user={currentUser} onContinue={finishVerification} onProfile={()=>{setShowProfile(true);setShowDashboard(true);}} onLogout={async()=>{const response=await fetch('http://localhost:8000/logout',{method:'POST',credentials:'include'});if(response.ok){setCurrentUser(null);setFinancing(null);setShowDashboard(false);setShowLogin(true);}}}/>;
 
@@ -636,7 +637,7 @@ function App() {
                   <a href="#about">Par mums</a>
                   <a href="#faq">FAQ</a>
                   <a href="/privacy">Privātuma politika</a>
-                  <a href="/terms">Lietošanas noteikumi</a>
+                  <a href="/terms">Lietošanas noteikumi</a><CookieSettingsLink />
                 </nav>
 
                 <div className="footer-contact">
@@ -734,7 +735,7 @@ function App() {
 
       {showLogin && (
         <Login
-          onForgot={()=>{setShowRecovery(true);window.scrollTo({top:0});}}
+          onForgot={()=>{setShowLogin(false);setShowRecovery(true);window.scrollTo({top:0});}}
           onRegister={() => {setShowLogin(false);setShowRegistration(true);}}
           onBack={() => setShowLogin(false)}
           onLogin={(user) => {

@@ -13,7 +13,7 @@ os.environ["JWT_SECRET_KEY"]="regression-tests-only-secret-key-32-characters"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fastapi.testclient import TestClient
 from PIL import Image
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -39,6 +39,9 @@ class RegressionTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(dir=temp_root)
         self.root = Path(self.temp.name)
         self.engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+        with self.engine.connect() as connection:
+            connection.execute(text("PRAGMA foreign_keys=ON"))
+            connection.commit()
         database.Base.metadata.create_all(self.engine)
         self.sessions = sessionmaker(bind=self.engine)
         self.patches = [patch.object(database, "SessionLocal", self.sessions),
@@ -80,6 +83,98 @@ class RegressionTests(unittest.TestCase):
 
     def upload(self):
         return self.client.post("/properties/10/image",files={"image":("../../unsafe.svg",self.jpeg(),"image/svg+xml")})
+
+    def test_registration_requires_explicit_current_terms(self):
+        from legal_terms import TERMS_VERSION
+        payload = {"first_name": "Consent", "last_name": "Test", "email": "consent@example.com", "password": self.password}
+        for extra in [{}, {"terms_accepted": False, "terms_version": TERMS_VERSION},
+                      {"terms_accepted": "true", "terms_version": TERMS_VERSION},
+                      {"terms_accepted": 1, "terms_version": TERMS_VERSION},
+                      {"terms_accepted": True},
+                      {"terms_accepted": True, "terms_version": "outdated"}]:
+            with self.subTest(extra=extra):
+                _attempts.clear()
+                self.assertEqual(self.client.post("/register", json={**payload, **extra}).status_code, 422)
+                with self.sessions() as db:
+                    self.assertIsNone(db.query(User).filter_by(email=payload["email"]).first())
+        _attempts.clear()
+        with patch.object(main, "send_verification"):
+            before = datetime.now(timezone.utc)
+            response = self.client.post("/register", json={**payload, "terms_accepted": True, "terms_version": TERMS_VERSION,
+                                                          "terms_accepted_at": "2000-01-01T00:00:00Z"})
+        self.assertEqual(response.status_code, 200, response.text)
+        with self.sessions() as db:
+            user = db.query(User).filter_by(email=payload["email"]).one()
+            self.assertEqual(user.terms_version, TERMS_VERSION)
+            self.assertGreaterEqual(user.terms_accepted_at.replace(tzinfo=timezone.utc), before)
+            self.assertIsNone(db.get(User, 1).terms_accepted_at)
+            self.assertIsNone(db.get(User, 1).terms_version)
+
+    def test_registration_terms_version_matches_frontend(self):
+        import json
+        from legal_terms import TERMS_VERSION
+        version_file = Path(__file__).resolve().parents[2] / "frontend/src/content/termsVersion.json"
+        self.assertEqual(json.loads(version_file.read_text(encoding="utf-8"))["version"], TERMS_VERSION)
+
+    def add_all_diary_types(self):
+        from models import DiaryEntry, ExpenseEntry, LoanEntry, UtilityEntry, WorkEntry, RentEntry, AdvancedAnalysis
+        with self.sessions() as db:
+            for kind, model, values in [("expense",ExpenseEntry,{"amount":100}), ("loan",LoanEntry,{"amount":100,"payment_type":"regular"}), ("utility",UtilityEntry,{"amount":100}), ("work",WorkEntry,{"hours":2}), ("rent",RentEntry,{"amount":200})]:
+                entry=DiaryEntry(property_id=10,entry_type=kind,entry_date=datetime.now().date(),title="Delete regression")
+                db.add(entry);db.flush();db.add(model(diary_entry_id=entry.id,**values))
+            db.add(AdvancedAnalysis(property_id=10,inputs={}))
+            db.commit()
+
+    def test_delete_property_with_all_diary_types_and_files(self):
+        from models import DiaryEntry, ExpenseEntry, LoanEntry, UtilityEntry, WorkEntry, RentEntry, AdvancedAnalysis
+        self.add_all_diary_types()
+        image_url=self.upload().json()["image_url"]
+        gallery_response=self.client.post('/properties/10/gallery',data={'photo_date':'2026-10-22','category':'initial'},files=[('photos',('photo.jpg',self.jpeg(),'image/jpeg'))])
+        self.assertEqual(gallery_response.status_code,201,gallery_response.text)
+        with self.sessions() as db:
+            db.add(Property(property_id=20,user_id=2,property_name="Other account",financing_type="cash",purchase_price=100,area=10))
+            db.flush()
+            db.add(DiaryEntry(property_id=20,entry_type="expense",entry_date=datetime.now().date(),title="Keep"));db.commit()
+        response=self.client.delete('/properties/10')
+        self.assertEqual(response.status_code,200,response.text)
+        with self.sessions() as db:
+            self.assertIsNone(db.get(Property,10))
+            self.assertIsNotNone(db.get(Property,20))
+            self.assertEqual(db.query(DiaryEntry).filter_by(property_id=20).count(),1)
+            self.assertEqual(db.query(DiaryEntry).filter_by(property_id=10).count(),0)
+            for model in (ExpenseEntry,LoanEntry,UtilityEntry,WorkEntry,RentEntry,AdvancedAnalysis,GalleryPhoto):
+                self.assertEqual(db.query(model).count(),0,model.__name__)
+        self.assertFalse(image_storage.property_path(image_url,10).exists())
+        self.assertEqual(list(gallery.GALLERY_DIR.glob('*.jpg')),[])
+
+    def test_delete_property_failed_commit_preserves_records_and_files(self):
+        self.add_all_diary_types()
+        image_url=self.upload().json()["image_url"]
+        with patch.object(self.sessions.class_,"commit",side_effect=RuntimeError("simulated failure")):
+            self.assertEqual(self.client.delete('/properties/10').status_code,500)
+        with self.sessions() as db:
+            self.assertIsNotNone(db.get(Property,10))
+            from models import DiaryEntry
+            self.assertEqual(db.query(DiaryEntry).filter_by(property_id=10).count(),5)
+        self.assertTrue(image_storage.property_path(image_url,10).exists())
+
+    def test_email_normalization_login_registration_and_recovery(self):
+        from legal_terms import TERMS_VERSION
+        with self.sessions() as db:
+            db.get(User,1).email=" Test1@Example.com "
+            db.commit()
+        response=self.client.post('/login',json={'email':' TEST1@example.com ','password':self.password})
+        self.assertEqual(response.status_code,200,response.text)
+        self.assertEqual(response.json()['user']['id'],1)
+        response=self.client.post('/register',json={'first_name':'Duplicate','last_name':'Test','email':'test1@example.com','password':self.password,'terms_accepted':True,'terms_version':TERMS_VERSION})
+        self.assertEqual(response.status_code,400,response.text)
+        self.assertEqual(self.client.post('/account/password/request',json={'email':'TEST1@example.com'}).status_code,200)
+        self.assertEqual(len(list(password_recovery.OUTBOX.glob('*.html'))),1)
+        from sqlalchemy.exc import IntegrityError
+        with self.sessions() as db:
+            db.add(User(username="duplicate",email="test1@EXAMPLE.com",password_hash=self.hashed))
+            with self.assertRaises(IntegrityError):db.commit()
+            db.rollback()
 
     def test_anonymous_cannot_read_files_or_private_records(self):
         self.client.cookies.clear()

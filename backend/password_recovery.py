@@ -15,13 +15,13 @@ from auth_limits import limit_auth
 from database import get_db
 from email_verification import OUTBOX
 from models import User
-from schemas import UserRegister
+from schemas import UserRegister, EmailInput
 from security import JWT_ALGORITHM, JWT_SECRET_KEY, hash_password
 
 router = APIRouter(prefix="/account/password", tags=["Paroles atjaunošana"])
 
 
-class RecoveryRequest(BaseModel):
+class RecoveryRequest(EmailInput):
     email: EmailStr
 
 
@@ -40,7 +40,7 @@ def recovery_token(user):
 
 @router.post("/request", dependencies=[Depends(limit_auth)])
 def request_recovery(data: RecoveryRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(func.lower(User.email) == str(data.email).lower()).first()
+    user = db.query(User).filter(func.lower(func.trim(User.email)) == str(data.email).lower()).first()
     if os.getenv("MAIL_DELIVERY", "local") != "local":
         raise HTTPException(503, "E-pasta piegādes pakalpojums vēl nav konfigurēts.")
     if user:

@@ -23,7 +23,8 @@ from database import Base, engine
 import models
 
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, select, delete
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.attributes import set_committed_value
 
 from database import get_db
@@ -152,7 +153,7 @@ def register_user(
 
     existing_email = (
         db.query(User)
-        .filter(User.email == user_data.email)
+        .filter(func.lower(func.trim(User.email)) == user_data.email)
         .first()
     )
 
@@ -167,11 +168,17 @@ def register_user(
         last_name=user_data.last_name,
         username=username,
         email=user_data.email,
+        terms_accepted_at=datetime.now(timezone.utc),
+        terms_version=user_data.terms_version,
         password_hash=hash_password(user_data.password)
     )
 
     db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(400, "E-pasts vai lietotājvārds jau tiek izmantots.")
     db.refresh(new_user)
 
     delivery_error=False
@@ -211,7 +218,7 @@ def login_user(
 ):
     user = (
         db.query(User)
-        .filter(User.email == login_data.email)
+        .filter(func.lower(func.trim(User.email)) == login_data.email)
         .first()
     )
 
@@ -670,8 +677,17 @@ def delete_property(
     # Īpašuma dzēšanas gadījumā savācam arī tā galerijas failus.
     gallery_files = [photo_path(photo.storage_name) for photo in
                      db.query(GalleryPhoto).filter(GalleryPhoto.property_id == property_id).all()]
-    db.delete(property)
-    db.commit()
+    try:
+        diary_ids = select(DiaryEntry.id).where(DiaryEntry.property_id == property_id)
+        for model in (ExpenseEntry, LoanEntry, UtilityEntry, WorkEntry, RentEntry):
+            db.execute(delete(model).where(model.diary_entry_id.in_(diary_ids)), execution_options={"synchronize_session": False})
+        for model in (DiaryEntry, GalleryPhoto, AdvancedAnalysis):
+            db.execute(delete(model).where(model.property_id == property_id), execution_options={"synchronize_session": False})
+        db.delete(property)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise HTTPException(500, "Īpašumu neizdevās izdzēst. Mēģini vēlreiz.")
     remove_image(image_path)
     for path in gallery_files:
         remove_image(path)

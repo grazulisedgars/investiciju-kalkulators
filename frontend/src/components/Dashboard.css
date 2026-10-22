@@ -1296,14 +1296,11 @@
  .dashboard-mobile-nav button[aria-current="location"] { color:#0f5138; background:#edf6f1; border-radius:8px; font-weight:600; }
 }
 
-.add-property-option .add-property-option-icon,.add-property-close-icon { display:none; }
-.add-property-option-copy { display:contents; }
-@media(max-width:600px) {
- .add-property-modal { position:relative; min-height:330px; padding:24px 20px calc(38px + env(safe-area-inset-bottom)); border-radius:16px 16px 0 0; }
- .add-property-modal h2 { margin:0 40px 10px 0; font-size:20px; line-height:1.35; }
+ .add-property-modal { position:relative; box-sizing:border-box; max-height:90dvh; overflow-y:auto; padding:28px; border-radius:16px; font-family:inherit; }
+ .add-property-modal h2 { margin:0 40px 10px 0; font-size:22px; line-height:1.35; }
  .add-property-modal>p { font-size:13px; line-height:1.5; margin:0 0 20px; color:#66756f; }
  .add-property-options { gap:12px; }
- .add-property-option { flex-direction:row; align-items:center; gap:14px; padding:16px 14px; min-height:90px; border-radius:10px; border-color:#e1eae5; background:#fff; }
+ .add-property-option { font-family:inherit; flex-direction:row; align-items:center; gap:14px; padding:16px 14px; min-height:90px; border-radius:10px; border-color:#e1eae5; background:#fff; }
  .add-property-option .add-property-option-icon { display:flex; align-items:center; justify-content:center; width:46px; height:46px; flex-shrink:0; border-radius:9px; background:#e3f1e9; color:#126a4e; }
  .add-property-option-copy { display:flex; flex-direction:column; gap:6px; min-width:0; }
  .add-property-option-copy strong { font-size:14px; line-height:1.35; }
@@ -1312,6 +1309,10 @@
  .add-property-cancel-label { display:none; }
  .add-property-close-icon { display:block; }
  .add-property-cancel-button:hover { background:#f1f7f3; }
+ .add-property-option:focus-visible, .add-property-cancel-button:focus-visible { outline:2px solid #126a4e; outline-offset:3px; }
+@media(max-width:600px) {
+ .add-property-modal { min-height:330px; padding:24px 20px calc(38px + env(safe-area-inset-bottom)); border-radius:16px 16px 0 0; }
+ .add-property-modal h2 { font-size:20px; }
 }
 
 .property-card-arrow-mobile { display:none; }

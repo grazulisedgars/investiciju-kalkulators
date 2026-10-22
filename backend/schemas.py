@@ -1,11 +1,36 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import ConfigDict, BaseModel, EmailStr, Field, field_validator
+from pydantic import ConfigDict, BaseModel, EmailStr, Field, StrictBool, field_validator
 from typing import Literal
+from legal_terms import TERMS_VERSION
 
 
-class UserRegister(BaseModel):
+class EmailInput(BaseModel):
+    @field_validator("email", mode="before", check_fields=False)
+    @classmethod
+    def normalize_email(cls, value):
+        return value.strip().lower() if isinstance(value, str) else value
+
+
+class UserRegister(EmailInput):
+    terms_accepted: StrictBool
+    terms_version: str = Field(max_length=64)
+
+    @field_validator("terms_accepted")
+    @classmethod
+    def require_terms(cls, value):
+        if not value:
+            raise ValueError("Lai reģistrētos, jāpiekrīt lietošanas noteikumiem.")
+        return value
+
+    @field_validator("terms_version")
+    @classmethod
+    def current_terms_version(cls, value):
+        if value != TERMS_VERSION:
+            raise ValueError("Noteikumi ir atjaunināti. Pārlādē lapu un iepazīsties ar aktuālo redakciju.")
+        return value
+
     first_name: str = Field(
         min_length=1,
         max_length=100
@@ -38,7 +63,7 @@ class UserRegister(BaseModel):
         return value
 
 
-class UserLogin(BaseModel):
+class UserLogin(EmailInput):
     email: EmailStr
     password: str = Field(
         min_length=8,

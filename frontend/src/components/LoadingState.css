@@ -1,0 +1,23 @@
+.propfolio-loading { min-height:100svh; width:100%; box-sizing:border-box; display:grid; place-items:center; padding:32px 20px; background:radial-gradient(ellipse at 50% 45%,#edf6f0 0%,#f5f8f5 60%); color:#124735; font-family:Arial,sans-serif; }
+.propfolio-loading-content { text-align:center; animation:loading-reveal .3s ease-out .25s both; }
+.propfolio-loading-scene { width:200px; height:160px; margin:0 auto 8px; }
+.propfolio-loading-scene svg { display:block; width:100%; height:100%; overflow:visible; }
+.loading-halo { fill:#e1f0e7; }
+.loading-crane { stroke:#84ad98; }
+.loading-house { stroke:#116b52; }
+.loading-build { stroke-dasharray:1; stroke-dashoffset:1; animation:loading-build 4.8s ease-in-out infinite; }
+.loading-walls { animation-delay:.35s; }
+.loading-roof { animation-delay:.7s; }
+.loading-details { animation-delay:1.05s; }
+.loading-brick { fill:#3f8f6b; animation:loading-brick 4.8s ease-in-out infinite; transform-origin:107px 76px; }
+.propfolio-loading-title { margin:0 0 9px; font-size:20px; line-height:1.4; font-weight:600; letter-spacing:-.3px; }
+.propfolio-loading-caption { margin:0; color:#627b6b; font-size:13px; line-height:1.6; }
+.loading-dots { display:inline-flex; gap:3px; margin-left:3px; vertical-align:middle; }
+.loading-dots i { width:3px; height:3px; border-radius:50%; background:currentColor; animation:loading-dot 1.5s ease-in-out infinite; }
+.loading-dots i:nth-child(2) { animation-delay:.2s; }.loading-dots i:nth-child(3) { animation-delay:.4s; }
+@keyframes loading-reveal { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+@keyframes loading-build { 0%,8% { stroke-dashoffset:1; opacity:0; } 12% { opacity:1; } 48%,78% { stroke-dashoffset:0; opacity:1; } 94%,100% { stroke-dashoffset:0; opacity:0; } }
+@keyframes loading-brick { 0%,8% { opacity:0; transform:translateY(-15px); } 16%,25% { opacity:1; transform:translateY(0); } 45% { opacity:1; transform:translate(-15px,35px); } 52%,100% { opacity:0; transform:translate(-15px,35px); } }
+@keyframes loading-dot { 0%,70%,100% { opacity:.3; } 35% { opacity:1; } }
+@media(max-width:600px) { .propfolio-loading-scene { width:176px; height:141px; }.propfolio-loading-title { font-size:18px; } }
+@media(prefers-reduced-motion:reduce) { .propfolio-loading-content,.loading-build,.loading-brick,.loading-dots i { animation:none; }.loading-build { stroke-dashoffset:0; opacity:1; }.loading-brick { opacity:0; } }

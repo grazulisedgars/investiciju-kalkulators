@@ -2652,3 +2652,8 @@
 
 .app-status{padding:12px 16px;border:1px solid #dce8e0;border-radius:9px;background:#edf6f1;color:#12573e;font:14px/1.5 Arial,sans-serif;margin:12px 0;}
 .app-status-error{background:#fff4f2;border-color:#edc9c2;color:#942f22;}
+
+.app-load-error { max-width:520px; margin:60px auto; padding:28px; border:1px solid #dce8df; border-radius:16px; background:white; }
+.app-load-error h1 { margin:0 0 16px; font-size:22px; color:#173e30; }
+.app-load-error p { font-size:14px; line-height:1.6; color:#52665a; }
+.app-load-error button { min-height:44px; padding:10px 20px; border:0; border-radius:8px; background:#11634d; color:white; font:inherit; font-size:14px; }

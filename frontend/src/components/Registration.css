@@ -270,3 +270,11 @@
 }
 .registration-password-help { margin:6px 0 0; color:#667b6e; font-size:.78rem; line-height:1.5; }
 .registration-form input[aria-invalid="true"] { border-color:#b42318; }
+
+.registration-consent { grid-column: 1 / -1; margin-top: 8px; }
+.app .registration-form .registration-consent-row { display: flex; align-items: flex-start; gap: 10px; }
+.app .registration-form .registration-consent-row input { flex: 0 0 18px; width: 18px; height: 18px; min-height: 18px; margin: 3px 0 0; padding: 0; accent-color: #116b52; cursor: pointer; }
+.app .registration-form .registration-consent-row label { margin: 0; font-size: 13px; line-height: 1.7; font-weight: 400; cursor: pointer; }
+.registration-consent a { color: #11634d; font-weight: 600; text-underline-offset: 3px; }
+.registration-consent a:focus-visible, .app .registration-form .registration-consent-row input:focus-visible { outline: 2px solid #116b52; outline-offset: 3px; }
+.registration-new-tab { font-size: 11px; font-weight: 400; }

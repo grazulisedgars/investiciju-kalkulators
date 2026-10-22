@@ -1,10 +1,11 @@
+import LoadingState from './components/LoadingState.jsx'
 import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.jsx'
+import EntryPage from './EntryPage.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Suspense fallback={<p role="status" className="app-loading">Ielādē…</p>}><App /></Suspense>
+    <Suspense fallback={<LoadingState />}><EntryPage /></Suspense>
   </StrictMode>,
 )
